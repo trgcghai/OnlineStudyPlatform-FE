@@ -26,3 +26,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - No `src/` dir: app code lives in `app/` (`app/layout.tsx` is the root layout, `app/page.tsx` the home page). Path alias `@/*` maps to the repo root.
 - Tailwind v4 uses CSS-first config: there is no `tailwind.config.*` — theme tokens go in `@theme` in `app/globals.css`.
 - No CI or git hooks in this repo yet.
+- `CLAUDE.md` only contains `@AGENTS.md` — keep guidance here, not there.
+
+## Deploy / build quirks
+
+- `next.config.ts` sets `output: "standalone"`, so `next build` also emits `.next/standalone`; `pnpm start` runs the standalone server (`node server.js`).
+- Deployment is Docker-based: the multi-stage `Dockerfile` (deps → dev → build → production) is the production path; the production stage runs `node server.js` from `.next/standalone` with `.next/static` and `public` copied separately.
+- `pnpm-workspace.yaml` sets `allowBuilds: { sharp: false, unrs-resolver: false }` — pnpm blocks dependency postinstall scripts by default. Any new dependency with a build script needs an `allowBuilds` entry to build its native bindings.
