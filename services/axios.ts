@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 
 // Cấu hình mặc định cho các request
 const axiosClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  baseURL: (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/api$/, ""),
   withCredentials: true,
   timeout: 1000 * 60 * 10,
 });
