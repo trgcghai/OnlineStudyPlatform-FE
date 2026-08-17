@@ -7,9 +7,10 @@ export const registerSchema = z.object({
     .min(2, "Họ và tên phải có ít nhất 2 ký tự")
     .max(100, "Họ và tên tối đa 100 ký tự"),
   email: z
-    .email("Email không hợp lệ")
+    .string()
     .trim()
-    .toLowerCase(),
+    .toLowerCase()
+    .pipe(z.email("Email không hợp lệ")),
   password: z
     .string()
     .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
