@@ -26,7 +26,7 @@ import {
   registerSchema,
   type RegisterFormValues,
 } from "@/lib/schemas/register";
-import { useRegisterUser } from "@/hooks/use-register-user";
+import { useRegisterUser } from "@/hooks/useUsers";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -71,11 +71,11 @@ export default function RegisterPage() {
     }
 
     if (result.fieldErrors) {
-      for (const [field, message] of Object.entries(result.fieldErrors)) {
+      for (const { field, message, shouldFocus } of result.fieldErrors) {
         setError(
-          field as keyof RegisterFormValues,
+          field,
           { message, type: "server" },
-          { shouldFocus: Boolean(result.shouldFocusEmail && field === "email") }
+          { shouldFocus: Boolean(shouldFocus) }
         );
       }
       return;

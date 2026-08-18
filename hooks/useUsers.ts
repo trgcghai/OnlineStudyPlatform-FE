@@ -1,4 +1,5 @@
 import { isAxiosError } from "axios";
+import { isApiErrorResponse } from "@/services/axios";
 import { registerUser as registerUserApi } from "@/services/api/users";
 import type { RegisterFormValues } from "@/lib/schemas/register";
 
@@ -8,8 +9,11 @@ const INVALID_PASSWORD_MESSAGE =
 interface RegisterFailure {
   ok: false;
   formError?: string;
-  fieldErrors?: Partial<Record<keyof RegisterFormValues, string>>;
-  shouldFocusEmail?: boolean;
+  fieldErrors?: Array<{
+    field: keyof RegisterFormValues;
+    message: string;
+    shouldFocus?: boolean;
+  }>;
 }
 
 interface RegisterSuccess {
@@ -43,36 +47,44 @@ function mapRegisterError(error: unknown): RegisterFailure {
   }
 
   const { status, data } = error.response;
+  const apiError = isApiErrorResponse(data) ? data : null;
 
   if (status === 409) {
     return {
       ok: false,
-      fieldErrors: { email: "Email đã được đăng ký" },
-      shouldFocusEmail: true,
+      fieldErrors: [
+        {
+          field: "email",
+          message: "Email đã được đăng ký",
+          shouldFocus: true,
+        },
+      ],
     };
   }
 
   if (status === 400) {
-    const errorText = getErrorText(data).toLowerCase();
+    const errorText = getErrorText(apiError?.error.details ?? data).toLowerCase();
 
     if (errorText.includes("password")) {
       return {
         ok: false,
-        fieldErrors: { password: INVALID_PASSWORD_MESSAGE },
+        fieldErrors: [
+          { field: "password", message: INVALID_PASSWORD_MESSAGE },
+        ],
       };
     }
 
     if (errorText.includes("email")) {
       return {
         ok: false,
-        fieldErrors: { email: "Email không hợp lệ" },
+        fieldErrors: [{ field: "email", message: "Email không hợp lệ" }],
       };
     }
 
     if (errorText.includes("name")) {
       return {
         ok: false,
-        fieldErrors: { name: "Họ và tên không hợp lệ" },
+        fieldErrors: [{ field: "name", message: "Họ và tên không hợp lệ" }],
       };
     }
 
@@ -84,7 +96,8 @@ function mapRegisterError(error: unknown): RegisterFailure {
 
   return {
     ok: false,
-    formError: "Đã có lỗi xảy ra. Vui lòng thử lại sau.",
+    formError:
+      apiError?.error.message ?? "Đã có lỗi xảy ra. Vui lòng thử lại sau.",
   };
 }
 

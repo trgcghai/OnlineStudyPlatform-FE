@@ -3,6 +3,52 @@ import type { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import axios from 'axios';
 import { redirect } from 'next/navigation';
 
+export interface ApiSuccessResponse<T> {
+  success: true;
+  data: T;
+  timestamp: string;
+}
+
+export interface ApiError {
+  code: number;
+  message: string;
+  details: string[];
+}
+
+export interface ApiErrorResponse {
+  success: false;
+  data: null;
+  error: ApiError;
+  timestamp: string;
+}
+
+export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse;
+
+export function isApiErrorResponse(data: unknown): data is ApiErrorResponse {
+  if (
+    !data ||
+    typeof data !== 'object' ||
+    !('success' in data) ||
+    data.success !== false ||
+    !('error' in data)
+  ) {
+    return false;
+  }
+
+  const { error } = data;
+
+  return (
+    !!error &&
+    typeof error === 'object' &&
+    'code' in error &&
+    typeof error.code === 'number' &&
+    'message' in error &&
+    typeof error.message === 'string' &&
+    'details' in error &&
+    Array.isArray(error.details)
+  );
+}
+
 // Cấu hình mặc định cho các request
 const axiosClient = axios.create({
   baseURL: (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/api$/, ""),
@@ -115,10 +161,9 @@ axiosClient.interceptors.response.use(
     }
 
     const isRefreshTokenExpired =
-      typeof error.response?.data === 'object' &&
-      error.response?.data !== null &&
-      'message' in error.response.data &&
-      (error.response.data as { message?: string }).message === 'Refresh token is invalid or expired';
+      isApiErrorResponse(error.response?.data) &&
+      error.response.data.error.message ===
+        'Refresh token is invalid or expired';
 
     if (isUnauthorized && !originalRequest._retry && !isRefreshEndpoint) {
       // Xử lý unauthorized trước khi handle tới refresh token

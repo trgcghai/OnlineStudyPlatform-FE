@@ -1,4 +1,20 @@
-import axiosClient from "@/services/axios";
+import axiosClient, { type ApiSuccessResponse } from "@/services/axios";
+
+export const USER_ROLES = {
+  ADMIN: "Admin",
+  INSTRUCTOR: "Instructor",
+  LEARNER: "Learner",
+} as const;
+
+export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES];
+
+export const USER_STATUSES = {
+  ACTIVE: "Active",
+  INACTIVE: "Inactive",
+} as const;
+
+export type UserStatus =
+  (typeof USER_STATUSES)[keyof typeof USER_STATUSES];
 
 export interface RegisterUserPayload {
   name: string;
@@ -10,9 +26,9 @@ export interface RegisterUserResponse {
   id: string;
   name: string;
   email: string;
-  role: "Learner" | "Instructor" | "Admin";
+  role: UserRole;
   avatar: string | null;
-  status: "Active" | "Inactive";
+  status: UserStatus;
   createdAt: string;
   updatedAt: string;
 }
@@ -20,10 +36,9 @@ export interface RegisterUserResponse {
 export async function registerUser(
   payload: RegisterUserPayload
 ): Promise<RegisterUserResponse> {
-  const { data } = await axiosClient.post<RegisterUserResponse>(
-    "/users",
-    payload
-  );
+  const { data } = await axiosClient.post<
+    ApiSuccessResponse<RegisterUserResponse>
+  >("/users", payload);
 
-  return data;
+  return data.data;
 }
