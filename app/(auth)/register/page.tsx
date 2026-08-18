@@ -1,7 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { isAxiosError } from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -27,29 +26,11 @@ import {
   registerSchema,
   type RegisterFormValues,
 } from "@/lib/schemas/register";
-import axiosClient from "@/services/axios";
-
-const INVALID_PASSWORD_MESSAGE =
-  "Mật khẩu không đáp ứng yêu cầu (tối thiểu 8 ký tự, gồm chữ, số và ký tự đặc biệt)";
-
-function getErrorText(data: unknown): string {
-  if (typeof data === "string") {
-    return data;
-  }
-
-  if (Array.isArray(data)) {
-    return data.map(getErrorText).join(" ");
-  }
-
-  if (data && typeof data === "object") {
-    return Object.values(data).map(getErrorText).join(" ");
-  }
-
-  return "";
-}
+import { useRegisterUser } from "@/hooks/use-register-user";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { registerUser } = useRegisterUser();
   const [formError, setFormError] = useState<string | null>(null);
   const [registered, setRegistered] = useState(false);
 
@@ -82,56 +63,25 @@ export default function RegisterPage() {
   async function onSubmit(values: RegisterFormValues) {
     setFormError(null);
 
-    try {
-      await axiosClient.post("/users", values);
+    const result = await registerUser(values);
+
+    if (result.ok) {
       setRegistered(true);
-    } catch (error) {
-      if (!isAxiosError(error) || !error.response) {
-        setFormError("Không thể kết nối đến máy chủ. Vui lòng thử lại.");
-        return;
-      }
-
-      const { status, data } = error.response;
-
-      if (status === 409) {
-        setError(
-          "email",
-          { message: "Email đã được đăng ký", type: "server" },
-          { shouldFocus: true }
-        );
-        return;
-      }
-
-      if (status === 400) {
-        const errorText = getErrorText(data).toLowerCase();
-
-        if (errorText.includes("password")) {
-          setError("password", {
-            message: INVALID_PASSWORD_MESSAGE,
-            type: "server",
-          });
-          return;
-        }
-
-        if (errorText.includes("email")) {
-          setError("email", { message: "Email không hợp lệ", type: "server" });
-          return;
-        }
-
-        if (errorText.includes("name")) {
-          setError("name", {
-            message: "Họ và tên không hợp lệ",
-            type: "server",
-          });
-          return;
-        }
-
-        setFormError("Thông tin không hợp lệ. Vui lòng kiểm tra lại.");
-        return;
-      }
-
-      setFormError("Đã có lỗi xảy ra. Vui lòng thử lại sau.");
+      return;
     }
+
+    if (result.fieldErrors) {
+      for (const [field, message] of Object.entries(result.fieldErrors)) {
+        setError(
+          field as keyof RegisterFormValues,
+          { message, type: "server" },
+          { shouldFocus: Boolean(result.shouldFocusEmail && field === "email") }
+        );
+      }
+      return;
+    }
+
+    setFormError(result.formError ?? "Đã có lỗi xảy ra. Vui lòng thử lại sau.");
   }
 
   const submitDisabled = isSubmitting || registered;
