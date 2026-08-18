@@ -21,6 +21,12 @@ export default function Home() {
         >
           Đăng nhập
         </Link>
+        <Link
+          href="/register"
+          className={buttonVariants({ variant: "outline", size: "lg" })}
+        >
+          Tạo tài khoản
+        </Link>
       </div>
     </section>
   );
