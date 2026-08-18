@@ -59,9 +59,7 @@ function mapRegisterError(error: unknown): RegisterFailure {
     if (hasDetail(details, "password")) {
       return {
         ok: false,
-        fieldErrors: [
-          { field: "password", message: INVALID_PASSWORD_MESSAGE },
-        ],
+        fieldErrors: [{ field: "password", message: INVALID_PASSWORD_MESSAGE }],
       };
     }
 
@@ -93,10 +91,14 @@ function mapRegisterError(error: unknown): RegisterFailure {
 
 export function useRegisterUser() {
   async function registerUser(
-    values: RegisterFormValues
+    values: RegisterFormValues,
   ): Promise<RegisterResult> {
     try {
-      await registerUserApi(values);
+      await registerUserApi({
+        name: values.name,
+        email: values.email,
+        password: values.password,
+      });
       return { ok: true };
     } catch (error) {
       return mapRegisterError(error);

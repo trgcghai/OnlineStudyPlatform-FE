@@ -44,6 +44,7 @@ export default function RegisterPage() {
       name: "",
       email: "",
       password: "",
+      confirmPassword: "",
     },
   });
 
@@ -62,7 +63,7 @@ export default function RegisterPage() {
         setError(
           field,
           { message, type: "server" },
-          { shouldFocus: Boolean(shouldFocus) }
+          { shouldFocus: Boolean(shouldFocus) },
         );
       }
       return;
@@ -81,7 +82,10 @@ export default function RegisterPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex flex-col gap-6"
+          >
             {formError ? (
               <Alert variant="destructive">
                 <AlertTitle>Không thể đăng ký</AlertTitle>
@@ -124,6 +128,20 @@ export default function RegisterPage() {
                 />
                 <FieldError errors={[errors.password]} />
               </Field>
+
+              <Field data-invalid={!!errors.confirmPassword}>
+                <FieldLabel htmlFor="confirmPassword">
+                  Xác nhận mật khẩu
+                </FieldLabel>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  aria-invalid={!!errors.confirmPassword}
+                  {...register("confirmPassword")}
+                />
+                <FieldError errors={[errors.confirmPassword]} />
+              </Field>
             </FieldGroup>
 
             <Button type="submit" disabled={isSubmitting}>
@@ -134,7 +152,10 @@ export default function RegisterPage() {
         <CardFooter className="justify-center">
           <p className="text-sm text-muted-foreground">
             Đã có tài khoản?{" "}
-            <Link href="/signin" className="font-medium text-primary underline-offset-4 hover:underline">
+            <Link
+              href="/signin"
+              className="font-medium text-primary underline-offset-4 hover:underline"
+            >
               Đăng nhập
             </Link>
           </p>
