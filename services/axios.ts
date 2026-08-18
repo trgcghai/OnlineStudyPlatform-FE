@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 
 export interface ApiSuccessResponse<T> {
   success: true;
+  statusCode: number;
   data: T;
   timestamp: string;
 }
@@ -17,6 +18,7 @@ export interface ApiError {
 
 export interface ApiErrorResponse {
   success: false;
+  statusCode: number;
   data: null;
   error: ApiError;
   timestamp: string;
@@ -30,6 +32,8 @@ export function isApiErrorResponse(data: unknown): data is ApiErrorResponse {
     typeof data !== 'object' ||
     !('success' in data) ||
     data.success !== false ||
+    !('statusCode' in data) ||
+    typeof data.statusCode !== 'number' ||
     !('error' in data)
   ) {
     return false;
