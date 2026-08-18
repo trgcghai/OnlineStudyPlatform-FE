@@ -9,33 +9,19 @@ const INVALID_PASSWORD_MESSAGE =
 interface RegisterFailure {
   ok: false;
   formError?: string;
-  fieldErrors?: Array<{
-    field: keyof RegisterFormValues;
-    message: string;
-    shouldFocus?: boolean;
-  }>;
+  fieldErrors?: RegisterFieldError[];
 }
 
-interface RegisterSuccess {
-  ok: true;
+interface RegisterFieldError {
+  field: keyof RegisterFormValues;
+  message: string;
+  shouldFocus?: boolean;
 }
 
-type RegisterResult = RegisterSuccess | RegisterFailure;
+type RegisterResult = { ok: true } | RegisterFailure;
 
-function getErrorText(data: unknown): string {
-  if (typeof data === "string") {
-    return data;
-  }
-
-  if (Array.isArray(data)) {
-    return data.map(getErrorText).join(" ");
-  }
-
-  if (data && typeof data === "object") {
-    return Object.values(data).map(getErrorText).join(" ");
-  }
-
-  return "";
+function hasDetail(details: string[], keyword: string): boolean {
+  return details.some((detail) => detail.toLowerCase().includes(keyword));
 }
 
 function mapRegisterError(error: unknown): RegisterFailure {
@@ -47,7 +33,12 @@ function mapRegisterError(error: unknown): RegisterFailure {
   }
 
   const { status, data } = error.response;
-  const apiError = isApiErrorResponse(data) ? data : null;
+  if (!isApiErrorResponse(data)) {
+    return {
+      ok: false,
+      formError: "Đã có lỗi xảy ra. Vui lòng thử lại sau.",
+    };
+  }
 
   if (status === 409) {
     return {
@@ -63,9 +54,9 @@ function mapRegisterError(error: unknown): RegisterFailure {
   }
 
   if (status === 400) {
-    const errorText = getErrorText(apiError?.error.details ?? data).toLowerCase();
+    const { details } = data.error;
 
-    if (errorText.includes("password")) {
+    if (hasDetail(details, "password")) {
       return {
         ok: false,
         fieldErrors: [
@@ -74,14 +65,14 @@ function mapRegisterError(error: unknown): RegisterFailure {
       };
     }
 
-    if (errorText.includes("email")) {
+    if (hasDetail(details, "email")) {
       return {
         ok: false,
         fieldErrors: [{ field: "email", message: "Email không hợp lệ" }],
       };
     }
 
-    if (errorText.includes("name")) {
+    if (hasDetail(details, "name")) {
       return {
         ok: false,
         fieldErrors: [{ field: "name", message: "Họ và tên không hợp lệ" }],
@@ -96,8 +87,7 @@ function mapRegisterError(error: unknown): RegisterFailure {
 
   return {
     ok: false,
-    formError:
-      apiError?.error.message ?? "Đã có lỗi xảy ra. Vui lòng thử lại sau.",
+    formError: data.error.message,
   };
 }
 

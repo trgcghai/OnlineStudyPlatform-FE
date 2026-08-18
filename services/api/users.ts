@@ -13,8 +13,7 @@ export const USER_STATUSES = {
   INACTIVE: "Inactive",
 } as const;
 
-export type UserStatus =
-  (typeof USER_STATUSES)[keyof typeof USER_STATUSES];
+export type UserStatus = (typeof USER_STATUSES)[keyof typeof USER_STATUSES];
 
 export interface RegisterUserPayload {
   name: string;
@@ -34,7 +33,7 @@ export interface RegisterUserResponse {
 }
 
 export async function registerUser(
-  payload: RegisterUserPayload
+  payload: RegisterUserPayload,
 ): Promise<RegisterUserResponse> {
   const { data } = await axiosClient.post<
     ApiSuccessResponse<RegisterUserResponse>
