@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import type { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import axios from 'axios';
-import { redirect } from 'next/navigation';
+import type { AxiosError, InternalAxiosRequestConfig } from "axios";
+import axios from "axios";
+import type { AuthUser } from "@/lib/features/authSlice";
 
 export interface ApiSuccessResponse<T> {
   success: true;
@@ -62,84 +61,144 @@ const axiosClient = axios.create({
 
 // Biến để track trạng thái refresh token
 let isRefreshing = false;
-let isLoggingOut = false; // Thêm flag để tránh logout nhiều lần
 let failedQueue: Array<{
-  resolve: (value?: any) => void;
-  reject: (reason?: any) => void;
+  resolve: (token: string) => void;
+  reject: (reason?: unknown) => void;
 }> = [];
 
+interface RefreshResult {
+  accessToken: string;
+  user: AuthUser;
+}
+
+class AuthSessionChangedError extends Error {
+  constructor() {
+    super("Auth session changed while refresh was in progress");
+    this.name = "AuthSessionChangedError";
+  }
+}
+
+async function getBrowserAuth() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const [{ store }, authSlice] = await Promise.all([
+    import("@/lib/store"),
+    import("@/lib/features/authSlice"),
+  ]);
+
+  return {
+    store,
+    clearAuth: authSlice.clearAuth,
+    setCredentials: authSlice.setCredentials,
+  };
+}
+
+async function getCurrentAccessToken(): Promise<string | null> {
+  const auth = await getBrowserAuth();
+  const accessToken = auth?.store.getState().auth.accessToken?.trim();
+
+  return accessToken || null;
+}
+
+function redirectToSignIn(): void {
+  if (typeof window !== "undefined") {
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+    window.location.assign("/signin");
+  }
+}
+
+function setAuthorizationHeader(
+  request: InternalAxiosRequestConfig,
+  accessToken: string,
+): void {
+  request.headers.Authorization = `Bearer ${accessToken}`;
+}
+
+function getRequestAccessToken(request: InternalAxiosRequestConfig): string | null {
+  const authorization = request.headers.Authorization;
+
+  if (typeof authorization !== "string") {
+    return null;
+  }
+
+  const match = authorization.match(/^Bearer\s+(.+)$/i);
+
+  return match?.[1]?.trim() || null;
+}
+
+function getRequestPath(request: InternalAxiosRequestConfig): string | null {
+  if (!request.url) {
+    return null;
+  }
+
+  try {
+    return new URL(request.url, request.baseURL ?? axiosClient.defaults.baseURL).pathname;
+  } catch {
+    return request.url.split("?")[0] || null;
+  }
+}
+
+function isAuthRefreshRequest(request: InternalAxiosRequestConfig): boolean {
+  return getRequestPath(request) === "/auth/refresh";
+}
+
+function isAuthSessionRequest(request: InternalAxiosRequestConfig): boolean {
+  const path = getRequestPath(request);
+
+  return path === "/auth/login" || path === "/auth/logout";
+}
+
 // Hàm xử lý queue khi refresh token hoàn thành
-const processQueue = (error: any, success: boolean = false) => {
+const processQueue = (error: unknown, token?: string) => {
   failedQueue.forEach(({ resolve, reject }) => {
     if (error) {
       reject(error);
+    } else if (token) {
+      resolve(token);
     } else {
-      resolve(success);
+      reject(new Error("Missing refreshed access token"));
     }
   });
 
   failedQueue = [];
 };
 
-const refreshToken = async (): Promise<boolean> => {
-  try {
-    const response = await axiosClient.get(`/auth/refresh`);
+const refreshToken = async (): Promise<RefreshResult> => {
+  const response = await axiosClient.post<
+    ApiSuccessResponse<RefreshResult>
+  >("/auth/refresh");
+  const accessToken = response.data.data.accessToken.trim();
 
-    console.log('Refresh token success');
-    return response.status === 200;
-  } catch (error) {
-    console.error('Refresh token failed:', error);
-    return false;
+  if (!accessToken) {
+    throw new Error("Refresh response did not include an access token");
   }
+
+  return {
+    ...response.data.data,
+    accessToken,
+  };
 };
 
 // Hàm logout redux state
 const performLogout = async () => {
-  // Tránh logout nhiều lần
-  if (isLoggingOut) {
-    console.log('Already logging out...');
-    return;
-  }
+  const auth = await getBrowserAuth();
 
-  isLoggingOut = true;
-  console.log('Performing logout...');
-
-  try {
-    const { store } = await import('@/lib/store');
-    const { clearUser } = await import('@/lib/features/authSlice');
-
-    // Clear Redux state
-    store.dispatch(clearUser());
-
-    // Clear refresh flag
-    isRefreshing = false;
-
-    // Redirect to login page
-    if (typeof window !== 'undefined') {
-      redirect('/signin');
-    }
-  } catch (error) {
-    console.error('Logout error:', error);
-  } finally {
-    // Reset flag sau một khoảng thời gian
-    setTimeout(() => {
-      isLoggingOut = false;
-    }, 1000);
-  }
+  auth?.store.dispatch(auth.clearAuth());
+  isRefreshing = false;
+  redirectToSignIn();
 };
 
-// Hàm logout redux state
-const handle401CodeWithoutRefresh = async () => {
-  try {
-    const { store } = await import('@/lib/store');
-    const { setIsAuthenticated } = await import('@/lib/features/authSlice');
+axiosClient.interceptors.request.use(async (request) => {
+  const accessToken = await getCurrentAccessToken();
 
-    // Clear Redux state
-    store.dispatch(setIsAuthenticated(false));
-  } catch (error) {
-    console.error('Handle 401 error:', error);
+  if (accessToken) {
+    setAuthorizationHeader(request, accessToken);
   }
-};
+
+  return request;
+});
 
 // Interceptor: Xử lý lỗi 401 và errorCode UNAUTHORIZED
 axiosClient.interceptors.response.use(
@@ -155,11 +214,11 @@ axiosClient.interceptors.response.use(
     }
 
     const isUnauthorized = error.response?.status === 401;
-    const isRefreshEndpoint = originalRequest.url?.includes('/auth/refresh');
+    const isRefreshEndpoint = isAuthRefreshRequest(originalRequest);
+    const isAuthSessionEndpoint = isAuthSessionRequest(originalRequest);
 
     // Nếu refresh token endpoint bị 401, logout ngay
     if (isUnauthorized && isRefreshEndpoint) {
-      console.log('Refresh token endpoint returned 401, logging out...');
       await performLogout();
       return Promise.reject(error);
     }
@@ -169,13 +228,21 @@ axiosClient.interceptors.response.use(
       error.response.data.error.message ===
         'Refresh token is invalid or expired';
 
-    if (isUnauthorized && !originalRequest._retry && !isRefreshEndpoint) {
-      // Xử lý unauthorized trước khi handle tới refresh token
-      await handle401CodeWithoutRefresh();
+    if (
+      isUnauthorized &&
+      !originalRequest._retry &&
+      !isRefreshEndpoint &&
+      !isAuthSessionEndpoint
+    ) {
+      const failedRequestToken = getRequestAccessToken(originalRequest);
+
+      if (!failedRequestToken) {
+        return Promise.reject(error);
+      }
 
       // Nếu refresh token đã hết hạn, logout ngay
       if (isRefreshTokenExpired) {
-        console.log('Refresh token expired, logging out...');
+        processQueue(error);
         await performLogout();
         return Promise.reject(error);
       }
@@ -183,14 +250,26 @@ axiosClient.interceptors.response.use(
       // Đánh dấu request này đã retry để tránh infinite loop
       originalRequest._retry = true;
 
+      const currentAccessToken = await getCurrentAccessToken();
+
+      if (currentAccessToken && currentAccessToken !== failedRequestToken) {
+        setAuthorizationHeader(originalRequest, currentAccessToken);
+        return axiosClient(originalRequest);
+      }
+
       if (isRefreshing) {
         // Nếu đang refresh, đưa request vào queue
-        console.log('Adding request to queue...');
-        return new Promise((resolve, reject) => {
+        return new Promise<string>((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
-          .then(() => {
-            // Retry request gốc (cookie đã được update)
+          .then(async (accessToken) => {
+            const currentAccessToken = await getCurrentAccessToken();
+
+            if (currentAccessToken !== accessToken) {
+              throw new AuthSessionChangedError();
+            }
+
+            setAuthorizationHeader(originalRequest, accessToken);
             return axiosClient(originalRequest);
           })
           .catch((err) => {
@@ -198,28 +277,31 @@ axiosClient.interceptors.response.use(
           });
       }
 
-      console.log('Access token expired, refreshing...');
       isRefreshing = true;
 
       try {
         // Gọi API refresh token
-        const refreshSuccess = await refreshToken();
+        const result = await refreshToken();
+        const auth = await getBrowserAuth();
+        const currentAccessToken = auth?.store.getState().auth.accessToken?.trim() || null;
 
-        if (refreshSuccess) {
-          console.log('Token refreshed successfully, retrying failed requests');
-          // Xử lý tất cả requests trong queue
-          processQueue(null, true);
-
-          // Retry request gốc
-          return axiosClient(originalRequest);
-        } else {
-          throw new Error('Token refresh failed');
+        if (!auth || currentAccessToken !== failedRequestToken) {
+          throw new AuthSessionChangedError();
         }
-      } catch (refreshError) {
-        console.error('Token refresh failed:', refreshError);
 
+        auth.store.dispatch(auth.setCredentials(result));
+        setAuthorizationHeader(originalRequest, result.accessToken);
+        processQueue(null, result.accessToken);
+
+        // Retry request gốc
+        return axiosClient(originalRequest);
+      } catch (refreshError) {
         // Xử lý queue với error
-        processQueue(refreshError, false);
+        processQueue(refreshError);
+
+        if (refreshError instanceof AuthSessionChangedError) {
+          return Promise.reject(refreshError);
+        }
 
         // Logout
         await performLogout();

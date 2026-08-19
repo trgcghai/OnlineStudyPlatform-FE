@@ -26,15 +26,15 @@ import {
   registerSchema,
   type RegisterFormValues,
 } from "@/lib/schemas/register";
-import { useRegisterUser } from "@/hooks/useUsers";
+import { getRegisterFailure, useRegisterUserMutation } from "@/hooks/useUsers";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { registerUser } = useRegisterUser();
+  const registerMutation = useRegisterUserMutation();
   const [formError, setFormError] = useState<string | null>(null);
 
   const {
-    formState: { errors, isSubmitting },
+    formState: { errors },
     handleSubmit,
     register,
     setError,
@@ -51,25 +51,28 @@ export default function RegisterPage() {
   async function onSubmit(values: RegisterFormValues) {
     setFormError(null);
 
-    const result = await registerUser(values);
-
-    if (result.ok) {
+    try {
+      await registerMutation.mutateAsync(values);
       router.push("/signin");
       return;
-    }
+    } catch (error) {
+      const result = getRegisterFailure(error);
 
-    if (result.fieldErrors) {
-      for (const { field, message, shouldFocus } of result.fieldErrors) {
-        setError(
-          field,
-          { message, type: "server" },
-          { shouldFocus: Boolean(shouldFocus) },
-        );
+      if (result.fieldErrors) {
+        for (const { field, message, shouldFocus } of result.fieldErrors) {
+          setError(
+            field,
+            { message, type: "server" },
+            { shouldFocus: Boolean(shouldFocus) },
+          );
+        }
+        return;
       }
-      return;
-    }
 
-    setFormError(result.formError ?? "Đã có lỗi xảy ra. Vui lòng thử lại sau.");
+      setFormError(
+        result.formError ?? "Đã có lỗi xảy ra. Vui lòng thử lại sau.",
+      );
+    }
   }
 
   return (
@@ -144,8 +147,8 @@ export default function RegisterPage() {
               </Field>
             </FieldGroup>
 
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Đang đăng ký..." : "Đăng ký"}
+            <Button type="submit" disabled={registerMutation.isPending}>
+              {registerMutation.isPending ? "Đang đăng ký..." : "Đăng ký"}
             </Button>
           </form>
         </CardContent>
