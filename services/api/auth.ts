@@ -1,0 +1,49 @@
+import type { AuthUser } from "@/lib/features/authSlice";
+import axiosClient, { type ApiSuccessResponse } from "@/services/axios";
+import type { UserRole, UserStatus } from "@/services/api/users";
+
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  accessToken: string;
+  user: AuthUser;
+}
+
+export interface CurrentUserResponse {
+  id: string;
+  email: string;
+  role: UserRole;
+  status: UserStatus;
+}
+
+export async function login(payload: LoginPayload): Promise<LoginResponse> {
+  const { data } = await axiosClient.post<ApiSuccessResponse<LoginResponse>>(
+    "/auth/login",
+    payload,
+  );
+
+  return data.data;
+}
+
+export async function refresh(): Promise<LoginResponse> {
+  const { data } = await axiosClient.post<ApiSuccessResponse<LoginResponse>>(
+    "/auth/refresh",
+  );
+
+  return data.data;
+}
+
+export async function logout(): Promise<void> {
+  await axiosClient.post("/auth/logout");
+}
+
+export async function getMe(): Promise<CurrentUserResponse> {
+  const { data } = await axiosClient.get<
+    ApiSuccessResponse<CurrentUserResponse>
+  >("/auth/me");
+
+  return data.data;
+}
