@@ -8,7 +8,6 @@ import type { UserRole } from "@/services/api/users";
 import {
   canAccessRole,
   getRoleHomePath,
-  getSignInRedirectPath,
   isAuthenticatedSession,
 } from "@/utils/authUtil";
 
@@ -25,7 +24,7 @@ export function AuthGuard({ allowedRoles, children }: AuthGuardProps) {
 
   useEffect(() => {
     if (!isSession) {
-      router.replace(getSignInRedirectPath());
+      router.replace("/signin");
       return;
     }
 

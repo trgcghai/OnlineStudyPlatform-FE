@@ -1,8 +1,6 @@
 import type { AuthState } from "@/lib/features/authSlice";
 import { USER_ROLES, type UserRole } from "@/services/api/users";
 
-export const SIGN_IN_PATH = "/signin";
-
 export function getRoleHomePath(role: UserRole): string {
   switch (role) {
     case USER_ROLES.ADMIN:
@@ -12,12 +10,8 @@ export function getRoleHomePath(role: UserRole): string {
     case USER_ROLES.LEARNER:
       return "/courses";
     default:
-      return SIGN_IN_PATH;
+      return "/courses";
   }
-}
-
-export function getSignInRedirectPath(): string {
-  return SIGN_IN_PATH;
 }
 
 export function isAuthenticatedSession(auth: AuthState): boolean {

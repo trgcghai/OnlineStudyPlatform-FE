@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { getSignInRedirectPath } from "@/utils/authUtil";
 
 export function LogoutButton() {
   const router = useRouter();
@@ -17,7 +16,7 @@ export function LogoutButton() {
     try {
       await logout();
     } finally {
-      router.replace(getSignInRedirectPath());
+      router.replace("/signin");
     }
   }
 
