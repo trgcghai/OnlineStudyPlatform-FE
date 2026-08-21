@@ -15,7 +15,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/components/ui/toast";
 import { useMyProfile, useUploadAvatarForm } from "@/hooks/useUsers";
 import { cn } from "@/lib/utils";
-import { X } from "lucide-react";
+import { Camera, Save, X } from "lucide-react";
 
 const AVATAR_MAX_SIZE_BYTES = 5 * 1024 * 1024;
 const AVATAR_ACCEPT = {
@@ -146,7 +146,8 @@ function ProfileAvatar() {
             <AvatarFallback className="text-2xl">{initials || "?"}</AvatarFallback>
           </Avatar>
           {!selectedFile && (
-            <div className="absolute inset-0 flex items-center justify-center rounded-full bg-background/70 text-center text-xs font-medium opacity-0 transition-opacity group-hover:opacity-100">
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 rounded-full bg-background/70 text-center text-xs font-medium opacity-0 transition-opacity group-hover:opacity-100">
+              <Camera className="size-4" aria-hidden="true" />
               Đổi ảnh
             </div>
           )}
@@ -177,7 +178,10 @@ function ProfileAvatar() {
                 <Spinner /> Đang lưu...
               </>
             ) : (
-              "Lưu ảnh đại diện"
+              <>
+                <Save aria-hidden="true" />
+                Lưu ảnh đại diện
+              </>
             )}
           </Button>
           {error && <p className="text-sm text-destructive">{error}</p>}

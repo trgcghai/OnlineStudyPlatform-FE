@@ -18,10 +18,15 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 import { Spinner } from "@/components/ui/spinner";
 import { useMyProfile, useUpdateProfileForm } from "@/hooks/useUsers";
 import { profileSchema, type ProfileFormValues } from "@/lib/schemas/profile";
+import { Mail, Save, User } from "lucide-react";
 
 const PROFILE_NAME_ERROR_ID = "profile-name-error";
 
@@ -78,7 +83,10 @@ function ProfileInfoForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Thông tin cá nhân</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <User className="size-5 text-muted-foreground" aria-hidden="true" />
+          Thông tin cá nhân
+        </CardTitle>
         <CardDescription>Cập nhật thông tin hồ sơ của bạn.</CardDescription>
       </CardHeader>
       <CardContent>
@@ -93,27 +101,37 @@ function ProfileInfoForm() {
           <FieldGroup>
             <Field data-invalid={!!errors.name}>
               <FieldLabel htmlFor="name">Họ và tên</FieldLabel>
-              <Input
-                id="name"
-                autoComplete="name"
-                aria-invalid={!!errors.name}
-                aria-describedby={
-                  errors.name ? PROFILE_NAME_ERROR_ID : undefined
-                }
-                {...register("name")}
-              />
+              <InputGroup>
+                <InputGroupAddon>
+                  <User aria-hidden="true" />
+                </InputGroupAddon>
+                <InputGroupInput
+                  id="name"
+                  autoComplete="name"
+                  aria-invalid={!!errors.name}
+                  aria-describedby={
+                    errors.name ? PROFILE_NAME_ERROR_ID : undefined
+                  }
+                  {...register("name")}
+                />
+              </InputGroup>
               <FieldError id={PROFILE_NAME_ERROR_ID} errors={[errors.name]} />
             </Field>
 
             <Field>
               <FieldLabel htmlFor="email">Email</FieldLabel>
-              <Input
-                id="email"
-                type="email"
-                value={profile?.email ?? ""}
-                disabled
-                readOnly
-              />
+              <InputGroup>
+                <InputGroupAddon>
+                  <Mail aria-hidden="true" />
+                </InputGroupAddon>
+                <InputGroupInput
+                  id="email"
+                  type="email"
+                  value={profile?.email ?? ""}
+                  disabled
+                  readOnly
+                />
+              </InputGroup>
               <p className="text-muted-foreground text-sm">
                 Email không thể thay đổi.
               </p>
@@ -121,7 +139,16 @@ function ProfileInfoForm() {
           </FieldGroup>
 
           <Button type="submit" disabled={isPending}>
-            {isPending ? "Đang lưu..." : "Lưu thay đổi"}
+            {isPending ? (
+              <>
+                <Spinner /> Đang lưu...
+              </>
+            ) : (
+              <>
+                <Save aria-hidden="true" />
+                Lưu thay đổi
+              </>
+            )}
           </Button>
         </form>
       </CardContent>

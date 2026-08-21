@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
+import { BookOpen, LogIn, UserPlus } from "lucide-react";
 
 export default function Home() {
   return (
@@ -13,18 +14,21 @@ export default function Home() {
       </p>
       <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
         <Link href="/courses" className={buttonVariants({ size: "lg" })}>
+          <BookOpen aria-hidden="true" />
           Khám phá khóa học
         </Link>
         <Link
           href="/signin"
           className={buttonVariants({ variant: "outline", size: "lg" })}
         >
+          <LogIn aria-hidden="true" />
           Đăng nhập
         </Link>
         <Link
           href="/register"
           className={buttonVariants({ variant: "outline", size: "lg" })}
         >
+          <UserPlus aria-hidden="true" />
           Tạo tài khoản
         </Link>
       </div>

@@ -21,12 +21,17 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 import {
   registerSchema,
   type RegisterFormValues,
 } from "@/lib/schemas/register";
 import { getRegisterFailure, useRegisterUserMutation } from "@/hooks/useUsers";
+import { Lock, Mail, User, UserPlus } from "lucide-react";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -79,7 +84,9 @@ export default function RegisterPage() {
     <section className="flex flex-1 items-center justify-center px-6 py-12">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Đăng ký tài khoản</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            Đăng ký tài khoản
+          </CardTitle>
           <CardDescription>
             Tạo tài khoản học viên để tham gia các khóa học.
           </CardDescription>
@@ -99,36 +106,51 @@ export default function RegisterPage() {
             <FieldGroup>
               <Field data-invalid={!!errors.name}>
                 <FieldLabel htmlFor="name">Họ và tên</FieldLabel>
-                <Input
-                  id="name"
-                  autoComplete="name"
-                  aria-invalid={!!errors.name}
-                  {...register("name")}
-                />
+                <InputGroup>
+                  <InputGroupAddon>
+                    <User aria-hidden="true" />
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    id="name"
+                    autoComplete="name"
+                    aria-invalid={!!errors.name}
+                    {...register("name")}
+                  />
+                </InputGroup>
                 <FieldError errors={[errors.name]} />
               </Field>
 
               <Field data-invalid={!!errors.email}>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
-                <Input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  aria-invalid={!!errors.email}
-                  {...register("email")}
-                />
+                <InputGroup>
+                  <InputGroupAddon>
+                    <Mail aria-hidden="true" />
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    id="email"
+                    type="email"
+                    autoComplete="email"
+                    aria-invalid={!!errors.email}
+                    {...register("email")}
+                  />
+                </InputGroup>
                 <FieldError errors={[errors.email]} />
               </Field>
 
               <Field data-invalid={!!errors.password}>
                 <FieldLabel htmlFor="password">Mật khẩu</FieldLabel>
-                <Input
-                  id="password"
-                  type="password"
-                  autoComplete="new-password"
-                  aria-invalid={!!errors.password}
-                  {...register("password")}
-                />
+                <InputGroup>
+                  <InputGroupAddon>
+                    <Lock aria-hidden="true" />
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    id="password"
+                    type="password"
+                    autoComplete="new-password"
+                    aria-invalid={!!errors.password}
+                    {...register("password")}
+                  />
+                </InputGroup>
                 <FieldError errors={[errors.password]} />
               </Field>
 
@@ -136,19 +158,31 @@ export default function RegisterPage() {
                 <FieldLabel htmlFor="confirmPassword">
                   Xác nhận mật khẩu
                 </FieldLabel>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  autoComplete="new-password"
-                  aria-invalid={!!errors.confirmPassword}
-                  {...register("confirmPassword")}
-                />
+                <InputGroup>
+                  <InputGroupAddon>
+                    <Lock aria-hidden="true" />
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    id="confirmPassword"
+                    type="password"
+                    autoComplete="new-password"
+                    aria-invalid={!!errors.confirmPassword}
+                    {...register("confirmPassword")}
+                  />
+                </InputGroup>
                 <FieldError errors={[errors.confirmPassword]} />
               </Field>
             </FieldGroup>
 
             <Button type="submit" disabled={registerMutation.isPending}>
-              {registerMutation.isPending ? "Đang đăng ký..." : "Đăng ký"}
+              {registerMutation.isPending ? (
+                "Đang đăng ký..."
+              ) : (
+                <>
+                  <UserPlus aria-hidden="true" />
+                  Đăng ký
+                </>
+              )}
             </Button>
           </form>
         </CardContent>

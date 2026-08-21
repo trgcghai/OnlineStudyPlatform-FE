@@ -18,12 +18,17 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 import { useChangePasswordForm } from "@/hooks/useUsers";
 import {
   changePasswordSchema,
   type ChangePasswordFormValues,
 } from "@/lib/schemas/profile";
+import { KeyRound, Lock, LockKeyhole, ShieldCheck } from "lucide-react";
 
 const PASSWORD_CURRENT_ERROR_ID = "password-current-error";
 const PASSWORD_NEW_ERROR_ID = "password-new-error";
@@ -70,7 +75,10 @@ function PasswordForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Đổi mật khẩu</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <LockKeyhole className="size-5 text-muted-foreground" aria-hidden="true" />
+          Đổi mật khẩu
+        </CardTitle>
         <CardDescription>
           Sử dụng mật khẩu hiện tại để đặt mật khẩu mới.
         </CardDescription>
@@ -89,16 +97,21 @@ function PasswordForm() {
               <FieldLabel htmlFor="currentPassword">
                 Mật khẩu hiện tại
               </FieldLabel>
-              <Input
-                id="currentPassword"
-                type="password"
-                autoComplete="current-password"
-                aria-invalid={!!errors.currentPassword}
-                aria-describedby={
-                  errors.currentPassword ? PASSWORD_CURRENT_ERROR_ID : undefined
-                }
-                {...register("currentPassword")}
-              />
+              <InputGroup>
+                <InputGroupAddon>
+                  <KeyRound aria-hidden="true" />
+                </InputGroupAddon>
+                <InputGroupInput
+                  id="currentPassword"
+                  type="password"
+                  autoComplete="current-password"
+                  aria-invalid={!!errors.currentPassword}
+                  aria-describedby={
+                    errors.currentPassword ? PASSWORD_CURRENT_ERROR_ID : undefined
+                  }
+                  {...register("currentPassword")}
+                />
+              </InputGroup>
               <FieldError
                 id={PASSWORD_CURRENT_ERROR_ID}
                 errors={[errors.currentPassword]}
@@ -107,16 +120,21 @@ function PasswordForm() {
 
             <Field data-invalid={!!errors.newPassword}>
               <FieldLabel htmlFor="newPassword">Mật khẩu mới</FieldLabel>
-              <Input
-                id="newPassword"
-                type="password"
-                autoComplete="new-password"
-                aria-invalid={!!errors.newPassword}
-                aria-describedby={
-                  errors.newPassword ? PASSWORD_NEW_ERROR_ID : undefined
-                }
-                {...register("newPassword")}
-              />
+              <InputGroup>
+                <InputGroupAddon>
+                  <Lock aria-hidden="true" />
+                </InputGroupAddon>
+                <InputGroupInput
+                  id="newPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  aria-invalid={!!errors.newPassword}
+                  aria-describedby={
+                    errors.newPassword ? PASSWORD_NEW_ERROR_ID : undefined
+                  }
+                  {...register("newPassword")}
+                />
+              </InputGroup>
               <FieldError
                 id={PASSWORD_NEW_ERROR_ID}
                 errors={[errors.newPassword]}
@@ -127,16 +145,21 @@ function PasswordForm() {
               <FieldLabel htmlFor="confirmPassword">
                 Xác nhận mật khẩu mới
               </FieldLabel>
-              <Input
-                id="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                aria-invalid={!!errors.confirmPassword}
-                aria-describedby={
-                  errors.confirmPassword ? PASSWORD_CONFIRM_ERROR_ID : undefined
-                }
-                {...register("confirmPassword")}
-              />
+              <InputGroup>
+                <InputGroupAddon>
+                  <Lock aria-hidden="true" />
+                </InputGroupAddon>
+                <InputGroupInput
+                  id="confirmPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  aria-invalid={!!errors.confirmPassword}
+                  aria-describedby={
+                    errors.confirmPassword ? PASSWORD_CONFIRM_ERROR_ID : undefined
+                  }
+                  {...register("confirmPassword")}
+                />
+              </InputGroup>
               <FieldError
                 id={PASSWORD_CONFIRM_ERROR_ID}
                 errors={[errors.confirmPassword]}
@@ -145,7 +168,14 @@ function PasswordForm() {
           </FieldGroup>
 
           <Button type="submit" disabled={isPending}>
-            {isPending ? "Đang đổi mật khẩu..." : "Đổi mật khẩu"}
+            {isPending ? (
+              "Đang đổi mật khẩu..."
+            ) : (
+              <>
+                <ShieldCheck aria-hidden="true" />
+                Đổi mật khẩu
+              </>
+            )}
           </Button>
         </form>
       </CardContent>

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { LogOut } from "lucide-react";
 
 export function LogoutButton() {
   const router = useRouter();
@@ -22,7 +23,14 @@ export function LogoutButton() {
 
   return (
     <Button type="button" onClick={handleLogout} disabled={pending}>
-      {pending ? "Đang đăng xuất..." : "Đăng xuất"}
+      {pending ? (
+        "Đang đăng xuất..."
+      ) : (
+        <>
+          <LogOut aria-hidden="true" />
+          Đăng xuất
+        </>
+      )}
     </Button>
   );
 }
