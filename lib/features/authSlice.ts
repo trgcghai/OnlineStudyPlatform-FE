@@ -60,6 +60,13 @@ const authSlice = createSlice({
       state.accessToken = action.payload.accessToken;
       state.user = action.payload.user;
     },
+    setUser(state, action: PayloadAction<AuthUser>) {
+      if (!state.user) {
+        return;
+      }
+
+      state.user = action.payload;
+    },
     setAccessToken(state, action: PayloadAction<string>) {
       const accessToken = action.payload.trim();
 
@@ -89,6 +96,7 @@ const authSlice = createSlice({
 export const {
   setCredentials,
   setAccessToken,
+  setUser,
   setIsAuthenticated,
   clearAuth,
 } = authSlice.actions;

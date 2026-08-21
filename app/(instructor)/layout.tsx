@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { USER_ROLES } from "@/services/api/users";
@@ -16,7 +17,15 @@ export default function InstructorLayout({
           <span className="text-sm font-medium text-foreground">
             Giảng viên
           </span>
-          <LogoutButton />
+          <div className="flex items-center gap-4">
+            <Link
+              href="/instructor/profile"
+              className="text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            >
+              Hồ sơ
+            </Link>
+            <LogoutButton />
+          </div>
         </header>
         <main className="flex flex-1 items-center justify-center p-6">
           {children}
