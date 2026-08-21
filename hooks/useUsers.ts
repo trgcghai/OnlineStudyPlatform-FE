@@ -15,11 +15,9 @@ import {
   updateMyProfile,
   uploadMyAvatar,
 } from "@/services/api/users";
-import type {
-  RegisterUserResponse,
-  UserProfile,
-} from "@/services/api/users";
+import type { RegisterUserResponse, UserProfile } from "@/services/api/users";
 import type { RegisterFormValues } from "@/lib/schemas/register";
+import { toast } from "@/components/ui/toast";
 
 export const userKeys = {
   all: ["users"] as const,
@@ -144,7 +142,8 @@ export function useRegisterUser() {
   return { registerUser, registerMutation };
 }
 
-const NETWORK_ERROR_MESSAGE = "Không thể kết nối đến máy chủ. Vui lòng thử lại.";
+const NETWORK_ERROR_MESSAGE =
+  "Không thể kết nối đến máy chủ. Vui lòng thử lại.";
 const GENERIC_ERROR_MESSAGE = "Đã xảy ra lỗi. Vui lòng thử lại sau.";
 const WRONG_CURRENT_PASSWORD_MESSAGE = "Mật khẩu hiện tại không chính xác.";
 const PROFILE_SAVED_MESSAGE = "Hồ sơ đã được cập nhật.";
@@ -172,9 +171,7 @@ function mapProfileError(error: unknown): ProfileFailure {
 
     if (hasDetail(details, "name")) {
       return {
-        fieldErrors: [
-          { field: "name", message: "Họ và tên không hợp lệ" },
-        ],
+        fieldErrors: [{ field: "name", message: "Họ và tên không hợp lệ" }],
       };
     }
   }
@@ -251,15 +248,13 @@ export function useUpdateProfile() {
   const dispatch = useDispatch<AppDispatch>();
   const queryClient = useQueryClient();
 
-  return useMutation<
-    UserProfile,
-    unknown,
-    ProfileFormValues,
-    ProfileResult
-  >({
+  return useMutation<UserProfile, unknown, ProfileFormValues, ProfileResult>({
     mutationFn: (values) => updateMyProfile(values),
     onSuccess: (profile) => {
       queryClient.setQueryData(userKeys.me(), profile);
+      toast.add({
+        title: PROFILE_SAVED_MESSAGE,
+      });
       dispatch(setUser(toAuthUser(profile)));
     },
   });
@@ -306,6 +301,11 @@ export function useChangePassword() {
         currentPassword: values.currentPassword,
         newPassword: values.newPassword,
       }),
+    onSuccess: () => {
+      toast.add({
+        title: PASSWORD_CHANGED_MESSAGE,
+      });
+    },
   });
 }
 
@@ -335,6 +335,9 @@ export function useUploadAvatar() {
     onSuccess: (profile) => {
       queryClient.setQueryData(userKeys.me(), profile);
       dispatch(setUser(toAuthUser(profile)));
+      toast.add({
+        title: AVATAR_UPDATED_MESSAGE,
+      });
     },
   });
 }
@@ -347,7 +350,10 @@ export function useUploadAvatarForm() {
       await mutation.mutateAsync(file);
       return { ok: true, message: AVATAR_UPDATED_MESSAGE };
     } catch {
-      return { ok: false, message: "Không thể tải lên ảnh đại diện. Vui lòng thử lại." };
+      return {
+        ok: false,
+        message: "Không thể tải lên ảnh đại diện. Vui lòng thử lại.",
+      };
     }
   }
 
