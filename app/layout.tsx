@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import QueryProvider from "@/components/providers/query-provider";
 import ReduxProvider from "@/components/providers/redux-provider";
+import { Toaster } from "@/components/ui/toast";
 
 const figtree = Figtree({subsets:['latin'],variable:'--font-sans'});
 
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <ReduxProvider>
           <QueryProvider>
             <TooltipProvider>{children}</TooltipProvider>
+            <Toaster />
           </QueryProvider>
         </ReduxProvider>
       </body>

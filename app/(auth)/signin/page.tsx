@@ -21,10 +21,15 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 import { getLoginFormError, useLogin } from "@/hooks/useAuth";
 import { loginSchema, type LoginFormValues } from "@/lib/schemas/login";
 import { getRoleHomePath } from "@/utils/authUtil";
+import { LockKeyhole, LogIn, Mail } from "lucide-react";
 
 const EMAIL_ERROR_ID = "signin-email-error";
 const PASSWORD_ERROR_ID = "signin-password-error";
@@ -61,7 +66,9 @@ export default function SignInPage() {
     <section className="flex flex-1 items-center justify-center px-6 py-12">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Đăng nhập</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            Đăng nhập
+          </CardTitle>
           <CardDescription>Đăng nhập để tiếp tục học tập.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -79,35 +86,52 @@ export default function SignInPage() {
             <FieldGroup>
               <Field data-invalid={!!errors.email}>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
-                <Input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  aria-invalid={!!errors.email}
-                  aria-describedby={errors.email ? EMAIL_ERROR_ID : undefined}
-                  {...register("email")}
-                />
+                <InputGroup>
+                  <InputGroupAddon>
+                    <Mail aria-hidden="true" />
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    id="email"
+                    type="email"
+                    autoComplete="email"
+                    aria-invalid={!!errors.email}
+                    aria-describedby={errors.email ? EMAIL_ERROR_ID : undefined}
+                    {...register("email")}
+                  />
+                </InputGroup>
                 <FieldError id={EMAIL_ERROR_ID} errors={[errors.email]} />
               </Field>
 
               <Field data-invalid={!!errors.password}>
                 <FieldLabel htmlFor="password">Mật khẩu</FieldLabel>
-                <Input
-                  id="password"
-                  type="password"
-                  autoComplete="current-password"
-                  aria-invalid={!!errors.password}
-                  aria-describedby={
-                    errors.password ? PASSWORD_ERROR_ID : undefined
-                  }
-                  {...register("password")}
-                />
+                <InputGroup>
+                  <InputGroupAddon>
+                    <LockKeyhole aria-hidden="true" />
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    id="password"
+                    type="password"
+                    autoComplete="current-password"
+                    aria-invalid={!!errors.password}
+                    aria-describedby={
+                      errors.password ? PASSWORD_ERROR_ID : undefined
+                    }
+                    {...register("password")}
+                  />
+                </InputGroup>
                 <FieldError id={PASSWORD_ERROR_ID} errors={[errors.password]} />
               </Field>
             </FieldGroup>
 
             <Button type="submit" disabled={loginMutation.isPending}>
-              {loginMutation.isPending ? "Đang đăng nhập..." : "Đăng nhập"}
+              {loginMutation.isPending ? (
+                "Đang đăng nhập..."
+              ) : (
+                <>
+                  <LogIn aria-hidden="true" />
+                  Đăng nhập
+                </>
+              )}
             </Button>
           </form>
         </CardContent>

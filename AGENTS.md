@@ -8,7 +8,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-## Project setup
+## Project Setup
 
 - Next.js 16.3.0 App Router, React 19, TypeScript (strict), Tailwind CSS v4. Online-study-platform frontend.
 - Package manager is **pnpm** (11.9.0, `pnpm-lock.yaml`). Use `pnpm` — not npm/yarn, despite the README listing all of them.
@@ -19,16 +19,17 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - `pnpm dev` — dev server
 - `pnpm build` — production build (also runs type checking)
 - `pnpm start` — `next start`; the Docker production stage is what runs `node server.js` from `.next/standalone`
-- `pnpm lint` — ESLint (flat config, `eslint.config.mjs`); typecheck standalone: `npx tsc --noEmit`
+- `pnpm lint` — ESLint (flat config, `eslint.config.mjs`); standalone typecheck: `pnpm exec tsc --noEmit`
 - **No test framework is installed.** Do not run or add test commands without installing one.
 
 ## Architecture
 
 - No `src/` dir: app code lives in `app/` (`app/layout.tsx` is the root layout, `app/page.tsx` the home page). Path alias `@/*` maps to the repo root.
 - State: Redux Toolkit + redux-persist. Store is `lib/store/index.ts` (persist whitelist `["auth"]`, SSR-safe noop storage); slices in `lib/features/` (`authSlice.ts` today). `ReduxProvider` wraps the root layout. Shared state goes through slices, not component-local state.
-- API layer: **one** axios instance, `services/axios.ts` — baseURL `NEXT_PUBLIC_API_URL`, `withCredentials: true` (cookie-based auth), 401 interceptor that refreshes via `/auth/refresh` (with a retry queue) and redirects to `/signin` on refresh failure. All server calls go through this instance, never raw axios. New endpoints referenced from `api-calls.md` — see warning below.
-- `api-calls.md` is **stale**: it describes a different stack (VITE_API_URL, TanStack Query, a manga app) and does not match this codebase. Ignore it.
-- shadcn stack is Base UI, not Radix: `components.json` uses style `base-maia` → `@base-ui/react` primitives, icons from `@hugeicons/react`. Adding components via the shadcn CLI pulls from that registry; don't assume default Radix-based shadcn output.
+- React Query is already mounted in `app/layout.tsx` via `components/providers/query-provider.tsx`; app hooks live in `hooks/` and API functions in `services/api/`.
+- API layer: use the single axios instance in `services/axios.ts`. It strips a trailing `/api` from `NEXT_PUBLIC_API_URL`, sends cookies with `withCredentials: true`, attaches the persisted bearer token, refreshes via `/auth/refresh` with a retry queue, and redirects to `/signin` on refresh failure. Do not use raw axios for backend calls.
+- `api-calls.md` is **stale**: it references Vite/TanStack Query/manga-app details that do not match this frontend. Do not use it as an endpoint source of truth.
+- shadcn stack is Base UI, not Radix: `components.json` uses style `base-maia`, `@base-ui/react` primitives, and Hugeicons. Adding components via the shadcn CLI pulls from that registry; don't assume default Radix-based shadcn output.
 
 ## Conventions
 
@@ -36,7 +37,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - No CI or git hooks in this repo yet.
 - `CLAUDE.md` only contains `@AGENTS.md` — keep guidance here, not there.
 
-## Deploy / build quirks
+## Deploy / Build Quirks
 
 - `next.config.ts` sets `output: "standalone"`, so `next build` also emits `.next/standalone`.
 - Deployment is Docker-based: the multi-stage `Dockerfile` (deps → dev → build → production) is the production path; the production stage runs `node server.js` from `.next/standalone` with `.next/static` and `public` copied separately.
