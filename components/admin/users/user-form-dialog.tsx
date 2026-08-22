@@ -43,6 +43,7 @@ import {
   type AdminUserFailure,
 } from "@/hooks/useAdminUsers";
 import { LoaderCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface UserFormDialogProps {
   open: boolean;
@@ -218,7 +219,7 @@ export function UserFormDialog({
               <FieldError errors={[errors.password]} />
             </Field>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className={cn("grid gap-4", isEdit ? "sm:grid-cols-2" : "sm:grid-cols-1")}>
               <Field data-invalid={!!errors.role}>
                 <FieldLabel>Vai trò</FieldLabel>
                 <Controller
