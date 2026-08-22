@@ -100,3 +100,89 @@ export async function uploadMyAvatar(file: File): Promise<UserProfile> {
 
   return data.data;
 }
+
+export interface AdminUserFilters {
+  role?: UserRole;
+  status?: UserStatus;
+  q?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface AdminUserList {
+  items: UserProfile[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface CreateAdminUserPayload {
+  name: string;
+  email: string;
+  password: string;
+  role: UserRole;
+}
+
+export interface UpdateAdminUserPayload {
+  name?: string;
+  email?: string;
+  password?: string;
+  role?: UserRole;
+  status?: UserStatus;
+}
+
+function buildAdminUsersQuery(filters: AdminUserFilters): string {
+  const params = new URLSearchParams();
+
+  if (filters.role) params.set("role", filters.role);
+  if (filters.status) params.set("status", filters.status);
+  if (filters.q && filters.q.trim().length > 0) params.set("q", filters.q.trim());
+  if (filters.page) params.set("page", String(filters.page));
+  if (filters.limit) params.set("limit", String(filters.limit));
+
+  const query = params.toString();
+
+  return query.length > 0 ? `?${query}` : "";
+}
+
+export async function listAdminUsers(
+  filters: AdminUserFilters = {},
+): Promise<AdminUserList> {
+  const { data } = await axiosClient.get<ApiSuccessResponse<AdminUserList>>(
+    `/users/admin${buildAdminUsersQuery(filters)}`,
+  );
+
+  return data.data;
+}
+
+export async function createUserAsAdmin(
+  payload: CreateAdminUserPayload,
+): Promise<UserProfile> {
+  const { data } = await axiosClient.post<ApiSuccessResponse<UserProfile>>(
+    "/users/admin",
+    payload,
+  );
+
+  return data.data;
+}
+
+export async function updateUserAsAdmin(
+  userId: string,
+  payload: UpdateAdminUserPayload,
+): Promise<UserProfile> {
+  const { data } = await axiosClient.patch<ApiSuccessResponse<UserProfile>>(
+    `/users/admin/${userId}`,
+    payload,
+  );
+
+  return data.data;
+}
+
+export async function disableUserAsAdmin(userId: string): Promise<UserProfile> {
+  const { data } = await axiosClient.patch<ApiSuccessResponse<UserProfile>>(
+    `/users/admin/${userId}/disable`,
+  );
+
+  return data.data;
+}
