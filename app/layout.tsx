@@ -6,8 +6,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import QueryProvider from "@/components/providers/query-provider";
 import ReduxProvider from "@/components/providers/redux-provider";
 import { Toaster } from "@/components/ui/toast";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 
-const figtree = Figtree({subsets:['latin'],variable:'--font-sans'});
+const figtree = Figtree({ subsets: ["latin"], variable: "--font-sans" });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,23 +22,37 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "LMS – Nền tảng học trực tuyến thông minh",
-  description:
-    "Nền tảng học trực tuyến AI hỗ trợ người học và giảng viên.",
+  description: "Nền tảng học trực tuyến AI hỗ trợ người học và giảng viên.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", figtree.variable)}
+      className={cn(
+        "h-full",
+        "antialiased",
+        geistSans.variable,
+        geistMono.variable,
+        "font-sans",
+        figtree.variable,
+      )}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
-        <ReduxProvider>
-          <QueryProvider>
-            <TooltipProvider>{children}</TooltipProvider>
-            <Toaster />
-          </QueryProvider>
-        </ReduxProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <ReduxProvider>
+            <QueryProvider>
+              <TooltipProvider>{children}</TooltipProvider>
+              <Toaster />
+            </QueryProvider>
+          </ReduxProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -108,15 +108,17 @@ export function CourseForm({ mode, course }: CourseFormProps) {
           noValidate
         >
           <FieldGroup>
-            {formError ? (
+            {formError && (
               <Alert variant="destructive">
                 <AlertTitle>Không thể lưu khóa học</AlertTitle>
                 <AlertDescription>{formError}</AlertDescription>
               </Alert>
-            ) : null}
+            )}
 
             <Field data-invalid={!!errors.title}>
-              <FieldLabel htmlFor="course-title">Tên khóa học</FieldLabel>
+              <FieldLabel htmlFor="course-title" required>
+                Tên khóa học
+              </FieldLabel>
               <InputGroup>
                 <InputGroupInput id="course-title" {...register("title")} />
               </InputGroup>
@@ -124,7 +126,9 @@ export function CourseForm({ mode, course }: CourseFormProps) {
             </Field>
 
             <Field data-invalid={!!errors.description}>
-              <FieldLabel htmlFor="course-description">Mô tả</FieldLabel>
+              <FieldLabel htmlFor="course-description" required>
+                Mô tả
+              </FieldLabel>
               <Textarea
                 id="course-description"
                 rows={8}
@@ -134,7 +138,9 @@ export function CourseForm({ mode, course }: CourseFormProps) {
             </Field>
 
             <Field data-invalid={!!errors.category}>
-              <FieldLabel>Danh mục</FieldLabel>
+              <FieldLabel htmlFor="course-category" required>
+                Danh mục
+              </FieldLabel>
               <Controller
                 control={control}
                 name="category"

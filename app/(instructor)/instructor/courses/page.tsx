@@ -9,6 +9,7 @@ import {
   Plus,
   Search,
   Trash2,
+  X,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -235,6 +236,27 @@ export default function InstructorCoursesPage() {
                 </SelectContent>
               </Select>
             </div>
+
+            <div>
+              <Button
+                variant="destructive"
+                disabled={
+                  !appliedSearch &&
+                  categoryFilter === ALL_OPTION &&
+                  statusFilter === ALL_OPTION
+                }
+                onClick={() => {
+                  setAppliedSearch("");
+                  setSearchDraft("");
+                  setCategoryFilter(ALL_OPTION);
+                  setStatusFilter(ALL_OPTION);
+                  setPage(1);
+                }}
+              >
+                <X className="size-4" aria-hidden="true" />
+                Xóa bộ lọc
+              </Button>
+            </div>
           </div>
 
           {isError ? (
@@ -321,13 +343,12 @@ export default function InstructorCoursesPage() {
                                 variant="ghost"
                                 size="icon-sm"
                                 aria-label={`Chỉnh sửa ${course.title}`}
-                                render={
-                                  <Link
-                                    href={`/instructor/courses/${course.id}/edit`}
-                                  />
-                                }
                               >
-                                <PencilLine />
+                                <Link
+                                  href={`/instructor/courses/${course.id}/edit`}
+                                >
+                                  <PencilLine />
+                                </Link>
                               </Button>
                               <Button
                                 variant="ghost"
