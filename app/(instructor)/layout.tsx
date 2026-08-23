@@ -30,9 +30,7 @@ export default function InstructorLayout({
             <LogoutButton />
           </div>
         </header>
-        <main className="flex flex-1 items-center justify-center p-6">
-          {children}
-        </main>
+        <main className="flex flex-1 p-6">{children}</main>
       </div>
     </AuthGuard>
   );
