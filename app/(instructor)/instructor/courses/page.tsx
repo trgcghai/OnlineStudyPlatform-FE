@@ -132,7 +132,7 @@ export default function InstructorCoursesPage() {
       q: debouncedSearch || undefined,
       category: categoryFilter || undefined,
       status: statusFilter || undefined,
-      sortBy: "createdAt",
+      sortBy: "updatedAt",
       sortOrder: "DESC",
     }),
     [categoryFilter, debouncedSearch, page, statusFilter],
