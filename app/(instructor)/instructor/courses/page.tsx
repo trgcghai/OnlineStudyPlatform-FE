@@ -67,6 +67,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { truncate } from "lodash";
 
 type CategoryFilter = "" | CourseCategory;
 type StatusFilter = "" | CourseStatus;
@@ -386,9 +387,16 @@ export default function InstructorCoursesPage() {
                           <TableCell className="max-w-64 text-sm">
                             {course.status === COURSE_STATUSES.REJECTED &&
                             course.rejectReason ? (
-                              <span className="line-clamp-2 text-destructive">
-                                {course.rejectReason}
-                              </span>
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <span className="line-clamp-2">
+                                    {truncate(course.rejectReason, { length: 100 })}
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>{course.rejectReason}</p>
+                                </TooltipContent>
+                              </Tooltip>
                             ) : (
                               <span className="text-muted-foreground">-</span>
                             )}
