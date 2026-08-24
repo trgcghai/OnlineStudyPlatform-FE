@@ -128,14 +128,14 @@ export default function InstructorCoursesPage() {
   const filters = useMemo<CourseListFilters>(
     () => ({
       page,
-      limit: COURSE_LIST_PAGE_SIZE,
+      limit: pageSize,
       q: debouncedSearch || undefined,
       category: categoryFilter || undefined,
       status: statusFilter || undefined,
       sortBy: "updatedAt",
       sortOrder: "DESC",
     }),
-    [categoryFilter, debouncedSearch, page, statusFilter],
+    [categoryFilter, debouncedSearch, page, statusFilter, pageSize],
   );
 
   const { data, isError, isPending, refetch } =

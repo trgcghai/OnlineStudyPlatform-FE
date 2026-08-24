@@ -97,9 +97,9 @@ export default function AdminUsersPage() {
       status: statusFilter || undefined,
       q: appliedSearch || undefined,
       page,
-      limit: USER_LIST_PAGE_SIZE,
+      limit: pageSize,
     }),
-    [appliedSearch, page, roleFilter, statusFilter],
+    [appliedSearch, page, roleFilter, statusFilter, pageSize],
   );
 
   const { data, isPending, isError, refetch } = useAdminUsersList(filters);
