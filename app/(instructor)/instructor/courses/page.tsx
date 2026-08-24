@@ -40,6 +40,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DeleteCourseDialog } from "@/components/instructor/courses/delete-course-dialog";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useInstructorCoursesList } from "@/hooks/useInstructorCourses";
 import {
   COURSE_CATEGORY_LABELS,
@@ -103,26 +104,26 @@ function CourseThumbnail({ course }: { course: Course }) {
 }
 
 export default function InstructorCoursesPage() {
-  const [searchDraft, setSearchDraft] = useState("");
-  const [appliedSearch, setAppliedSearch] = useState("");
+  const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] =
     useState<CategoryFilter>(ALL_OPTION);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>(ALL_OPTION);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(COURSE_LIST_PAGE_SIZE);
   const [deletingCourse, setDeletingCourse] = useState<Course | null>(null);
+  const debouncedSearch = useDebounce(search.trim(), 500);
 
   const filters = useMemo<CourseListFilters>(
     () => ({
       page,
       limit: COURSE_LIST_PAGE_SIZE,
-      q: appliedSearch || undefined,
+      q: debouncedSearch || undefined,
       category: categoryFilter || undefined,
       status: statusFilter || undefined,
       sortBy: "createdAt",
       sortOrder: "DESC",
     }),
-    [appliedSearch, categoryFilter, page, statusFilter],
+    [categoryFilter, debouncedSearch, page, statusFilter],
   );
 
   const { data, isError, isPending, refetch } =
@@ -130,11 +131,6 @@ export default function InstructorCoursesPage() {
   const items = data?.items ?? [];
   const totalPages = data?.totalPages ?? 0;
   const totalItems = data?.total ?? 0;
-
-  function applySearch() {
-    setPage(1);
-    setAppliedSearch(searchDraft.trim());
-  }
 
   function handleFilterChange(apply: () => void) {
     apply();
@@ -166,15 +162,17 @@ export default function InstructorCoursesPage() {
               className="xl:min-w-80 xl:flex-1"
               onSubmit={(event) => {
                 event.preventDefault();
-                applySearch();
               }}
             >
               <InputGroup>
                 <InputGroupInput
                   placeholder="Tìm theo tên hoặc mô tả..."
                   aria-label="Tìm kiếm khóa học"
-                  value={searchDraft}
-                  onChange={(event) => setSearchDraft(event.target.value)}
+                  value={search}
+                  onChange={(event) => {
+                    setSearch(event.target.value);
+                    setPage(1);
+                  }}
                 />
                 <Button
                   type="submit"
@@ -244,13 +242,12 @@ export default function InstructorCoursesPage() {
               <Button
                 variant="destructive"
                 disabled={
-                  !appliedSearch &&
+                  !debouncedSearch &&
                   categoryFilter === ALL_OPTION &&
                   statusFilter === ALL_OPTION
                 }
                 onClick={() => {
-                  setAppliedSearch("");
-                  setSearchDraft("");
+                  setSearch("");
                   setCategoryFilter(ALL_OPTION);
                   setStatusFilter(ALL_OPTION);
                   setPage(1);
