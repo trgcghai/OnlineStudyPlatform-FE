@@ -4,10 +4,12 @@ import ProfileInfoForm from "@/components/profile/ProfileInfoForm";
 
 export default function InstructorProfilePage() {
   return (
-    <section className="flex w-full max-w-xl flex-col gap-6">
-      <ProfileAvatar />
-      <ProfileInfoForm />
-      <PasswordForm />
+    <section className="w-full flex items-center justify-center">
+      <div className="flex flex-col w-xl gap-6">
+        <ProfileAvatar />
+        <ProfileInfoForm />
+        <PasswordForm />
+      </div>
     </section>
   );
 }

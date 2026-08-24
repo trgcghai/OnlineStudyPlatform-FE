@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { BookOpen, LogIn, UserPlus } from "lucide-react";
+import { ModeToggle } from "@/components/mode-toggle";
 
 export default function Home() {
   return (
@@ -31,6 +32,7 @@ export default function Home() {
           <UserPlus aria-hidden="true" />
           Tạo tài khoản
         </Link>
+        <ModeToggle />
       </div>
     </section>
   );
