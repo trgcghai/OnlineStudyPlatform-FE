@@ -54,8 +54,14 @@ import { formatDate } from "@/utils/dateTimeUtil";
 import StatCard from "@/components/admin/users/StatCard";
 import StatusBadge from "@/components/admin/users/StatusBadge";
 import RoleBadge from "@/components/admin/users/RoleBadge";
+import { Pagination } from "@/components/ui/pagination";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
-const PAGE_SIZE = 10;
+const USER_LIST_PAGE_SIZE = 10;
 
 type RoleFilter = "" | AssignableRole;
 type StatusFilter = "" | UserStatus;
@@ -80,6 +86,7 @@ export default function AdminUsersPage() {
   const [searchDraft, setSearchDraft] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(USER_LIST_PAGE_SIZE);
   const [formDialogOpen, setFormDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
   const [disablingUser, setDisablingUser] = useState<UserProfile | null>(null);
@@ -90,7 +97,7 @@ export default function AdminUsersPage() {
       status: statusFilter || undefined,
       q: appliedSearch || undefined,
       page,
-      limit: PAGE_SIZE,
+      limit: USER_LIST_PAGE_SIZE,
     }),
     [appliedSearch, page, roleFilter, statusFilter],
   );
@@ -323,27 +330,45 @@ export default function AdminUsersPage() {
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-1">
-                              <Button
-                                variant="ghost"
-                                size="icon-sm"
-                                aria-label={`Chỉnh sửa ${user.name}`}
-                                disabled={isPending}
-                                onClick={() => openEditDialog(user)}
-                              >
-                                <PencilLine />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon-sm"
-                                className="text-destructive hover:text-destructive"
-                                aria-label={`Vô hiệu hóa ${user.name}`}
-                                disabled={
-                                  isPending || user.status === "Inactive"
-                                }
-                                onClick={() => setDisablingUser(user)}
-                              >
-                                <UserX />
-                              </Button>
+                              <Tooltip>
+                                <TooltipTrigger
+                                  render={
+                                    <Button
+                                      variant="ghost"
+                                      size="icon-sm"
+                                      aria-label={`Chỉnh sửa ${user.name}`}
+                                      disabled={isPending}
+                                      onClick={() => openEditDialog(user)}
+                                    >
+                                      <PencilLine />
+                                    </Button>
+                                  }
+                                />
+                                <TooltipContent>
+                                  <p>Chỉnh sửa người dùng</p>
+                                </TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger
+                                  render={
+                                    <Button
+                                      variant="ghost"
+                                      size="icon-sm"
+                                      className="text-destructive hover:text-destructive"
+                                      aria-label={`Vô hiệu hóa ${user.name}`}
+                                      disabled={
+                                        isPending || user.status === "Inactive"
+                                      }
+                                      onClick={() => setDisablingUser(user)}
+                                    >
+                                      <UserX />
+                                    </Button>
+                                  }
+                                />
+                                <TooltipContent>
+                                  <p>Vô hiệu hóa người dùng</p>
+                                </TooltipContent>
+                              </Tooltip>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -355,33 +380,16 @@ export default function AdminUsersPage() {
             </div>
           )}
 
-          {!isError && !isPending && totalPages > 1 ? (
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-muted-foreground">
-                Trang {data?.page} / {totalPages} · {data?.total} tài khoản
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page <= 1}
-                  onClick={() => setPage((current) => Math.max(1, current - 1))}
-                >
-                  Trước
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page >= totalPages}
-                  onClick={() =>
-                    setPage((current) => Math.min(totalPages, current + 1))
-                  }
-                >
-                  Sau
-                </Button>
-              </div>
-            </div>
-          ) : null}
+          {!isError && !isPending && (
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              totalItems={totalUsers}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+            />
+          )}
         </CardContent>
       </Card>
 

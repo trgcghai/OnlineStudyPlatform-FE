@@ -25,7 +25,15 @@ export const COURSE_STATUS_LABELS: Record<CourseStatus, string> = {
   Draft: "Bản nháp",
   Pending: "Chờ duyệt",
   Published: "Đã xuất bản",
+  Rejected: "Bị từ chối",
 };
+
+export const COURSE_STATUS_BADGE_VARIANTS: Record<CourseStatus, string> = {
+  Draft: "secondary",
+  Pending: "secondary",
+  Published: "default",
+  Rejected: "destructive",
+}
 
 export const COURSE_THUMBNAIL_ACCEPT = {
   "image/jpeg": [".jpg", ".jpeg"],

@@ -3,49 +3,54 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-} from 'lucide-react'
-import { Button } from '@/components/ui/button'
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
-const PAGE_SIZE_OPTIONS = [10, 20, 50, 100]
+const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
 interface PaginationProps {
-  page: number
-  totalPages: number
-  totalItems: number
-  pageSize: number
-  onPageChange: (page: number) => void
-  onPageSizeChange: (size: number) => void
+  page: number;
+  totalPages: number;
+  totalItems: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
 }
 
 function getPageNumbers(
   current: number,
   total: number,
-): (number | 'ellipsis')[] {
+): (number | "ellipsis")[] {
   if (total <= 7) {
-    return Array.from({ length: total }, (_, i) => i + 1)
+    return Array.from({ length: total }, (_, i) => i + 1);
   }
 
-  const pages: (number | 'ellipsis')[] = [1]
-  const start = Math.max(2, current - 2)
-  const end = Math.min(total - 1, current + 2)
+  const pages: (number | "ellipsis")[] = [1];
+  const start = Math.max(2, current - 2);
+  const end = Math.min(total - 1, current + 2);
 
-  if (start > 2) pages.push('ellipsis')
+  if (start > 2) pages.push("ellipsis");
 
   for (let i = start; i <= end; i++) {
-    pages.push(i)
+    pages.push(i);
   }
 
-  if (end < total - 1) pages.push('ellipsis')
-  pages.push(total)
+  if (end < total - 1) pages.push("ellipsis");
+  pages.push(total);
 
-  return pages
+  return pages;
 }
 
 export function Pagination({
@@ -56,8 +61,8 @@ export function Pagination({
   onPageChange,
   onPageSizeChange,
 }: PaginationProps) {
-  const currentCount = Math.min(pageSize, totalItems - (page - 1) * pageSize)
-  const pageNumbers = getPageNumbers(page, totalPages)
+  const currentCount = Math.min(pageSize, totalItems - (page - 1) * pageSize);
+  const pageNumbers = getPageNumbers(page, totalPages);
 
   return (
     <div className="mt-4 flex items-center justify-between gap-4">
@@ -84,27 +89,45 @@ export function Pagination({
 
       {totalPages > 1 && (
         <div className="flex items-center gap-1">
-          <Button
-            variant="outline"
-            size="icon-sm"
-            disabled={page <= 1}
-            onClick={() => onPageChange(1)}
-            aria-label="First page"
-          >
-            <ChevronsLeft className="size-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon-sm"
-            disabled={page <= 1}
-            onClick={() => onPageChange(page - 1)}
-            aria-label="Previous page"
-          >
-            <ChevronLeft className="size-4" />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  disabled={page <= 1}
+                  onClick={() => onPageChange(1)}
+                  aria-label="First page"
+                >
+                  <ChevronsLeft className="size-4" />
+                </Button>
+              }
+            />
+            <TooltipContent>
+              <p>Trang đầu</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  disabled={page <= 1}
+                  onClick={() => onPageChange(page - 1)}
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft className="size-4" />
+                </Button>
+              }
+            />
+            <TooltipContent>
+              <p>Trang trước</p>
+            </TooltipContent>
+          </Tooltip>
 
           {pageNumbers.map((p, i) =>
-            p === 'ellipsis' ? (
+            p === "ellipsis" ? (
               <span
                 key={`ellipsis-${i}`}
                 className="px-1 text-muted-foreground"
@@ -112,38 +135,64 @@ export function Pagination({
                 ...
               </span>
             ) : (
-              <Button
-                key={p}
-                variant={p === page ? 'default' : 'outline'}
-                size="icon-sm"
-                className="min-w-9"
-                onClick={() => onPageChange(p)}
-              >
-                {p}
-              </Button>
+              <Tooltip key={p}>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      variant={p === page ? "default" : "outline"}
+                      size="icon-sm"
+                      className="min-w-9"
+                      onClick={() => onPageChange(p)}
+                    >
+                      {p}
+                    </Button>
+                  }
+                />
+                <TooltipContent>
+                  <p>Trang {p}</p>
+                </TooltipContent>
+              </Tooltip>
             ),
           )}
 
-          <Button
-            variant="outline"
-            size="icon-sm"
-            disabled={page >= totalPages}
-            onClick={() => onPageChange(page + 1)}
-            aria-label="Next page"
-          >
-            <ChevronRight className="size-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon-sm"
-            disabled={page >= totalPages}
-            onClick={() => onPageChange(totalPages)}
-            aria-label="Last page"
-          >
-            <ChevronsRight className="size-4" />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  disabled={page >= totalPages}
+                  onClick={() => onPageChange(page + 1)}
+                  aria-label="Next page"
+                >
+                  <ChevronRight className="size-4" />
+                </Button>
+              }
+            />
+            <TooltipContent>
+              <p>Trang sau</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  disabled={page >= totalPages}
+                  onClick={() => onPageChange(totalPages)}
+                  aria-label="Last page"
+                >
+                  <ChevronsRight className="size-4" />
+                </Button>
+              }
+            />
+            <TooltipContent>
+              <p>Trang cuối</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
       )}
     </div>
-  )
+  );
 }
