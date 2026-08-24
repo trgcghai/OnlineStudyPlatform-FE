@@ -8,37 +8,39 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-## Project Setup
+## Setup
 
-- Next.js 16.3.0 App Router, React 19, TypeScript (strict), Tailwind CSS v4. Online-study-platform frontend.
-- Package manager is **pnpm** (11.9.0, `pnpm-lock.yaml`). Use `pnpm` — not npm/yarn, despite the README listing all of them.
-- `.env` is gitignored; dev requires `NEXT_PUBLIC_API_URL` set (copy the local `.env` if it goes missing).
+- Next.js 16.3.0 App Router, React 19, strict TypeScript, Tailwind CSS v4.
+- Use `pnpm` 11.9.0 (`packageManager` and `pnpm-lock.yaml`); ignore README examples for npm/yarn/bun.
+- `NEXT_PUBLIC_API_URL` is required by `services/axios.ts`; it strips a trailing `/api` before making backend calls.
 
 ## Commands
 
-- `pnpm dev` — dev server
-- `pnpm build` — production build (also runs type checking)
-- `pnpm start` — `next start`; the Docker production stage is what runs `node server.js` from `.next/standalone`
-- `pnpm lint` — ESLint (flat config, `eslint.config.mjs`); standalone typecheck: `pnpm exec tsc --noEmit`
-- **No test framework is installed.** Do not run or add test commands without installing one.
+- Install: `pnpm install --frozen-lockfile`
+- Dev: `pnpm dev`
+- Lint: `pnpm lint` (flat ESLint config in `eslint.config.mjs`)
+- Typecheck: `pnpm exec tsc --noEmit`
+- Production build: `pnpm build` (also emits standalone output)
+- Start built app locally: `pnpm start`; Docker production runs `node server.js` from `.next/standalone` instead.
+- No test script or test framework is configured in `package.json`; do not invent test commands.
 
 ## Architecture
 
-- No `src/` dir: app code lives in `app/` (`app/layout.tsx` is the root layout, `app/page.tsx` the home page). Path alias `@/*` maps to the repo root.
-- State: Redux Toolkit + redux-persist. Store is `lib/store/index.ts` (persist whitelist `["auth"]`, SSR-safe noop storage); slices in `lib/features/` (`authSlice.ts` today). `ReduxProvider` wraps the root layout. Shared state goes through slices, not component-local state.
-- React Query is already mounted in `app/layout.tsx` via `components/providers/query-provider.tsx`; app hooks live in `hooks/` and API functions in `services/api/`.
-- API layer: use the single axios instance in `services/axios.ts`. It strips a trailing `/api` from `NEXT_PUBLIC_API_URL`, sends cookies with `withCredentials: true`, attaches the persisted bearer token, refreshes via `/auth/refresh` with a retry queue, and redirects to `/signin` on refresh failure. Do not use raw axios for backend calls.
-- `api-calls.md` is **stale**: it references Vite/TanStack Query/manga-app details that do not match this frontend. Do not use it as an endpoint source of truth.
-- shadcn stack is Base UI, not Radix: `components.json` uses style `base-maia`, `@base-ui/react` primitives, and Hugeicons. Adding components via the shadcn CLI pulls from that registry; don't assume default Radix-based shadcn output.
+- No `src/` directory. App Router files live under `app/`; `@/*` maps to the repo root.
+- Route groups split auth and RBAC areas: `app/(auth)`, `app/(admin)`, `app/(instructor)`, `app/(learner)`. Admin/instructor/learner layouts wrap pages with `AuthGuard` and role constants from `services/api/users.ts`.
+- Root providers are wired in `app/layout.tsx`: `ThemeProvider` -> `ReduxProvider` -> `QueryProvider` -> `TooltipProvider` plus `Toaster`.
+- Client auth state is Redux Toolkit + redux-persist in `lib/store/index.ts`; only `auth` is persisted and SSR uses a noop storage.
+- Server state uses TanStack Query. Hooks live in `hooks/`; typed backend functions live in `services/api/`.
+- Use the shared `axiosClient` from `services/axios.ts` for backend calls. It sends cookies, attaches the persisted bearer token, queues refreshes through `/auth/refresh`, and redirects to `/signin` on refresh failure.
+- `api-calls.md` documents another Vite/manga project and is stale for this frontend; do not use it as endpoint truth.
 
-## Conventions
+## UI And Styling
 
-- Tailwind v4 uses CSS-first config: no `tailwind.config.*` — theme tokens go in `@theme` in `app/globals.css`.
-- No CI or git hooks in this repo yet.
-- `CLAUDE.md` only contains `@AGENTS.md` — keep guidance here, not there.
+- Tailwind v4 is CSS-first: there is no `tailwind.config.*`; tokens belong in `@theme` in `app/globals.css`.
+- shadcn is configured for Base UI, not Radix: `components.json` uses style `base-maia`, `@base-ui/react`, and Hugeicons.
 
-## Deploy / Build Quirks
+## Build And Deploy
 
-- `next.config.ts` sets `output: "standalone"`, so `next build` also emits `.next/standalone`.
-- Deployment is Docker-based: the multi-stage `Dockerfile` (deps → dev → build → production) is the production path; the production stage runs `node server.js` from `.next/standalone` with `.next/static` and `public` copied separately.
-- `pnpm-workspace.yaml` sets `allowBuilds: { sharp: false, unrs-resolver: false }` — pnpm blocks dependency postinstall scripts by default. Any new dependency with a build script needs an `allowBuilds` entry to build its native bindings.
+- `next.config.ts` sets `output: "standalone"`; Docker copies `.next/standalone`, `.next/static`, and `public` into the production image.
+- `pnpm-workspace.yaml` blocks dependency build scripts by default via `allowBuilds` (`sharp: false`, `unrs-resolver: false`). New dependencies with native/build steps may need this file updated.
+- No CI workflows or tracked hook/task-runner config are present. `CLAUDE.md` only points to `AGENTS.md`; keep repo guidance here.
