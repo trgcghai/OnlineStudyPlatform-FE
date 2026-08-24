@@ -1,6 +1,6 @@
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { LogoutButton } from "@/components/auth/logout-button";
-import { AppSidebar } from "@/components/app-sidebar";
+import { AdminSidebar } from "@/components/admin-sidebar";
 import {
   SidebarInset,
   SidebarProvider,
@@ -17,7 +17,7 @@ export default function AdminLayout({
   return (
     <AuthGuard allowedRoles={ADMIN_ROLES}>
       <SidebarProvider className="min-h-full bg-muted/30">
-        <AppSidebar />
+        <AdminSidebar />
         <SidebarInset className="bg-muted/30">
           <header className="sticky top-0 z-10 border-b bg-background/95 px-4 py-4 backdrop-blur sm:px-6 lg:px-8">
             <div className="flex items-center justify-between gap-4">

@@ -54,6 +54,7 @@ import {
   type CourseStatus,
 } from "@/services/api/courses";
 import { formatDate } from "@/utils/dateTimeUtil";
+import { Pagination } from "@/components/ui/pagination";
 
 type CategoryFilter = "" | CourseCategory;
 type StatusFilter = "" | CourseStatus;
@@ -108,6 +109,7 @@ export default function InstructorCoursesPage() {
     useState<CategoryFilter>(ALL_OPTION);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>(ALL_OPTION);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(COURSE_LIST_PAGE_SIZE);
   const [deletingCourse, setDeletingCourse] = useState<Course | null>(null);
 
   const filters = useMemo<CourseListFilters>(
@@ -127,6 +129,7 @@ export default function InstructorCoursesPage() {
     useInstructorCoursesList(filters);
   const items = data?.items ?? [];
   const totalPages = data?.totalPages ?? 0;
+  const totalItems = data?.total ?? 0;
 
   function applySearch() {
     setPage(1);
@@ -259,7 +262,7 @@ export default function InstructorCoursesPage() {
             </div>
           </div>
 
-          {isError ? (
+          {isError && (
             <Alert variant="destructive">
               <AlertTitle>Không thể tải danh sách khóa học</AlertTitle>
               <AlertDescription>
@@ -274,7 +277,21 @@ export default function InstructorCoursesPage() {
                 Thử lại
               </Button>
             </Alert>
-          ) : (
+          )}
+
+          {isPending && (
+            <div className="flex flex-col gap-2">
+              {Array.from({ length: 5 }).map((_, index) => (
+                <Skeleton
+                  key={index}
+                  className="h-10 w-full rounded-lg"
+                  aria-hidden="true"
+                />
+              ))}
+            </div>
+          )}
+
+          {!isError && !isPending && (
             <div className="overflow-hidden rounded-2xl border">
               <div className="overflow-x-auto">
                 <Table>
@@ -370,33 +387,16 @@ export default function InstructorCoursesPage() {
             </div>
           )}
 
-          {!isError && !isPending && totalPages > 1 ? (
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-muted-foreground">
-                Trang {data?.page} / {totalPages} · {data?.total} khóa học
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page <= 1}
-                  onClick={() => setPage((current) => Math.max(1, current - 1))}
-                >
-                  Trước
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page >= totalPages}
-                  onClick={() =>
-                    setPage((current) => Math.min(totalPages, current + 1))
-                  }
-                >
-                  Sau
-                </Button>
-              </div>
-            </div>
-          ) : null}
+          {!isError && !isPending && (
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+            />
+          )}
         </CardContent>
       </Card>
 
