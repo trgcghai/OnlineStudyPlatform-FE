@@ -8,11 +8,12 @@ import {
   PencilLine,
   Plus,
   Search,
+  Send,
   Trash2,
   X,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
+import { Badge, badgeVariants } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -40,11 +41,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DeleteCourseDialog } from "@/components/instructor/courses/delete-course-dialog";
+import { toast } from "@/components/ui/toast";
 import { useDebounce } from "@/hooks/useDebounce";
-import { useInstructorCoursesList } from "@/hooks/useInstructorCourses";
+import {
+  useInstructorCoursesList,
+  useRequestPublishCourse,
+} from "@/hooks/useInstructorCourses";
 import {
   COURSE_CATEGORY_LABELS,
   COURSE_LIST_PAGE_SIZE,
+  COURSE_STATUS_BADGE_VARIANTS,
   COURSE_STATUS_LABELS,
   type CourseCategory,
 } from "@/lib/schemas/course";
@@ -56,6 +62,12 @@ import {
 } from "@/services/api/courses";
 import { formatDate } from "@/utils/dateTimeUtil";
 import { Pagination } from "@/components/ui/pagination";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { truncate } from "lodash";
 
 type CategoryFilter = "" | CourseCategory;
 type StatusFilter = "" | CourseStatus;
@@ -72,6 +84,7 @@ const STATUS_FILTER_ITEMS: Record<StatusFilter, string> = {
   Draft: COURSE_STATUS_LABELS.Draft,
   Pending: COURSE_STATUS_LABELS.Pending,
   Published: COURSE_STATUS_LABELS.Published,
+  Rejected: COURSE_STATUS_LABELS.Rejected,
 };
 
 function getCourseCategoryLabel(category: string): string {
@@ -116,18 +129,23 @@ export default function InstructorCoursesPage() {
   const filters = useMemo<CourseListFilters>(
     () => ({
       page,
-      limit: COURSE_LIST_PAGE_SIZE,
+      limit: pageSize,
       q: debouncedSearch || undefined,
       category: categoryFilter || undefined,
       status: statusFilter || undefined,
-      sortBy: "createdAt",
+      sortBy: "updatedAt",
       sortOrder: "DESC",
     }),
-    [categoryFilter, debouncedSearch, page, statusFilter],
+    [categoryFilter, debouncedSearch, page, statusFilter, pageSize],
   );
 
   const { data, isError, isPending, refetch } =
     useInstructorCoursesList(filters);
+  const {
+    requestPublishInstructorCourse,
+    isPending: isRequestingPublish,
+    pendingCourseId,
+  } = useRequestPublishCourse();
   const items = data?.items ?? [];
   const totalPages = data?.totalPages ?? 0;
   const totalItems = data?.total ?? 0;
@@ -135,6 +153,17 @@ export default function InstructorCoursesPage() {
   function handleFilterChange(apply: () => void) {
     apply();
     setPage(1);
+  }
+
+  async function handleRequestPublish(course: Course) {
+    const result = await requestPublishInstructorCourse(course.id);
+
+    if (!result.ok) {
+      toast.add({
+        title: result.message ?? "Không thể gửi yêu cầu xuất bản khóa học.",
+        type: "error",
+      });
+    }
   }
 
   return (
@@ -297,6 +326,7 @@ export default function InstructorCoursesPage() {
                       <TableHead>Khóa học</TableHead>
                       <TableHead>Danh mục</TableHead>
                       <TableHead>Trạng thái</TableHead>
+                      <TableHead>Lý do từ chối</TableHead>
                       <TableHead>Cập nhật</TableHead>
                       <TableHead className="text-right">Thao tác</TableHead>
                     </TableRow>
@@ -305,14 +335,14 @@ export default function InstructorCoursesPage() {
                     {isPending ? (
                       Array.from({ length: 5 }).map((_, index) => (
                         <TableRow key={index}>
-                          <TableCell colSpan={5}>
+                          <TableCell colSpan={6}>
                             <Skeleton className="h-8 w-full" />
                           </TableCell>
                         </TableRow>
                       ))
                     ) : items.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={5}>
+                        <TableCell colSpan={6}>
                           <div className="flex flex-col items-center gap-2 py-12 text-center">
                             <BookOpen
                               className="size-10 text-muted-foreground"
@@ -344,35 +374,109 @@ export default function InstructorCoursesPage() {
                             {getCourseCategoryLabel(course.category)}
                           </TableCell>
                           <TableCell>
-                            <Badge variant="secondary">
+                            <Badge
+                              variant={
+                                COURSE_STATUS_BADGE_VARIANTS[
+                                  course.status
+                                ] as keyof typeof badgeVariants
+                              }
+                            >
                               {COURSE_STATUS_LABELS[course.status]}
                             </Badge>
+                          </TableCell>
+                          <TableCell className="max-w-64 text-sm">
+                            {course.status === COURSE_STATUSES.REJECTED &&
+                            course.rejectReason ? (
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <span className="line-clamp-2">
+                                    {truncate(course.rejectReason, { length: 100 })}
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>{course.rejectReason}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
                             {formatDate(course.updatedAt)}
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-1">
-                              <Button
-                                variant="ghost"
-                                size="icon-sm"
-                                aria-label={`Chỉnh sửa ${course.title}`}
-                              >
-                                <Link
-                                  href={`/instructor/courses/${course.id}/edit`}
-                                >
-                                  <PencilLine />
-                                </Link>
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon-sm"
-                                className="text-destructive hover:text-destructive"
-                                onClick={() => setDeletingCourse(course)}
-                                aria-label={`Xóa ${course.title}`}
-                              >
-                                <Trash2 />
-                              </Button>
+                              {course.status === COURSE_STATUSES.DRAFT && (
+                                <Tooltip>
+                                  <TooltipTrigger
+                                    render={
+                                      <Button
+                                        variant="ghost"
+                                        size="icon-sm"
+                                        disabled={
+                                          isRequestingPublish &&
+                                          pendingCourseId === course.id
+                                        }
+                                        onClick={() =>
+                                          handleRequestPublish(course)
+                                        }
+                                        aria-label={`Yêu cầu xuất bản ${course.title}`}
+                                      >
+                                        {isRequestingPublish &&
+                                        pendingCourseId === course.id ? (
+                                          "Đang gửi..."
+                                        ) : (
+                                          <Send
+                                            className="size-4"
+                                            aria-hidden="true"
+                                          />
+                                        )}
+                                      </Button>
+                                    }
+                                  />
+                                  <TooltipContent>
+                                    <p>Yêu cầu xuất bản khóa học</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              )}
+                              <Tooltip>
+                                <TooltipTrigger
+                                  render={
+                                    <Button
+                                      variant="ghost"
+                                      size="icon-sm"
+                                      aria-label={`Chỉnh sửa ${course.title}`}
+                                    >
+                                      <Link
+                                        href={`/instructor/courses/${course.id}/edit`}
+                                      >
+                                        <PencilLine />
+                                      </Link>
+                                    </Button>
+                                  }
+                                />
+                                <TooltipContent>
+                                  <p>Chỉnh sửa khóa học</p>
+                                </TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger
+                                  render={
+                                    <Button
+                                      variant="ghost"
+                                      size="icon-sm"
+                                      className="text-destructive hover:text-destructive"
+                                      onClick={() => setDeletingCourse(course)}
+                                      aria-label={`Xóa ${course.title}`}
+                                    >
+                                      <Trash2 />
+                                    </Button>
+                                  }
+                                />
+                                <TooltipContent>
+                                  <p>Xóa khóa học</p>
+                                </TooltipContent>
+                              </Tooltip>
                             </div>
                           </TableCell>
                         </TableRow>

@@ -38,10 +38,13 @@ import {
 import {
   COURSE_CATEGORIES,
   COURSE_CATEGORY_LABELS,
+  COURSE_STATUS_BADGE_VARIANTS,
+  COURSE_STATUS_LABELS,
   courseFormSchema,
   type CourseFormValues,
 } from "@/lib/schemas/course";
-import type { Course } from "@/services/api/courses";
+import { COURSE_STATUSES, type Course } from "@/services/api/courses";
+import { Badge, badgeVariants } from "@/components/ui/badge";
 
 interface CourseFormProps {
   mode: "create" | "edit";
@@ -112,6 +115,30 @@ export function CourseForm({ mode, course }: CourseFormProps) {
               <Alert variant="destructive">
                 <AlertTitle>Không thể lưu khóa học</AlertTitle>
                 <AlertDescription>{formError}</AlertDescription>
+              </Alert>
+            )}
+
+            {mode === "edit" && course && (
+              <Alert
+                variant={
+                  course.status === COURSE_STATUSES.REJECTED
+                    ? "destructive"
+                    : "default"
+                }
+              >
+                <AlertTitle>
+                  Trạng thái:{" "}
+                  <Badge
+                    className="ml-2"
+                    variant={
+                      COURSE_STATUS_BADGE_VARIANTS[
+                        course.status
+                      ] as keyof typeof badgeVariants
+                    }
+                  >
+                    {COURSE_STATUS_LABELS[course.status]}
+                  </Badge>
+                </AlertTitle>
               </Alert>
             )}
 

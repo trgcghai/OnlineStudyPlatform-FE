@@ -22,7 +22,7 @@ export function LogoutButton() {
   }
 
   return (
-    <Button type="button" onClick={handleLogout} disabled={pending}>
+    <Button type="button" variant="destructive" onClick={handleLogout} disabled={pending}>
       {pending ? (
         "Đang đăng xuất..."
       ) : (

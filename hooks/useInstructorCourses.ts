@@ -7,6 +7,7 @@ import {
   deleteCourse,
   getCourse,
   listMyCourses,
+  requestPublishCourse,
   updateCourse,
   uploadCourseThumbnail,
   type Course,
@@ -50,6 +51,26 @@ export function mapCourseError(error: unknown): string {
   if (status === 400) {
     return data.error.message || "Thông tin khóa học không hợp lệ.";
   }
+
+  return data.error.message || GENERIC_ERROR_MESSAGE;
+}
+
+export function mapRequestPublishCourseError(error: unknown): string {
+  if (!isAxiosError(error) || !error.response) {
+    return NETWORK_ERROR_MESSAGE;
+  }
+
+  const { status, data } = error.response;
+
+  if (!isApiErrorResponse(data)) {
+    return GENERIC_ERROR_MESSAGE;
+  }
+
+  if (status === 400) {
+    return data.error.message || "Chỉ khóa học bản nháp mới có thể gửi duyệt.";
+  }
+  if (status === 403) return "Bạn không có quyền quản lý khóa học này.";
+  if (status === 404) return "Khóa học không tồn tại hoặc đã bị xóa.";
 
   return data.error.message || GENERIC_ERROR_MESSAGE;
 }
@@ -164,6 +185,37 @@ export function useUpdateInstructorCourse() {
   }
 
   return { updateInstructorCourse, isPending: mutation.isPending };
+}
+
+export function useRequestPublishCourse() {
+  const invalidate = useInvalidateCourses();
+  const mutation = useMutation<Course, unknown, string>({
+    mutationFn: (courseId) => requestPublishCourse(courseId),
+    onSuccess: async (course) => {
+      await invalidate(course.id);
+      toast.add({
+        title: "Đã gửi yêu cầu xuất bản khóa học.",
+        type: "success",
+      });
+    },
+  });
+
+  async function requestPublishInstructorCourse(
+    courseId: string,
+  ): Promise<CourseMutationResult> {
+    try {
+      const course = await mutation.mutateAsync(courseId);
+      return { ok: true, data: course };
+    } catch (error) {
+      return { ok: false, message: mapRequestPublishCourseError(error) };
+    }
+  }
+
+  return {
+    requestPublishInstructorCourse,
+    isPending: mutation.isPending,
+    pendingCourseId: mutation.variables,
+  };
 }
 
 export function useDeleteInstructorCourse() {

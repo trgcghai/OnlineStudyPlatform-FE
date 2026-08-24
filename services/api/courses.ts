@@ -4,6 +4,7 @@ export const COURSE_STATUSES = {
   DRAFT: "Draft",
   PENDING: "Pending",
   PUBLISHED: "Published",
+  REJECTED: "Rejected",
 } as const;
 
 export type CourseStatus =
@@ -16,6 +17,7 @@ export interface Course {
   category: string;
   thumbnail: string | null;
   status: CourseStatus;
+  rejectReason: string | null;
   instructorId: string;
   createdAt: string;
   updatedAt: string;
@@ -99,6 +101,14 @@ export async function updateCourse(
   const { data } = await axiosClient.patch<ApiSuccessResponse<Course>>(
     `/courses/${courseId}`,
     payload,
+  );
+
+  return data.data;
+}
+
+export async function requestPublishCourse(courseId: string): Promise<Course> {
+  const { data } = await axiosClient.post<ApiSuccessResponse<Course>>(
+    `/courses/${courseId}/request-publish`,
   );
 
   return data.data;
