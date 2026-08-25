@@ -1,5 +1,6 @@
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { LogoutButton } from "@/components/auth/logout-button";
+import { NotificationPopover } from "@/components/notifications/notification-popover";
 import { USER_ROLES } from "@/services/api/users";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { InstructorSidebar } from "@/components/instructor-sidebar";
@@ -28,7 +29,10 @@ export default function InstructorLayout({
                   </span>
                 </div>
               </div>
-              <LogoutButton />
+              <div className="flex items-center gap-2">
+                <NotificationPopover />
+                <LogoutButton />
+              </div>
             </div>
           </header>
           <div className="flex-1 p-4 sm:p-6 lg:p-8 bg-background">

@@ -34,6 +34,11 @@ const adminNavItems = [
     href: "/admin/users",
     icon: UserMultipleIcon,
   },
+  {
+    title: "Duyệt khóa học",
+    href: "/admin/courses/approvals",
+    icon: GraduationCapIcon,
+  },
 ]
 
 export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {

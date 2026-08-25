@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { LogoutButton } from "@/components/auth/logout-button";
+import { NotificationPopover } from "@/components/notifications/notification-popover";
 import { USER_ROLES } from "@/services/api/users";
 import { CircleUserRound, GraduationCap } from "lucide-react";
 
@@ -20,6 +21,7 @@ export default function LearnerLayout({
             Người học
           </span>
           <div className="flex items-center gap-4">
+            <NotificationPopover />
             <Link
               href="/profile"
               className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"

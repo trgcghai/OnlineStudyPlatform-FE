@@ -18,14 +18,12 @@ import {
 import type { RegisterUserResponse, UserProfile } from "@/services/api/users";
 import type { RegisterFormValues } from "@/lib/schemas/register";
 import { toast } from "@/components/ui/toast";
+import { GENERIC_ERROR_MESSAGE, NETWORK_ERROR_MESSAGE } from "@/constants/constants";
 
 export const userKeys = {
   all: ["users"] as const,
   me: () => [...userKeys.all, "me"] as const,
 };
-
-const INVALID_PASSWORD_MESSAGE =
-  "Mật khẩu không đáp ứng yêu cầu (tối thiểu 8 ký tự, gồm chữ, số và ký tự đặc biệt)";
 
 interface RegisterFailure {
   ok: false;
@@ -80,7 +78,7 @@ function mapRegisterError(error: unknown): RegisterFailure {
     if (hasDetail(details, "password")) {
       return {
         ok: false,
-        fieldErrors: [{ field: "password", message: INVALID_PASSWORD_MESSAGE }],
+        fieldErrors: [{ field: "password", message: "Mật khẩu không đáp ứng yêu cầu (tối thiểu 8 ký tự, gồm chữ, số và ký tự đặc biệt)" }],
       };
     }
 
@@ -142,14 +140,6 @@ export function useRegisterUser() {
   return { registerUser, registerMutation };
 }
 
-const NETWORK_ERROR_MESSAGE =
-  "Không thể kết nối đến máy chủ. Vui lòng thử lại.";
-const GENERIC_ERROR_MESSAGE = "Đã xảy ra lỗi. Vui lòng thử lại sau.";
-const WRONG_CURRENT_PASSWORD_MESSAGE = "Mật khẩu hiện tại không chính xác.";
-const PROFILE_SAVED_MESSAGE = "Hồ sơ đã được cập nhật.";
-const PASSWORD_CHANGED_MESSAGE = "Đổi mật khẩu thành công.";
-const AVATAR_UPDATED_MESSAGE = "Ảnh đại diện đã được cập nhật.";
-
 export interface ProfileFailure {
   formError?: string;
   fieldErrors?: Array<{ field: keyof ProfileFormValues; message: string }>;
@@ -204,7 +194,7 @@ function mapChangePasswordError(error: unknown): PasswordFailure {
   ) {
     return {
       fieldErrors: [
-        { field: "currentPassword", message: WRONG_CURRENT_PASSWORD_MESSAGE },
+        { field: "currentPassword", message: "Mật khẩu hiện tại không chính xác." },
       ],
     };
   }
@@ -253,7 +243,7 @@ export function useUpdateProfile() {
     onSuccess: (profile) => {
       queryClient.setQueryData(userKeys.me(), profile);
       toast.add({
-        title: PROFILE_SAVED_MESSAGE,
+        title: "Hồ sơ đã được cập nhật.",
       });
       dispatch(setUser(toAuthUser(profile)));
     },
@@ -285,7 +275,7 @@ export function useUpdateProfileForm() {
   ): Promise<ProfileResult> {
     try {
       await mutation.mutateAsync(values);
-      return { ok: true, message: PROFILE_SAVED_MESSAGE };
+      return { ok: true, message: "Hồ sơ đã được cập nhật." };
     } catch (error) {
       return { ok: false, failure: mapProfileError(error) };
     }
@@ -303,7 +293,7 @@ export function useChangePassword() {
       }),
     onSuccess: () => {
       toast.add({
-        title: PASSWORD_CHANGED_MESSAGE,
+        title: "Đổi mật khẩu thành công.",
       });
     },
   });
@@ -317,7 +307,7 @@ export function useChangePasswordForm() {
   ): Promise<PasswordResult> {
     try {
       await mutation.mutateAsync(values);
-      return { ok: true, message: PASSWORD_CHANGED_MESSAGE };
+      return { ok: true, message: "Đổi mật khẩu thành công." };
     } catch (error) {
       return { ok: false, failure: mapChangePasswordError(error) };
     }
@@ -336,7 +326,7 @@ export function useUploadAvatar() {
       queryClient.setQueryData(userKeys.me(), profile);
       dispatch(setUser(toAuthUser(profile)));
       toast.add({
-        title: AVATAR_UPDATED_MESSAGE,
+        title: "Ảnh đại diện đã được cập nhật.",
       });
     },
   });
@@ -348,7 +338,7 @@ export function useUploadAvatarForm() {
   async function uploadAvatar(file: File): Promise<AvatarResult> {
     try {
       await mutation.mutateAsync(file);
-      return { ok: true, message: AVATAR_UPDATED_MESSAGE };
+      return { ok: true, message: "Ảnh đại diện đã được cập nhật." };
     } catch {
       return {
         ok: false,

@@ -23,6 +23,16 @@ export interface Course {
   updatedAt: string;
 }
 
+export interface CourseInstructorSummary {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface CourseApproval extends Course {
+  instructor: CourseInstructorSummary;
+}
+
 export interface CourseListFilters {
   page?: number;
   limit?: number;
@@ -41,6 +51,14 @@ export interface CourseListResult {
   totalPages: number;
 }
 
+export interface CourseApprovalListResult {
+  items: CourseApproval[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export interface CreateCoursePayload {
   title: string;
   description: string;
@@ -48,6 +66,10 @@ export interface CreateCoursePayload {
 }
 
 export type UpdateCoursePayload = Partial<CreateCoursePayload>;
+
+export type ReviewCourseStatusPayload =
+  | { status: typeof COURSE_STATUSES.PUBLISHED }
+  | { status: typeof COURSE_STATUSES.REJECTED; rejectReason: string };
 
 function buildCourseListQuery(filters: CourseListFilters): string {
   const params = new URLSearchParams();
@@ -71,6 +93,16 @@ export async function listMyCourses(
   const { data } = await axiosClient.get<ApiSuccessResponse<CourseListResult>>(
     `/courses/me${buildCourseListQuery(filters)}`,
   );
+
+  return data.data;
+}
+
+export async function listCourseApprovals(
+  filters: CourseListFilters = {},
+): Promise<CourseApprovalListResult> {
+  const { data } = await axiosClient.get<
+    ApiSuccessResponse<CourseApprovalListResult>
+  >(`/courses/approvals${buildCourseListQuery(filters)}`);
 
   return data.data;
 }
@@ -109,6 +141,18 @@ export async function updateCourse(
 export async function requestPublishCourse(courseId: string): Promise<Course> {
   const { data } = await axiosClient.post<ApiSuccessResponse<Course>>(
     `/courses/${courseId}/request-publish`,
+  );
+
+  return data.data;
+}
+
+export async function reviewCourseStatus(
+  courseId: string,
+  payload: ReviewCourseStatusPayload,
+): Promise<Course> {
+  const { data } = await axiosClient.patch<ApiSuccessResponse<Course>>(
+    `/courses/${courseId}/status`,
+    payload,
   );
 
   return data.data;
