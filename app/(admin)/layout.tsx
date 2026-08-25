@@ -1,6 +1,7 @@
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { AdminSidebar } from "@/components/admin-sidebar";
+import { NotificationPopover } from "@/components/notifications/notification-popover";
 import {
   SidebarInset,
   SidebarProvider,
@@ -31,7 +32,10 @@ export default function AdminLayout({
                   </span>
                 </div>
               </div>
-              <LogoutButton />
+              <div className="flex items-center gap-2">
+                <NotificationPopover />
+                <LogoutButton />
+              </div>
             </div>
           </header>
           <div className="flex-1 p-4 sm:p-6 lg:p-8 bg-background">{children}</div>
