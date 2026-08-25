@@ -17,17 +17,12 @@ import {
   logout as logoutApi,
 } from "@/services/api/auth";
 import type { UserRole } from "@/services/api/users";
+import { GENERIC_ERROR_MESSAGE, NETWORK_ERROR_MESSAGE } from "@/constants/constants";
 
 export const authKeys = {
   all: ["auth"] as const,
   me: () => [...authKeys.all, "me"] as const,
 };
-
-const NETWORK_ERROR_MESSAGE =
-  "Không thể kết nối đến máy chủ. Vui lòng thử lại.";
-const INVALID_CREDENTIALS_MESSAGE = "Email hoặc mật khẩu không chính xác.";
-const ACCOUNT_DISABLED_MESSAGE = "Tài khoản của bạn đã bị vô hiệu hóa.";
-const GENERIC_ERROR_MESSAGE = "Đã xảy ra lỗi. Vui lòng thử lại sau.";
 
 export type LoginResult =
   | { ok: true; role: UserRole; user: AuthUser }
@@ -57,11 +52,11 @@ function mapLoginError(error: unknown): LoginResult {
   const { status, data } = error.response;
 
   if (status === 401) {
-    return { ok: false, formError: INVALID_CREDENTIALS_MESSAGE };
+    return { ok: false, formError: "Email hoặc mật khẩu không chính xác." };
   }
 
   if (status === 403 && hasAccountDisabledMessage(data)) {
-    return { ok: false, formError: ACCOUNT_DISABLED_MESSAGE };
+    return { ok: false, formError: "Tài khoản của bạn đã bị vô hiệu hóa." };
   }
 
   return { ok: false, formError: GENERIC_ERROR_MESSAGE };

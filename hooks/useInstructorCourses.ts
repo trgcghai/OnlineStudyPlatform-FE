@@ -14,6 +14,7 @@ import {
   type CourseListFilters,
 } from "@/services/api/courses";
 import type { CourseFormValues } from "@/lib/schemas/course";
+import { GENERIC_ERROR_MESSAGE, NETWORK_ERROR_MESSAGE } from "@/constants/constants";
 
 export const instructorCourseKeys = {
   all: ["instructor-courses"] as const,
@@ -22,10 +23,6 @@ export const instructorCourseKeys = {
   detail: (courseId: string) =>
     [...instructorCourseKeys.all, "detail", courseId] as const,
 };
-
-const NETWORK_ERROR_MESSAGE =
-  "Không thể kết nối đến máy chủ. Vui lòng thử lại.";
-const GENERIC_ERROR_MESSAGE = "Đã xảy ra lỗi. Vui lòng thử lại sau.";
 
 export interface CourseMutationResult<T = Course> {
   ok: boolean;

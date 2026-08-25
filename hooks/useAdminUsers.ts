@@ -17,16 +17,13 @@ import type {
   CreateAdminUserFormValues,
   EditAdminUserFormValues,
 } from "@/lib/schemas/admin-user";
+import { GENERIC_ERROR_MESSAGE, NETWORK_ERROR_MESSAGE } from "@/constants/constants";
 
 export const adminUserKeys = {
   all: ["admin-users"] as const,
   list: (filters: AdminUserFilters) =>
     [...adminUserKeys.all, "list", filters] as const,
 };
-
-const NETWORK_ERROR_MESSAGE =
-  "Không thể kết nối đến máy chủ. Vui lòng thử lại.";
-const GENERIC_ERROR_MESSAGE = "Đã xảy ra lỗi. Vui lòng thử lại sau.";
 
 export interface AdminUserFailure {
   formError?: string;
