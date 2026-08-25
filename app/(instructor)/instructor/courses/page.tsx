@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import {
   BookOpen,
   ImageIcon,
+  LoaderCircle,
   PencilLine,
   Plus,
   Search,
@@ -390,7 +391,9 @@ export default function InstructorCoursesPage() {
                               <Tooltip>
                                 <TooltipTrigger>
                                   <span className="line-clamp-2">
-                                    {truncate(course.rejectReason, { length: 100 })}
+                                    {truncate(course.rejectReason, {
+                                      length: 100,
+                                    })}
                                   </span>
                                 </TooltipTrigger>
                                 <TooltipContent>
@@ -424,7 +427,10 @@ export default function InstructorCoursesPage() {
                                       >
                                         {isRequestingPublish &&
                                         pendingCourseId === course.id ? (
-                                          "Đang gửi..."
+                                          <LoaderCircle
+                                            className="size-4 animate-spin"
+                                            aria-hidden="true"
+                                          />
                                         ) : (
                                           <Send
                                             className="size-4"

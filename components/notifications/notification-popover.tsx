@@ -2,8 +2,12 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, BellDot, Inbox, LoaderCircle } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import {
+  Bell,
+  BellDot,
+  Inbox,
+  LoaderCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -13,7 +17,6 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Separator } from "@/components/ui/separator";
 import {
   useMarkNotificationSeen,
   useNotificationsList,
@@ -21,42 +24,9 @@ import {
 } from "@/hooks/useNotifications";
 import { cn } from "@/lib/utils";
 import {
-  NOTIFICATION_TYPES,
   type NotificationItem,
 } from "@/services/api/notifications";
 import { formatSentAt } from "@/utils/dateTimeUtil";
-
-const NOTIFICATION_TYPE_LABELS = {
-  [NOTIFICATION_TYPES.DIRECT]: "Cá nhân",
-  [NOTIFICATION_TYPES.QUEUE]: "Hàng đợi",
-} as const;
-
-function formatMetadataValue(value: unknown): string {
-  if (typeof value === "string") return value;
-  if (typeof value === "number" || typeof value === "boolean") {
-    return String(value);
-  }
-  if (value === null || value === undefined) return "-";
-
-  return JSON.stringify(value);
-}
-
-function NotificationMetadata({ metadata }: { metadata: Record<string, unknown> }) {
-  const entries = Object.entries(metadata);
-
-  if (entries.length === 0) return null;
-
-  return (
-    <dl className="grid gap-1 rounded-xl bg-muted/60 p-2 text-xs">
-      {entries.slice(0, 3).map(([key, value]) => (
-        <div key={key} className="grid grid-cols-[5rem_1fr] gap-2">
-          <dt className="truncate text-muted-foreground">{key}</dt>
-          <dd className="truncate font-medium">{formatMetadataValue(value)}</dd>
-        </div>
-      ))}
-    </dl>
-  );
-}
 
 function NotificationRow({
   notification,
@@ -67,42 +37,36 @@ function NotificationRow({
   onOpen: (notification: NotificationItem) => void;
   disabled: boolean;
 }) {
+
   return (
     <button
       type="button"
       className={cn(
-        "w-full rounded-2xl border p-3 text-left transition-colors hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-70",
-        !notification.seen && "border-primary/30 bg-primary/5",
+        "cursor-pointer group relative w-full overflow-hidden p-0 text-left transition-all duration-200 border-t",
+        !notification.seen
+          ? "border-primary/25 bg-primary/4"
+          : "border-border/80",
       )}
       disabled={disabled}
       onClick={() => onOpen(notification)}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 space-y-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant={notification.seen ? "outline" : "default"}>
-              {NOTIFICATION_TYPE_LABELS[notification.type]}
-            </Badge>
-            {!notification.seen && (
-              <span className="size-2 rounded-full bg-primary" aria-hidden="true" />
-            )}
+      <div className="flex gap-3 p-3 pl-4">
+        <div className="min-w-0 flex-1 space-y-2">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 space-y-1">
+              <p className="line-clamp-2 text-sm font-semibold leading-5 text-foreground">
+                {notification.title}
+              </p>
+            </div>
+            <span className="shrink-0 text-right text-[11px] leading-4 text-muted-foreground tabular-nums">
+              {formatSentAt(notification.sentAt)}
+            </span>
           </div>
-          <p className="font-medium text-foreground">{notification.title}</p>
-          <p className="line-clamp-2 text-sm text-muted-foreground">
+
+          <p className="line-clamp-3 max-w-prose text-sm leading-5 text-muted-foreground">
             {notification.message}
           </p>
         </div>
-        <span className="shrink-0 text-xs text-muted-foreground">
-          {formatSentAt(notification.sentAt)}
-        </span>
-      </div>
-      <div className="mt-3 space-y-2">
-        <NotificationMetadata metadata={notification.metadata} />
-        {notification.actionUrl && (
-          <span className="text-xs font-medium text-primary">
-            Mở liên kết liên quan
-          </span>
-        )}
       </div>
     </button>
   );
@@ -177,12 +141,10 @@ export function NotificationPopover() {
               : "Không có thông báo chưa xem"}
           </PopoverDescription>
         </PopoverHeader>
-        <Separator />
-        <div className="max-h-[28rem] space-y-2 overflow-y-auto px-3 pb-3">
+        <div className="max-h-[28rem] overflow-y-auto">
           {isPending && (
             <div className="flex items-center justify-center gap-2 py-8 text-sm text-muted-foreground">
               <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
-              Đang tải thông báo...
             </div>
           )}
 

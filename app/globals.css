@@ -196,3 +196,8 @@
     @apply font-sans;
   }
 }
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
