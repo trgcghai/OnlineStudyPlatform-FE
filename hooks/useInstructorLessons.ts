@@ -13,14 +13,7 @@ import {
 } from "@/services/api/lessons";
 import type { LessonFormValues } from "@/lib/schemas/lesson";
 import { GENERIC_ERROR_MESSAGE, NETWORK_ERROR_MESSAGE } from "@/constants/constants";
-
-export const instructorLessonKeys = {
-  all: ["instructor-lessons"] as const,
-  list: (courseId: string) =>
-    [...instructorLessonKeys.all, "list", courseId] as const,
-  detail: (lessonId: string) =>
-    [...instructorLessonKeys.all, "detail", lessonId] as const,
-};
+import { instructorLessonKeys } from "@/lib/query-keys";
 
 export interface LessonMutationResult {
   ok: boolean;

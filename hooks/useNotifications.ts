@@ -10,14 +10,9 @@ import {
   markNotificationSeen,
   type NotificationItem,
 } from "@/services/api/notifications";
+import { notificationKeys } from "@/lib/query-keys";
 
 const NOTIFICATION_PAGE_SIZE = 10;
-
-export const notificationKeys = {
-  all: ["notifications"] as const,
-  lists: () => [...notificationKeys.all, "list"] as const,
-  unreadCount: () => [...notificationKeys.all, "unread-count"] as const,
-};
 
 export function useNotificationsList() {
   return useInfiniteQuery({

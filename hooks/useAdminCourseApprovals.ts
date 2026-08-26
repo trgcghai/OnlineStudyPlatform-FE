@@ -10,12 +10,7 @@ import {
 } from "@/services/api/courses";
 import { isApiErrorResponse } from "@/services/axios";
 import { GENERIC_ERROR_MESSAGE, NETWORK_ERROR_MESSAGE } from "@/constants/constants";
-
-export const adminCourseApprovalKeys = {
-  all: ["admin-course-approvals"] as const,
-  list: (filters: CourseListFilters) =>
-    [...adminCourseApprovalKeys.all, "list", filters] as const,
-};
+import { adminCourseApprovalKeys } from "@/lib/query-keys";
 
 export interface CourseApprovalMutationResult<T = Course> {
   ok: boolean;

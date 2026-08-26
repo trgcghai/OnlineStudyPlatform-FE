@@ -3,15 +3,10 @@
 import { useState } from "react";
 import { Search, X } from "lucide-react";
 import { PublicCourseCard } from "@/components/courses/public-course-card";
-import { PublicCourseSection } from "@/components/courses/public-course-section";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/useDebounce";
-import {
-  useLatestPublishedCourses,
-  usePublishedCourseSuggestions,
-  usePublishedCoursesList,
-} from "@/hooks/usePublicCourses";
+import { usePublishedCoursesList } from "@/hooks/usePublicCourses";
 import { Pagination } from "@/components/ui/pagination";
 import { COURSE_CATEGORY_LABELS, CourseCategory } from "@/lib/schemas/course";
 import {
@@ -24,7 +19,6 @@ import {
 import { Button } from "@/components/ui/button";
 
 const CATALOG_LIMIT = 24;
-const SECTION_LIMIT = 8;
 type CategoryFilter = "" | CourseCategory;
 const ALL_OPTION = "";
 const CATEGORY_FILTER_ITEMS: Record<CategoryFilter, string> = {
@@ -45,9 +39,6 @@ export default function CoursePage() {
     q: debouncedKeyword,
     category: categoryFilter || undefined,
   });
-  const suggestionsQuery = usePublishedCourseSuggestions(SECTION_LIMIT);
-  const latestQuery = useLatestPublishedCourses(SECTION_LIMIT);
-
   const courses = coursesQuery.data?.items ?? [];
   const total = coursesQuery.data?.total ?? 0;
   const totalPages = coursesQuery.data?.totalPages ?? 1;
@@ -115,12 +106,9 @@ export default function CoursePage() {
           </Select>
 
           <Button
-          className="ml-3"
+            className="ml-3"
             variant="destructive"
-            disabled={
-              !debouncedKeyword &&
-              categoryFilter === ALL_OPTION
-            }
+            disabled={!debouncedKeyword && categoryFilter === ALL_OPTION}
             onClick={() => {
               setKeyword("");
               setCategoryFilter(ALL_OPTION);
@@ -167,18 +155,6 @@ export default function CoursePage() {
         )}
       </section>
 
-      <PublicCourseSection
-        title="Gợi ý khóa học"
-        description="Một số khóa học đã xuất bản để bạn bắt đầu khám phá."
-        courses={suggestionsQuery.data}
-        isLoading={suggestionsQuery.isLoading}
-      />
-      <PublicCourseSection
-        title="Khóa học mới cập nhật"
-        description="Các khóa học có nội dung được cập nhật gần đây."
-        courses={latestQuery.data}
-        isLoading={latestQuery.isLoading}
-      />
     </main>
   );
 }

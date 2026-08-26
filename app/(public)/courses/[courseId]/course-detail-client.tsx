@@ -7,12 +7,12 @@ import {
   ChevronLeft,
   GraduationCap,
 } from "lucide-react";
+import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePublishedCourse } from "@/hooks/usePublicCourses";
 import { formatDate } from "@/utils/dateTimeUtil";
-import Image from "next/image";
 
 interface CourseDetailClientProps {
   courseId: string;

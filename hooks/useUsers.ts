@@ -19,11 +19,7 @@ import type { RegisterUserResponse, UserProfile } from "@/services/api/users";
 import type { RegisterFormValues } from "@/lib/schemas/register";
 import { toast } from "@/components/ui/toast";
 import { GENERIC_ERROR_MESSAGE, NETWORK_ERROR_MESSAGE } from "@/constants/constants";
-
-export const userKeys = {
-  all: ["users"] as const,
-  me: () => [...userKeys.all, "me"] as const,
-};
+import { userKeys } from "@/lib/query-keys";
 
 interface RegisterFailure {
   ok: false;
