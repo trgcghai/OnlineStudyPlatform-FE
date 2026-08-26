@@ -169,13 +169,12 @@ export function useUpdateInstructorLesson() {
 export function useDeleteInstructorLesson() {
   const queryClient = useQueryClient();
   const mutation = useMutation<
-    { courseId: string },
+    void,
     unknown,
     { lessonId: string; courseId: string }
   >({
     mutationFn: async ({ lessonId }) => {
       await deleteLesson(lessonId);
-      return { courseId: "" };
     },
     onSuccess: async (_result, variables) => {
       await queryClient.invalidateQueries({

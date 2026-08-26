@@ -55,12 +55,12 @@ export function DeleteLessonDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Xóa bài học?</AlertDialogTitle>
           <AlertDialogDescription>
-            Bài học{" "}
+            Bạn có chắc chắn muốn xóa bài học{" "}
             <span className="font-medium text-foreground">
               {lesson?.title}
-            </span>{" "}
-            sẽ bị xóa khỏi khóa học cùng tất cả file video và tài liệu đính
-            kèm. Thao tác này không thể hoàn tác.
+            </span>
+            ? Bài học sẽ bị xóa khỏi khóa học cùng tất cả file video và tài
+            liệu đính kèm. Thao tác này không thể hoàn tác.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

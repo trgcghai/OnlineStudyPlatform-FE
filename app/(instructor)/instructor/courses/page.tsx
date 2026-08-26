@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import {
   BookOpen,
   ImageIcon,
+  List,
   LoaderCircle,
   PencilLine,
   Plus,
@@ -463,6 +464,26 @@ export default function InstructorCoursesPage() {
                                 />
                                 <TooltipContent>
                                   <p>Chỉnh sửa khóa học</p>
+                                </TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger
+                                  render={
+                                    <Button
+                                      variant="ghost"
+                                      size="icon-sm"
+                                      aria-label={`Quản lý bài học ${course.title}`}
+                                    >
+                                      <Link
+                                        href={`/instructor/courses/${course.id}/lessons`}
+                                      >
+                                        <List />
+                                      </Link>
+                                    </Button>
+                                  }
+                                />
+                                <TooltipContent>
+                                  <p>Quản lý bài học</p>
                                 </TooltipContent>
                               </Tooltip>
                               <Tooltip>
