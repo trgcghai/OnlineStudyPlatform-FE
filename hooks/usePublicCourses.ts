@@ -6,18 +6,7 @@ import {
   listPublishedCourses,
   type PublicCourseListFilters,
 } from "@/services/api/public-courses";
-
-export const publicCourseKeys = {
-  all: ["public-courses"] as const,
-  list: (filters: PublicCourseListFilters) =>
-    [...publicCourseKeys.all, "list", filters] as const,
-  suggestion: (limit: number) =>
-    [...publicCourseKeys.all, "suggestion", limit] as const,
-  latest: (limit: number) =>
-    [...publicCourseKeys.all, "latest", limit] as const,
-  detail: (courseId: string) =>
-    [...publicCourseKeys.all, "detail", courseId] as const,
-};
+import { publicCourseKeys } from "@/lib/query-keys";
 
 export function usePublishedCoursesList(filters: PublicCourseListFilters) {
   return useQuery({

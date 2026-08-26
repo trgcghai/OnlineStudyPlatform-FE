@@ -18,12 +18,7 @@ import type {
   EditAdminUserFormValues,
 } from "@/lib/schemas/admin-user";
 import { GENERIC_ERROR_MESSAGE, NETWORK_ERROR_MESSAGE } from "@/constants/constants";
-
-export const adminUserKeys = {
-  all: ["admin-users"] as const,
-  list: (filters: AdminUserFilters) =>
-    [...adminUserKeys.all, "list", filters] as const,
-};
+import { adminUserKeys } from "@/lib/query-keys";
 
 export interface AdminUserFailure {
   formError?: string;

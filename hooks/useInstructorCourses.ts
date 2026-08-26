@@ -15,14 +15,7 @@ import {
 } from "@/services/api/courses";
 import type { CourseFormValues } from "@/lib/schemas/course";
 import { GENERIC_ERROR_MESSAGE, NETWORK_ERROR_MESSAGE } from "@/constants/constants";
-
-export const instructorCourseKeys = {
-  all: ["instructor-courses"] as const,
-  list: (filters: CourseListFilters) =>
-    [...instructorCourseKeys.all, "list", filters] as const,
-  detail: (courseId: string) =>
-    [...instructorCourseKeys.all, "detail", courseId] as const,
-};
+import { instructorCourseKeys } from "@/lib/query-keys";
 
 export interface CourseMutationResult<T = Course> {
   ok: boolean;

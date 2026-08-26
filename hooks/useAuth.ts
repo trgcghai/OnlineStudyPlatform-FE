@@ -18,11 +18,7 @@ import {
 } from "@/services/api/auth";
 import type { UserRole } from "@/services/api/users";
 import { GENERIC_ERROR_MESSAGE, NETWORK_ERROR_MESSAGE } from "@/constants/constants";
-
-export const authKeys = {
-  all: ["auth"] as const,
-  me: () => [...authKeys.all, "me"] as const,
-};
+import { authKeys } from "@/lib/query-keys";
 
 export type LoginResult =
   | { ok: true; role: UserRole; user: AuthUser }
