@@ -9,6 +9,8 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
+import { DragDropProvider, type DragEndEvent } from "@dnd-kit/react";
+import { useSortable } from "@dnd-kit/react/sortable";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,7 +36,100 @@ import {
   useInstructorLessonsList,
   useReorderInstructorLessons,
 } from "@/hooks/useInstructorLessons";
+import { cn } from "@/lib/utils";
 import type { Lesson } from "@/services/api/lessons";
+
+interface SortableLessonRowProps {
+  lesson: Lesson;
+  index: number;
+  onEdit: (lesson: Lesson) => void;
+  onDelete: (lesson: Lesson) => void;
+}
+
+function SortableLessonRow({
+  lesson,
+  index,
+  onEdit,
+  onDelete,
+}: SortableLessonRowProps) {
+  const { isDragging, ref, handleRef } = useSortable({
+    id: lesson.id,
+    index,
+    plugins: [],
+  });
+
+  return (
+    <TableRow
+      ref={ref}
+      className={cn(isDragging && "opacity-50")}
+    >
+      <TableCell className="w-12 text-center">
+        <button
+          type="button"
+          ref={handleRef}
+          className="inline-flex size-7 cursor-grab items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:cursor-grabbing"
+          aria-label="Kéo để di chuyển"
+        >
+          <GripVertical className="size-4" />
+        </button>
+      </TableCell>
+      <TableCell className="text-center text-sm text-muted-foreground">
+        {index + 1}
+      </TableCell>
+      <TableCell>
+        <div className="flex flex-col">
+          <span className="font-medium">{lesson.title}</span>
+          {lesson.description && (
+            <span className="line-clamp-1 text-sm text-muted-foreground">
+              {lesson.description}
+            </span>
+          )}
+        </div>
+      </TableCell>
+      <TableCell>
+        {lesson.videoUrl ? (
+          <span className="inline-flex items-center gap-1 text-sm text-green-600 dark:text-green-400">
+            <Film className="size-3.5" />
+            Có
+          </span>
+        ) : (
+          <span className="text-sm text-muted-foreground">-</span>
+        )}
+      </TableCell>
+      <TableCell>
+        {lesson.materialUrl ? (
+          <span className="inline-flex items-center gap-1 text-sm text-green-600 dark:text-green-400">
+            <FileText className="size-3.5" />
+            Có
+          </span>
+        ) : (
+          <span className="text-sm text-muted-foreground">-</span>
+        )}
+      </TableCell>
+      <TableCell className="text-right">
+        <div className="flex justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => onEdit(lesson)}
+            aria-label={`Chỉnh sửa ${lesson.title}`}
+          >
+            <PencilLine />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="text-destructive hover:text-destructive"
+            onClick={() => onDelete(lesson)}
+            aria-label={`Xóa ${lesson.title}`}
+          >
+            <Trash2 />
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+}
 
 interface LessonListProps {
   courseId: string;
@@ -47,28 +142,23 @@ export function LessonList({ courseId }: LessonListProps) {
 
   const { data, isError, isPending, refetch } =
     useInstructorLessonsList(courseId);
-  const { reorderInstructorLessons, isPending: isReordering } =
-    useReorderInstructorLessons();
+  const { reorderInstructorLessons } = useReorderInstructorLessons();
   const items = data?.items ?? [];
 
-  async function handleMoveUp(index: number) {
-    if (index <= 0 || isReordering) return;
-    const orderedIds = items.map((l) => l.id);
-    [orderedIds[index - 1], orderedIds[index]] = [
-      orderedIds[index],
-      orderedIds[index - 1],
-    ];
-    await reorderInstructorLessons(courseId, orderedIds);
-  }
+  function handleDragEnd(event: DragEndEvent) {
+    if (event.canceled) return;
+    const sourceId = event.operation.source?.id;
+    const targetId = event.operation.target?.id;
+    if (!sourceId || !targetId || sourceId === targetId) return;
 
-  async function handleMoveDown(index: number) {
-    if (index >= items.length - 1 || isReordering) return;
-    const orderedIds = items.map((l) => l.id);
-    [orderedIds[index], orderedIds[index + 1]] = [
-      orderedIds[index + 1],
-      orderedIds[index],
-    ];
-    await reorderInstructorLessons(courseId, orderedIds);
+    const oldIndex = items.findIndex((l) => l.id === sourceId);
+    const newIndex = items.findIndex((l) => l.id === targetId);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reordered = [...items];
+    const [moved] = reordered.splice(oldIndex, 1);
+    reordered.splice(newIndex, 0, moved);
+    reorderInstructorLessons(courseId, reordered.map((l) => l.id));
   }
 
   return (
@@ -76,8 +166,8 @@ export function LessonList({ courseId }: LessonListProps) {
       <CardHeader>
         <CardTitle>Danh sách bài học</CardTitle>
         <CardDescription>
-          Quản lý thứ tự và nội dung bài học trong khóa học. Kéo thả hoặc sử
-          dụng nút mũi tên để sắp xếp.
+          Quản lý thứ tự và nội dung bài học trong khóa học. Kéo thả để sắp
+          xếp lại thứ tự.
         </CardDescription>
         <CardAction>
           <Button size="sm" onClick={() => setCreating(true)}>
@@ -138,101 +228,31 @@ export function LessonList({ courseId }: LessonListProps) {
         {!isError && !isPending && items.length > 0 && (
           <div className="overflow-hidden rounded-2xl border">
             <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12">#</TableHead>
-                    <TableHead>Bài học</TableHead>
-                    <TableHead>Video</TableHead>
-                    <TableHead>Tài liệu</TableHead>
-                    <TableHead className="text-right">Thao tác</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {items.map((lesson, index) => (
-                    <TableRow key={lesson.id}>
-                      <TableCell className="text-center text-sm text-muted-foreground">
-                        {index + 1}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col">
-                          <span className="font-medium">{lesson.title}</span>
-                          {lesson.description && (
-                            <span className="line-clamp-1 text-sm text-muted-foreground">
-                              {lesson.description}
-                            </span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {lesson.videoUrl ? (
-                          <span className="inline-flex items-center gap-1 text-sm text-green-600 dark:text-green-400">
-                            <Film className="size-3.5" />
-                            Có
-                          </span>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">
-                            -
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {lesson.materialUrl ? (
-                          <span className="inline-flex items-center gap-1 text-sm text-green-600 dark:text-green-400">
-                            <FileText className="size-3.5" />
-                            Có
-                          </span>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">
-                            -
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            disabled={isReordering || index === 0}
-                            onClick={() => handleMoveUp(index)}
-                            aria-label="Di chuyển lên"
-                          >
-                            <GripVertical className="size-4 rotate-180" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            disabled={
-                              isReordering || index === items.length - 1
-                            }
-                            onClick={() => handleMoveDown(index)}
-                            aria-label="Di chuyển xuống"
-                          >
-                            <GripVertical className="size-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            onClick={() => setEditingLesson(lesson)}
-                            aria-label={`Chỉnh sửa ${lesson.title}`}
-                          >
-                            <PencilLine />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            className="text-destructive hover:text-destructive"
-                            onClick={() => setDeletingLesson(lesson)}
-                            aria-label={`Xóa ${lesson.title}`}
-                          >
-                            <Trash2 />
-                          </Button>
-                        </div>
-                      </TableCell>
+              <DragDropProvider onDragEnd={handleDragEnd}>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12" />
+                      <TableHead className="w-12">#</TableHead>
+                      <TableHead>Bài học</TableHead>
+                      <TableHead>Video</TableHead>
+                      <TableHead>Tài liệu</TableHead>
+                      <TableHead className="text-right">Thao tác</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {items.map((lesson, index) => (
+                      <SortableLessonRow
+                        key={lesson.id}
+                        lesson={lesson}
+                        index={index}
+                        onEdit={setEditingLesson}
+                        onDelete={setDeletingLesson}
+                      />
+                    ))}
+                  </TableBody>
+                </Table>
+              </DragDropProvider>
             </div>
           </div>
         )}

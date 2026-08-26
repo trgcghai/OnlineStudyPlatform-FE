@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -85,19 +85,39 @@ export function LessonFormDialog({
     },
   });
 
+  useEffect(() => {
+    if (lesson) {
+      reset({ title: lesson.title, description: lesson.description ?? "" });
+    }
+  }, [lesson, reset]);
+
   function handleOpenChange(nextOpen: boolean) {
     if (isPending) return;
     if (!nextOpen) {
       setVideo(null);
       setMaterial(null);
       setFormError(null);
-      reset({ title: "", description: "" });
+      if (lesson) {
+        reset({ title: lesson.title, description: lesson.description ?? "" });
+      } else {
+        reset({ title: "", description: "" });
+      }
     }
     onOpenChange(nextOpen);
   }
 
   async function onSubmit(values: LessonFormValues) {
     setFormError(null);
+
+    if (!isEditing && !video) {
+      setFormError("Vui lòng tải lên file video bài giảng.");
+      return;
+    }
+
+    if (isEditing && !video && !lesson?.videoUrl) {
+      setFormError("Bài học phải có file video.");
+      return;
+    }
 
     let duration: number | undefined;
 

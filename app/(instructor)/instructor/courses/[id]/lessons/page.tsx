@@ -22,10 +22,10 @@ export default function CourseLessonsPage() {
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
       <Button variant="ghost" size="sm" className="w-fit">
         <Link
-          href={`/instructor/courses/${courseId}/edit`}
+          href="/instructor/courses"
           className="flex items-center gap-2"
         >
-          <ArrowLeft /> Quay lại chỉnh sửa khóa học
+          <ArrowLeft /> Quay lại danh sách khóa học
         </Link>
       </Button>
 
