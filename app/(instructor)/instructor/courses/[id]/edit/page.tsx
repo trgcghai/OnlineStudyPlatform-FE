@@ -47,7 +47,21 @@ export default function EditCoursePage() {
         </Alert>
       ) : null}
 
-      {data ? <CourseForm mode="edit" course={data} /> : null}
+      {data ? (
+        <>
+          <div className="flex justify-end">
+            <Button variant="outline" size="sm">
+              <Link
+                href={`/instructor/courses/${courseId}/lessons`}
+                className="flex items-center gap-2"
+              >
+                Quản lý bài học
+              </Link>
+            </Button>
+          </div>
+          <CourseForm mode="edit" course={data} />
+        </>
+      ) : null}
     </div>
   );
 }
