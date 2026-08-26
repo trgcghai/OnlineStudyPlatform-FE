@@ -26,7 +26,9 @@ interface PaginationProps {
   totalItems: number;
   pageSize: number;
   onPageChange: (page: number) => void;
-  onPageSizeChange: (size: number) => void;
+  onPageSizeChange?: (size: number) => void;
+
+  allowPageSizeChange?: boolean;
 }
 
 function getPageNumbers(
@@ -60,6 +62,7 @@ export function Pagination({
   pageSize,
   onPageChange,
   onPageSizeChange,
+  allowPageSizeChange = true
 }: PaginationProps) {
   const currentCount = Math.min(pageSize, totalItems - (page - 1) * pageSize);
   const pageNumbers = getPageNumbers(page, totalPages);
@@ -70,9 +73,13 @@ export function Pagination({
         <span>
           {currentCount} trên {totalItems} mục
         </span>
-        <Select
+        {allowPageSizeChange && <Select
           value={String(pageSize)}
-          onValueChange={(v) => onPageSizeChange(Number(v))}
+          onValueChange={(v) => {
+            if (allowPageSizeChange && onPageSizeChange) {
+              onPageSizeChange(Number(v));
+            }
+          }}
         >
           <SelectTrigger className="h-8 w-16">
             <SelectValue />
@@ -84,7 +91,7 @@ export function Pagination({
               </SelectItem>
             ))}
           </SelectContent>
-        </Select>
+        </Select>}
       </div>
 
       {totalPages > 1 && (
