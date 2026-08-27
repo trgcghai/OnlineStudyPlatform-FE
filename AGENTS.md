@@ -23,11 +23,12 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Production build: `pnpm build` (also emits standalone output)
 - Start built app locally: `pnpm start`; Docker production runs `node server.js` from `.next/standalone` instead.
 - No test script or test framework is configured in `package.json`; do not invent test commands.
+- Pre-commit runs `pnpm lint-staged`; staged JS/TS/TSX files get `eslint --fix` then `prettier --write`.
 
 ## Architecture
 
 - No `src/` directory. App Router files live under `app/`; `@/*` maps to the repo root.
-- Route groups split auth and RBAC areas: `app/(auth)`, `app/(admin)`, `app/(instructor)`, `app/(learner)`. Admin/instructor/learner layouts wrap pages with `AuthGuard` and role constants from `services/api/users.ts`.
+- Route groups split public, auth, and RBAC areas: `app/(public)`, `app/(auth)`, `app/(admin)`, `app/(instructor)`, `app/(learner)`. Admin/instructor/learner layouts wrap pages with `AuthGuard` and role constants from `services/api/users.ts`.
 - Root providers are wired in `app/layout.tsx`: `ThemeProvider` -> `ReduxProvider` -> `QueryProvider` -> `TooltipProvider` plus `Toaster`.
 - Client auth state is Redux Toolkit + redux-persist in `lib/store/index.ts`; only `auth` is persisted and SSR uses a noop storage.
 - Server state uses TanStack Query. Hooks live in `hooks/`; typed backend functions live in `services/api/`.
@@ -43,4 +44,4 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 - `next.config.ts` sets `output: "standalone"`; Docker copies `.next/standalone`, `.next/static`, and `public` into the production image.
 - `pnpm-workspace.yaml` blocks dependency build scripts by default via `allowBuilds` (`sharp: false`, `unrs-resolver: false`). New dependencies with native/build steps may need this file updated.
-- No CI workflows or tracked hook/task-runner config are present. `CLAUDE.md` only points to `AGENTS.md`; keep repo guidance here.
+- No CI workflows are present. `CLAUDE.md` only points to `AGENTS.md`; keep repo guidance here.
