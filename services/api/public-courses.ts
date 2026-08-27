@@ -25,6 +25,7 @@ export interface PublicCourse {
   thumbnail: string | null;
   instructorId: string;
   instructor?: PublicCourseInstructorSummary;
+  isEnrolled?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -51,7 +52,8 @@ function buildPublicCourseListQuery(filters: PublicCourseListFilters): string {
 
   if (filters.page) params.set("page", String(filters.page));
   if (filters.limit) params.set("limit", String(filters.limit));
-  if (filters.q && filters.q.trim().length > 0) params.set("q", filters.q.trim());
+  if (filters.q && filters.q.trim().length > 0)
+    params.set("q", filters.q.trim());
   if (filters.category && filters.category.trim().length > 0) {
     params.set("category", filters.category.trim());
   }
