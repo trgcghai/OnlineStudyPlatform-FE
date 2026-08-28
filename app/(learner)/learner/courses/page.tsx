@@ -98,7 +98,7 @@ export default function LearnerCoursesPage() {
 
   if (enrollmentsQuery.isLoading) {
     return (
-      <div className="w-full max-w-6xl space-y-6">
+      <div className="w-full max-w-7xl space-y-6 px-6">
         <div>
           <p className="text-sm font-medium text-primary">Lộ trình học tập</p>
           <h1 className="text-3xl font-bold tracking-tight">
@@ -147,7 +147,7 @@ export default function LearnerCoursesPage() {
   }
 
   return (
-    <div className="w-full max-w-6xl space-y-6">
+    <div className="container w-full max-w-7xl space-y-6 px-6">
       <div>
         <p className="text-sm font-medium text-primary">Lộ trình học tập</p>
         <h1 className="text-3xl font-bold tracking-tight">Khóa học của tôi</h1>

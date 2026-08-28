@@ -1,7 +1,15 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo, useState } from "react";
-import { BookOpen, CheckCircle2, ImageIcon, Search, X, XCircle } from "lucide-react";
+import {
+  BookOpen,
+  CheckCircle2,
+  ImageIcon,
+  Search,
+  X,
+  XCircle,
+} from "lucide-react";
 import { ApproveCourseDialog } from "@/components/admin/courses/approve-course-dialog";
 import { RejectCourseDialog } from "@/components/admin/courses/reject-course-dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -67,16 +75,20 @@ function getCourseCategoryLabel(category: string): string {
 
 function CourseThumbnail({ course }: { course: CourseApproval }) {
   return (
-    <div
-      className="flex size-14 items-center justify-center overflow-hidden rounded-xl bg-muted bg-cover bg-center"
-      style={
-        course.thumbnail ? { backgroundImage: `url(${course.thumbnail})` } : undefined
-      }
-    >
+    <div className="relative flex size-14 items-center justify-center overflow-hidden rounded-xl bg-muted">
       {course.thumbnail ? (
-        <span className="sr-only">Có ảnh khóa học</span>
+        <Image
+          src={course.thumbnail}
+          alt={course.title}
+          fill
+          sizes="56px"
+          className="object-cover"
+        />
       ) : (
-        <ImageIcon className="size-5 text-muted-foreground" aria-hidden="true" />
+        <ImageIcon
+          className="size-5 text-muted-foreground"
+          aria-hidden="true"
+        />
       )}
     </div>
   );
@@ -88,10 +100,12 @@ export default function AdminCourseApprovalsPage() {
     useState<CategoryFilter>(ALL_OPTION);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(COURSE_LIST_PAGE_SIZE);
-  const [approvingCourse, setApprovingCourse] =
-    useState<CourseApproval | null>(null);
-  const [rejectingCourse, setRejectingCourse] =
-    useState<CourseApproval | null>(null);
+  const [approvingCourse, setApprovingCourse] = useState<CourseApproval | null>(
+    null,
+  );
+  const [rejectingCourse, setRejectingCourse] = useState<CourseApproval | null>(
+    null,
+  );
   const debouncedSearch = useDebounce(search.trim(), 500);
 
   const filters = useMemo<CourseListFilters>(
@@ -182,10 +196,7 @@ export default function AdminCourseApprovalsPage() {
             <div>
               <Button
                 variant="destructive"
-                disabled={
-                  !debouncedSearch &&
-                  categoryFilter === ALL_OPTION
-                }
+                disabled={!debouncedSearch && categoryFilter === ALL_OPTION}
                 onClick={() => {
                   setSearch("");
                   setCategoryFilter(ALL_OPTION);
@@ -200,7 +211,9 @@ export default function AdminCourseApprovalsPage() {
 
           {isError && (
             <Alert variant="destructive">
-              <AlertTitle>Không thể tải danh sách khóa học chờ duyệt</AlertTitle>
+              <AlertTitle>
+                Không thể tải danh sách khóa học chờ duyệt
+              </AlertTitle>
               <AlertDescription>
                 Đã xảy ra lỗi khi truy vấn dữ liệu. Vui lòng thử lại.
               </AlertDescription>
