@@ -10,6 +10,14 @@ export const COURSE_STATUSES = {
 export type CourseStatus =
   (typeof COURSE_STATUSES)[keyof typeof COURSE_STATUSES];
 
+export const COURSE_LEARNING_ORDERS = {
+  SEQUENTIAL: "sequential",
+  FREE: "free",
+} as const;
+
+export type LearningOrder =
+  (typeof COURSE_LEARNING_ORDERS)[keyof typeof COURSE_LEARNING_ORDERS];
+
 export interface Course {
   id: string;
   title: string;
@@ -18,6 +26,7 @@ export interface Course {
   thumbnail: string | null;
   status: CourseStatus;
   rejectReason: string | null;
+  learningOrder: LearningOrder;
   instructorId: string;
   createdAt: string;
   updatedAt: string;
@@ -63,6 +72,7 @@ export interface CreateCoursePayload {
   title: string;
   description: string;
   category: string;
+  learningOrder?: LearningOrder;
 }
 
 export type UpdateCoursePayload = Partial<CreateCoursePayload>;
@@ -76,7 +86,8 @@ function buildCourseListQuery(filters: CourseListFilters): string {
 
   if (filters.page) params.set("page", String(filters.page));
   if (filters.limit) params.set("limit", String(filters.limit));
-  if (filters.q && filters.q.trim().length > 0) params.set("q", filters.q.trim());
+  if (filters.q && filters.q.trim().length > 0)
+    params.set("q", filters.q.trim());
   if (filters.category) params.set("category", filters.category);
   if (filters.status) params.set("status", filters.status);
   if (filters.sortBy) params.set("sortBy", filters.sortBy);

@@ -12,6 +12,8 @@ export type PublicCourseSortField =
 
 export type PublicCourseSortOrder = "ASC" | "DESC";
 
+export type PublicCourseLearningOrder = "sequential" | "free";
+
 export interface PublicCourseInstructorSummary {
   id: string;
   name: string;
@@ -23,6 +25,7 @@ export interface PublicCourse {
   description: string;
   category: string;
   thumbnail: string | null;
+  learningOrder: PublicCourseLearningOrder;
   instructorId: string;
   instructor?: PublicCourseInstructorSummary;
   isEnrolled?: boolean;

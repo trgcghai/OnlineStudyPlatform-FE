@@ -33,7 +33,17 @@ export const COURSE_STATUS_BADGE_VARIANTS: Record<CourseStatus, string> = {
   Pending: "secondary",
   Published: "default",
   Rejected: "destructive",
-}
+};
+
+export const COURSE_LEARNING_ORDERS = ["sequential", "free"] as const;
+
+export type CourseLearningOrder = (typeof COURSE_LEARNING_ORDERS)[number];
+
+export const COURSE_LEARNING_ORDER_LABELS: Record<CourseLearningOrder, string> =
+  {
+    sequential: "Học theo trình tự",
+    free: "Học tự do",
+  };
 
 export const COURSE_THUMBNAIL_ACCEPT = {
   "image/jpeg": [".jpg", ".jpeg"],
@@ -56,6 +66,7 @@ export const courseFormSchema = z.object({
     .min(1, "Mô tả không được để trống")
     .max(5000, "Mô tả tối đa 5000 ký tự"),
   category: z.enum(COURSE_CATEGORIES),
+  learningOrder: z.enum(COURSE_LEARNING_ORDERS),
 });
 
 export type CourseFormValues = z.infer<typeof courseFormSchema>;
