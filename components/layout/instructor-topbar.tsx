@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSelector } from "react-redux";
 import { CircleUserRound } from "lucide-react";
 import { LogoutButton } from "@/components/auth/logout-button";
+import { ModeToggle } from "@/components/mode-toggle";
 import { NotificationPopover } from "@/components/notifications/notification-popover";
 import { buttonVariants } from "@/components/ui/button";
 import { selectAuthUser } from "@/lib/features/authSlice";
@@ -26,6 +27,7 @@ export function InstructorTopbar() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <ModeToggle />
           <NotificationPopover />
           <Link
             href="/instructor/profile"

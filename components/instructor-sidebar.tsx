@@ -1,12 +1,13 @@
-"use client"
+"use client";
 
-import { HugeiconsIcon } from "@hugeicons/react"
+import { HugeiconsIcon } from "@hugeicons/react";
 import {
+  CircleUserRound,
   DashboardSquare01Icon,
   Presentation,
-} from "@hugeicons/core-free-icons"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+} from "@hugeicons/core-free-icons";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import {
   Sidebar,
@@ -20,7 +21,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
   SidebarSeparator,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 const adminNavItems = [
   {
@@ -33,24 +34,33 @@ const adminNavItems = [
     href: "/instructor/courses",
     icon: Presentation,
   },
-]
+  {
+    title: "Hồ sơ",
+    href: "/instructor/profile",
+    icon: CircleUserRound,
+  },
+];
 
-export function InstructorSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const pathname = usePathname()
+export function InstructorSidebar({
+  ...props
+}: React.ComponentProps<typeof Sidebar>) {
+  const pathname = usePathname();
 
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" tooltip="Online Study" render={<Link href="/instructor" />}>
+            <SidebarMenuButton
+              size="lg"
+              tooltip="Online Study"
+              render={<Link href="/instructor" />}
+            >
               <span className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                 <HugeiconsIcon icon={Presentation} strokeWidth={2} />
               </span>
               <span className="flex min-w-0 flex-col gap-0.5 leading-none">
-                <span className="truncate font-semibold">
-                  Giảng viên
-                </span>
+                <span className="truncate font-semibold">Giảng viên</span>
                 <span className="truncate text-xs text-sidebar-foreground/70">
                   Bảng điều khiển quản trị
                 </span>
@@ -71,7 +81,8 @@ export function InstructorSidebar({ ...props }: React.ComponentProps<typeof Side
                 const isActive =
                   item.href === "/instructor"
                     ? pathname === item.href
-                    : pathname === item.href || pathname.startsWith(`${item.href}/`)
+                    : pathname === item.href ||
+                      pathname.startsWith(`${item.href}/`);
 
                 return (
                   <SidebarMenuItem key={item.href}>
@@ -84,7 +95,7 @@ export function InstructorSidebar({ ...props }: React.ComponentProps<typeof Side
                       <span>{item.title}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                )
+                );
               })}
             </SidebarMenu>
           </SidebarGroupContent>
@@ -92,5 +103,5 @@ export function InstructorSidebar({ ...props }: React.ComponentProps<typeof Side
       </SidebarContent>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }
