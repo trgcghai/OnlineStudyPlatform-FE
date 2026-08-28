@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
@@ -98,16 +99,15 @@ function getCourseCategoryLabel(category: string): string {
 
 function CourseThumbnail({ course }: { course: Course }) {
   return (
-    <div
-      className="flex size-14 items-center justify-center overflow-hidden rounded-xl bg-muted bg-cover bg-center"
-      style={
-        course.thumbnail
-          ? { backgroundImage: `url(${course.thumbnail})` }
-          : undefined
-      }
-    >
+    <div className="relative flex size-14 items-center justify-center overflow-hidden rounded-xl bg-muted">
       {course.thumbnail ? (
-        <span className="sr-only">Có ảnh khóa học</span>
+        <Image
+          src={course.thumbnail}
+          alt={course.title}
+          fill
+          sizes="56px"
+          className="object-cover"
+        />
       ) : (
         <ImageIcon
           className="size-5 text-muted-foreground"

@@ -28,7 +28,7 @@ export function LogoutButton() {
     try {
       await logout();
     } finally {
-      router.replace("/signin");
+      router.replace("/");
     }
   }
 

@@ -4,7 +4,7 @@ import ProfileInfoForm from "@/components/profile/ProfileInfoForm";
 
 export default function LearnerProfilePage() {
   return (
-    <section className="flex w-full max-w-xl flex-col gap-6">
+    <section className="flex w-full max-w-7xl px-6 flex-col gap-6">
       <ProfileAvatar />
       <ProfileInfoForm />
       <PasswordForm />

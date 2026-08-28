@@ -5,7 +5,7 @@ import ProfileInfoForm from "@/components/profile/ProfileInfoForm";
 export default function InstructorProfilePage() {
   return (
     <section className="w-full flex items-center justify-center">
-      <div className="flex flex-col w-xl gap-6">
+      <div className="flex flex-col w-7xl gap-6">
         <ProfileAvatar />
         <ProfileInfoForm />
         <PasswordForm />
