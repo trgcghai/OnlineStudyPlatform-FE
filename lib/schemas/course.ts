@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { CourseStatus } from "@/services/api/courses";
+import type { CourseStatus, LearningOrder } from "@/services/api/courses";
 
 export const COURSE_CATEGORIES = [
   "Programming",
@@ -19,6 +19,20 @@ export const COURSE_CATEGORY_LABELS: Record<CourseCategory, string> = {
   Business: "Kinh doanh",
   Language: "Ngoại ngữ",
   Other: "Khác",
+};
+
+export const LEARNING_ORDERS_VALUE = ["Sequential", "Free"] as const;
+
+export type LearningOrderValue = (typeof LEARNING_ORDERS_VALUE)[number];
+
+export const LEARNING_ORDER_LABELS: Record<LearningOrder, string> = {
+  Sequential: "Học tuần tự",
+  Free: "Học tự do",
+};
+
+export const LEARNING_ORDER_DESCRIPTIONS: Record<LearningOrder, string> = {
+  Sequential: "Học viên phải hoàn thành bài học trước để mở bài tiếp theo.",
+  Free: "Học viên có thể truy cập mọi bài học bất kể tiến độ.",
 };
 
 export const COURSE_STATUS_LABELS: Record<CourseStatus, string> = {
@@ -56,6 +70,7 @@ export const courseFormSchema = z.object({
     .min(1, "Mô tả không được để trống")
     .max(5000, "Mô tả tối đa 5000 ký tự"),
   category: z.enum(COURSE_CATEGORIES),
+  learningOrder: z.enum(LEARNING_ORDERS_VALUE),
 });
 
 export type CourseFormValues = z.infer<typeof courseFormSchema>;

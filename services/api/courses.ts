@@ -10,6 +10,14 @@ export const COURSE_STATUSES = {
 export type CourseStatus =
   (typeof COURSE_STATUSES)[keyof typeof COURSE_STATUSES];
 
+export const LEARNING_ORDERS = {
+  SEQUENTIAL: "Sequential",
+  FREE: "Free",
+} as const;
+
+export type LearningOrder =
+  (typeof LEARNING_ORDERS)[keyof typeof LEARNING_ORDERS];
+
 export interface Course {
   id: string;
   title: string;
@@ -17,6 +25,7 @@ export interface Course {
   category: string;
   thumbnail: string | null;
   status: CourseStatus;
+  learningOrder: LearningOrder;
   rejectReason: string | null;
   instructorId: string;
   createdAt: string;
@@ -63,6 +72,7 @@ export interface CreateCoursePayload {
   title: string;
   description: string;
   category: string;
+  learningOrder?: LearningOrder;
 }
 
 export type UpdateCoursePayload = Partial<CreateCoursePayload>;

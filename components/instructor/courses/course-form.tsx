@@ -40,10 +40,17 @@ import {
   COURSE_CATEGORY_LABELS,
   COURSE_STATUS_BADGE_VARIANTS,
   COURSE_STATUS_LABELS,
+  LEARNING_ORDER_DESCRIPTIONS,
+  LEARNING_ORDER_LABELS,
+  LEARNING_ORDERS_VALUE,
   courseFormSchema,
   type CourseFormValues,
 } from "@/lib/schemas/course";
-import { COURSE_STATUSES, type Course } from "@/services/api/courses";
+import {
+  COURSE_STATUSES,
+  LEARNING_ORDERS,
+  type Course,
+} from "@/services/api/courses";
 import { Badge, badgeVariants } from "@/components/ui/badge";
 
 interface CourseFormProps {
@@ -74,6 +81,7 @@ export function CourseForm({ mode, course }: CourseFormProps) {
       category:
         (course?.category as CourseFormValues["category"] | undefined) ??
         "Programming",
+      learningOrder: course?.learningOrder ?? LEARNING_ORDERS.SEQUENTIAL,
     },
   });
 
@@ -191,6 +199,43 @@ export function CourseForm({ mode, course }: CourseFormProps) {
                 )}
               />
               <FieldError errors={[errors.category]} />
+            </Field>
+
+            <Field data-invalid={!!errors.learningOrder}>
+              <FieldLabel htmlFor="course-learning-order">
+                Học theo trình tự
+              </FieldLabel>
+              <Controller
+                control={control}
+                name="learningOrder"
+                render={({ field }) => (
+                  <>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      items={LEARNING_ORDER_LABELS}
+                    >
+                      <SelectTrigger
+                        className="w-full"
+                        aria-label="Học theo trình tự"
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {LEARNING_ORDERS_VALUE.map((order) => (
+                          <SelectItem key={order} value={order}>
+                            {LEARNING_ORDER_LABELS[order]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {LEARNING_ORDER_DESCRIPTIONS[field.value]}
+                    </p>
+                  </>
+                )}
+              />
+              <FieldError errors={[errors.learningOrder]} />
             </Field>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
