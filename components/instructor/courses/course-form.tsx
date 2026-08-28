@@ -38,6 +38,8 @@ import {
 import {
   COURSE_CATEGORIES,
   COURSE_CATEGORY_LABELS,
+  COURSE_LEARNING_ORDERS,
+  COURSE_LEARNING_ORDER_LABELS,
   COURSE_STATUS_BADGE_VARIANTS,
   COURSE_STATUS_LABELS,
   courseFormSchema,
@@ -74,6 +76,9 @@ export function CourseForm({ mode, course }: CourseFormProps) {
       category:
         (course?.category as CourseFormValues["category"] | undefined) ??
         "Programming",
+      learningOrder:
+        (course?.learningOrder as
+          CourseFormValues["learningOrder"] | undefined) ?? "free",
     },
   });
 
@@ -191,6 +196,38 @@ export function CourseForm({ mode, course }: CourseFormProps) {
                 )}
               />
               <FieldError errors={[errors.category]} />
+            </Field>
+
+            <Field data-invalid={!!errors.learningOrder}>
+              <FieldLabel htmlFor="course-learning-order" required>
+                Hình thức học
+              </FieldLabel>
+              <Controller
+                control={control}
+                name="learningOrder"
+                render={({ field }) => (
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    items={COURSE_LEARNING_ORDER_LABELS}
+                  >
+                    <SelectTrigger
+                      className="w-full"
+                      aria-label="Hình thức học"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COURSE_LEARNING_ORDERS.map((order) => (
+                        <SelectItem key={order} value={order}>
+                          {COURSE_LEARNING_ORDER_LABELS[order]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              <FieldError errors={[errors.learningOrder]} />
             </Field>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
