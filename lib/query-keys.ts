@@ -57,3 +57,8 @@ export const publicCourseKeys = {
   detail: (courseId: string) =>
     [...publicCourseKeys.all, "detail", courseId] as const,
 };
+
+export const enrollmentKeys = {
+  all: ["enrollments"] as const,
+  mine: () => [...enrollmentKeys.all, "mine"] as const,
+};

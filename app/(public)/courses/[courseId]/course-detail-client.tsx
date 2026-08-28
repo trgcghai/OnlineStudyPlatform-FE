@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   BookOpen,
   CalendarDays,
@@ -8,10 +9,18 @@ import {
   GraduationCap,
 } from "lucide-react";
 import Image from "next/image";
+import { useSelector } from "react-redux";
 import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "@/components/ui/toast";
+import { useEnrollInCourse } from "@/hooks/useEnrollments";
 import { usePublishedCourse } from "@/hooks/usePublicCourses";
+import {
+  selectIsAuthenticated,
+  selectUserRole,
+} from "@/lib/features/authSlice";
+import { USER_ROLES } from "@/services/api/users";
 import { formatDate } from "@/utils/dateTimeUtil";
 
 interface CourseDetailClientProps {
@@ -19,8 +28,35 @@ interface CourseDetailClientProps {
 }
 
 export function CourseDetailClient({ courseId }: CourseDetailClientProps) {
+  const router = useRouter();
   const courseQuery = usePublishedCourse(courseId);
   const course = courseQuery.data;
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const userRole = useSelector(selectUserRole);
+  const { enroll, isPending } = useEnrollInCourse();
+  const isLearner = userRole === USER_ROLES.LEARNER;
+  const learnHref = course
+    ? `/learner/courses/${course.id}/learn`
+    : "/learner/courses";
+
+  async function handleEnroll() {
+    if (!course) return;
+
+    const result = await enroll(course.id);
+
+    if (result.ok || result.alreadyEnrolled) {
+      if (result.alreadyEnrolled && result.message) {
+        toast.add({ title: result.message, type: "info" });
+      }
+      router.push(`/learner/courses/${course.id}/learn`);
+      return;
+    }
+
+    toast.add({
+      title: result.message ?? "Không thể đăng ký khóa học.",
+      type: "error",
+    });
+  }
 
   if (courseQuery.isLoading) {
     return (
@@ -106,19 +142,43 @@ export function CourseDetailClient({ courseId }: CourseDetailClientProps) {
         <aside className="h-fit rounded-3xl border bg-card p-6 shadow-sm lg:sticky lg:top-6">
           <h2 className="text-xl font-semibold">Sẵn sàng bắt đầu?</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Đăng ký hoặc đăng nhập để tiếp tục với khóa học này khi chức năng
-            ghi danh được mở.
+            Ghi danh để lưu khóa học vào lộ trình học tập và theo dõi tiến độ
+            của bạn.
           </p>
           <div className="mt-5 grid gap-3">
-            <Link href="/register" className={buttonVariants({ size: "lg" })}>
-              Tạo tài khoản
-            </Link>
-            <Link
-              href="/signin"
-              className={buttonVariants({ variant: "outline", size: "lg" })}
-            >
-              Đăng nhập
-            </Link>
+            {!isAuthenticated ? (
+              <>
+                <Link
+                  href="/register"
+                  className={buttonVariants({ size: "lg" })}
+                >
+                  Tạo tài khoản
+                </Link>
+                <Link
+                  href="/signin"
+                  className={buttonVariants({ variant: "outline", size: "lg" })}
+                >
+                  Đăng nhập
+                </Link>
+              </>
+            ) : isLearner && course.isEnrolled ? (
+              <Link href={learnHref} className={buttonVariants({ size: "lg" })}>
+                Tiếp tục học
+              </Link>
+            ) : isLearner ? (
+              <Button
+                type="button"
+                size="lg"
+                onClick={handleEnroll}
+                disabled={isPending}
+              >
+                {isPending ? "Đang đăng ký..." : "Đăng ký khóa học"}
+              </Button>
+            ) : (
+              <div className="rounded-2xl bg-muted p-4 text-sm text-muted-foreground">
+                Chỉ tài khoản học viên mới có thể đăng ký khóa học này.
+              </div>
+            )}
           </div>
           <div className="mt-6 rounded-2xl bg-muted p-4">
             <h3 className="font-medium">Danh sách bài học</h3>
