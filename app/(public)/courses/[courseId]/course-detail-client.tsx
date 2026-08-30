@@ -38,6 +38,9 @@ export function CourseDetailClient({ courseId }: CourseDetailClientProps) {
   const learnHref = course
     ? `/learner/courses/${course.id}/learn`
     : "/learner/courses";
+  const lessons = course
+    ? [...(course.lessons ?? [])].sort((a, b) => a.position - b.position)
+    : [];
 
   async function handleEnroll() {
     if (!course) return;
@@ -182,9 +185,27 @@ export function CourseDetailClient({ courseId }: CourseDetailClientProps) {
           </div>
           <div className="mt-6 rounded-2xl bg-muted p-4">
             <h3 className="font-medium">Danh sách bài học</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Danh sách bài học sẽ được cập nhật sau.
-            </p>
+            {lessons.length > 0 ? (
+              <ol className="mt-3 space-y-2">
+                {lessons.map((lesson, index) => (
+                  <li
+                    key={lesson.id}
+                    className="flex gap-3 rounded-xl bg-background/70 px-3 py-2 text-sm"
+                  >
+                    <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                      {index + 1}
+                    </span>
+                    <span className="font-medium text-foreground">
+                      {lesson.title}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p className="mt-2 text-sm text-muted-foreground">
+                Danh sách bài học sẽ được cập nhật sau.
+              </p>
+            )}
           </div>
         </aside>
       </section>
