@@ -1,11 +1,16 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
 import {
   GENERIC_ERROR_MESSAGE,
   NETWORK_ERROR_MESSAGE,
 } from "@/constants/constants";
-import { learningKeys } from "@/lib/query-keys";
-import { getLearningCourse, getLearningLesson } from "@/services/api/learning";
+import { enrollmentKeys, learningKeys } from "@/lib/query-keys";
+import {
+  getLearningCourse,
+  getLearningLesson,
+  sendLessonWatchEvent,
+  type CreateWatchEventPayload,
+} from "@/services/api/learning";
 import { isApiErrorResponse } from "@/services/axios";
 
 export function getLearningErrorStatus(error: unknown): number | null {
@@ -47,5 +52,47 @@ export function useLearningLesson(courseId: string, lessonId: string | null) {
     queryKey: learningKeys.lesson(courseId, lessonId ?? ""),
     queryFn: () => getLearningLesson(courseId, lessonId ?? ""),
     enabled: courseId.trim().length > 0 && !!lessonId?.trim(),
+  });
+}
+
+export function useSendLessonWatchEvent(
+  courseId: string,
+  lessonId: string | null,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: CreateWatchEventPayload) => {
+      if (!lessonId?.trim()) {
+        throw new Error("Missing lesson id for watch event");
+      }
+
+      return sendLessonWatchEvent(courseId, lessonId, payload);
+    },
+    onSuccess: async () => {
+      if (!lessonId?.trim()) return;
+
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: learningKeys.course(courseId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: learningKeys.lesson(courseId, lessonId),
+        }),
+        queryClient.invalidateQueries({ queryKey: enrollmentKeys.mine() }),
+      ]);
+    },
+    onError: async (error) => {
+      if (getLearningErrorStatus(error) !== 403 || !lessonId?.trim()) return;
+
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: learningKeys.course(courseId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: learningKeys.lesson(courseId, lessonId),
+        }),
+      ]);
+    },
   });
 }

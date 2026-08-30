@@ -52,6 +52,7 @@ import {
 } from "@/hooks/useInstructorCourses";
 import {
   COURSE_CATEGORY_LABELS,
+  COURSE_LEARNING_ORDER_LABELS,
   COURSE_LIST_PAGE_SIZE,
   COURSE_STATUS_BADGE_VARIANTS,
   COURSE_STATUS_LABELS,
@@ -327,6 +328,7 @@ export default function InstructorCoursesPage() {
                     <TableRow>
                       <TableHead>Khóa học</TableHead>
                       <TableHead>Danh mục</TableHead>
+                      <TableHead>Thứ tự học</TableHead>
                       <TableHead>Trạng thái</TableHead>
                       <TableHead>Lý do từ chối</TableHead>
                       <TableHead>Cập nhật</TableHead>
@@ -337,14 +339,14 @@ export default function InstructorCoursesPage() {
                     {isPending ? (
                       Array.from({ length: 5 }).map((_, index) => (
                         <TableRow key={index}>
-                          <TableCell colSpan={6}>
+                          <TableCell colSpan={7}>
                             <Skeleton className="h-8 w-full" />
                           </TableCell>
                         </TableRow>
                       ))
                     ) : items.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6}>
+                        <TableCell colSpan={7}>
                           <div className="flex flex-col items-center gap-2 py-12 text-center">
                             <BookOpen
                               className="size-10 text-muted-foreground"
@@ -374,6 +376,9 @@ export default function InstructorCoursesPage() {
                           </TableCell>
                           <TableCell>
                             {getCourseCategoryLabel(course.category)}
+                          </TableCell>
+                          <TableCell>
+                            {COURSE_LEARNING_ORDER_LABELS[course.learningOrder]}
                           </TableCell>
                           <TableCell>
                             <Badge

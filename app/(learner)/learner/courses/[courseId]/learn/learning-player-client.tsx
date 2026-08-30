@@ -28,11 +28,13 @@ import {
   mapLearningError,
   useLearningCourse,
   useLearningLesson,
+  useSendLessonWatchEvent,
 } from "@/hooks/useLearning";
 import { cn } from "@/lib/utils";
 import type {
   LearningCourse,
   LearningLessonSummary,
+  WatchEventType,
 } from "@/services/api/learning";
 
 interface LearningPlayerClientProps {
@@ -44,6 +46,53 @@ const activeLessonStorageKey = (courseId: string) =>
 
 const videoPositionStorageKey = (courseId: string, lessonId: string) =>
   `learning-player:${courseId}:${lessonId}:position`;
+
+const WATCH_EVENT_BUCKET_SECONDS = 15;
+const COMPLETION_RATIO = 0.9;
+
+function createSessionId(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function getSafeVideoSeconds(value: number): number {
+  return Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
+}
+
+function getWatchEventBucket(
+  eventType: WatchEventType,
+  positionSeconds: number,
+): string {
+  if (eventType === "completed") return "complete";
+  if (eventType === "opened") return "0";
+
+  return String(
+    Math.floor(positionSeconds / WATCH_EVENT_BUCKET_SECONDS) *
+      WATCH_EVENT_BUCKET_SECONDS,
+  );
+}
+
+function buildWatchEventKey({
+  courseId,
+  lessonId,
+  sessionId,
+  eventType,
+  positionSeconds,
+}: {
+  courseId: string;
+  lessonId: string;
+  sessionId: string;
+  eventType: WatchEventType;
+  positionSeconds: number;
+}): string {
+  return `learning:${courseId}:${lessonId}:${sessionId}:${eventType}:${getWatchEventBucket(
+    eventType,
+    positionSeconds,
+  )}`;
+}
 
 function safeReadLocalStorage(key: string): string | null {
   try {
@@ -227,6 +276,10 @@ export function LearningPlayerClient({ courseId }: LearningPlayerClientProps) {
     () => safeReadLocalStorage(activeLessonStorageKey(courseId)),
   );
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const sessionIdRef = useRef(createSessionId());
+  const openedLessonIdsRef = useRef(new Set<string>());
+  const completedLessonIdsRef = useRef(new Set<string>());
+  const lastHeartbeatBucketRef = useRef<string | null>(null);
 
   const activeLesson = courseQuery.data
     ? (findAccessibleLesson(courseQuery.data, queryLessonId) ??
@@ -235,6 +288,7 @@ export function LearningPlayerClient({ courseId }: LearningPlayerClientProps) {
     : null;
   const activeLessonId = activeLesson?.id ?? null;
   const lessonQuery = useLearningLesson(courseId, activeLessonId);
+  const watchEventMutation = useSendLessonWatchEvent(courseId, activeLessonId);
 
   useEffect(() => {
     if (
@@ -293,6 +347,10 @@ export function LearningPlayerClient({ courseId }: LearningPlayerClientProps) {
   const activeLessonForStorage = lessonQuery.data?.id ?? null;
 
   useEffect(() => {
+    lastHeartbeatBucketRef.current = null;
+  }, [activeLessonId]);
+
+  useEffect(() => {
     function saveCurrentVideoPosition() {
       const video = videoRef.current;
       if (!activeLessonForStorage || !video) return;
@@ -311,6 +369,62 @@ export function LearningPlayerClient({ courseId }: LearningPlayerClientProps) {
       window.removeEventListener("beforeunload", saveCurrentVideoPosition);
     };
   }, [activeLessonForStorage, courseId]);
+
+  function sendWatchEvent(eventType: WatchEventType) {
+    const lesson = lessonQuery.data;
+    const video = videoRef.current;
+    if (!lesson || !activeLessonId || !video || watchEventMutation.isPending) {
+      return;
+    }
+
+    const positionSeconds = getSafeVideoSeconds(video.currentTime);
+    const durationSeconds = getSafeVideoSeconds(
+      Number.isFinite(video.duration) ? video.duration : lesson.duration,
+    );
+    const watchedSeconds = Math.min(positionSeconds, durationSeconds);
+
+    if (eventType === "heartbeat") {
+      const bucket = getWatchEventBucket(eventType, positionSeconds);
+      if (bucket === lastHeartbeatBucketRef.current) return;
+      lastHeartbeatBucketRef.current = bucket;
+    }
+
+    if (eventType === "opened") {
+      if (openedLessonIdsRef.current.has(lesson.id)) return;
+      openedLessonIdsRef.current.add(lesson.id);
+    }
+
+    if (eventType === "completed") {
+      if (lesson.isCompleted || completedLessonIdsRef.current.has(lesson.id)) {
+        return;
+      }
+      completedLessonIdsRef.current.add(lesson.id);
+    }
+
+    watchEventMutation.mutate(
+      {
+        idempotencyKey: buildWatchEventKey({
+          courseId,
+          lessonId: lesson.id,
+          sessionId: sessionIdRef.current,
+          eventType,
+          positionSeconds,
+        }),
+        eventType,
+        positionSeconds,
+        watchedSeconds,
+        durationSeconds,
+        clientCreatedAt: new Date().toISOString(),
+      },
+      {
+        onError: () => {
+          if (eventType === "completed") {
+            completedLessonIdsRef.current.delete(lesson.id);
+          }
+        },
+      },
+    );
+  }
 
   function selectLesson(lesson: LearningLessonSummary) {
     if (!lesson.isAccessible) return;
@@ -346,6 +460,35 @@ export function LearningPlayerClient({ courseId }: LearningPlayerClientProps) {
     const duration = Number.isFinite(video.duration) ? video.duration : 0;
     if (duration > 0 && savedPosition < duration - 2) {
       video.currentTime = savedPosition;
+    }
+  }
+
+  function handleLoadedMetadata() {
+    restoreVideoPosition();
+    sendWatchEvent("opened");
+  }
+
+  function handleVideoPause() {
+    saveVideoPosition();
+    sendWatchEvent("paused");
+  }
+
+  function handleVideoTimeUpdate() {
+    saveVideoPosition();
+
+    const lesson = lessonQuery.data;
+    const video = videoRef.current;
+    if (!lesson || !video) return;
+
+    const duration = Number.isFinite(video.duration)
+      ? video.duration
+      : lesson.duration;
+    if (duration <= 0) return;
+
+    sendWatchEvent("heartbeat");
+
+    if (video.currentTime / duration >= COMPLETION_RATIO) {
+      sendWatchEvent("completed");
     }
   }
 
@@ -490,9 +633,9 @@ export function LearningPlayerClient({ courseId }: LearningPlayerClientProps) {
                     controls
                     className="aspect-video w-full rounded-2xl bg-black"
                     src={lessonQuery.data.videoUrl}
-                    onLoadedMetadata={restoreVideoPosition}
-                    onPause={saveVideoPosition}
-                    onTimeUpdate={saveVideoPosition}
+                    onLoadedMetadata={handleLoadedMetadata}
+                    onPause={handleVideoPause}
+                    onTimeUpdate={handleVideoTimeUpdate}
                   />
                 ) : (
                   <Alert>

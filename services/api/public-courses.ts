@@ -19,6 +19,12 @@ export interface PublicCourseInstructorSummary {
   name: string;
 }
 
+export interface PublicCourseLessonSummary {
+  id: string;
+  title: string;
+  position: number;
+}
+
 export interface PublicCourse {
   id: string;
   title: string;
@@ -28,6 +34,7 @@ export interface PublicCourse {
   learningOrder: PublicCourseLearningOrder;
   instructorId: string;
   instructor?: PublicCourseInstructorSummary;
+  lessons?: PublicCourseLessonSummary[];
   isEnrolled?: boolean;
   createdAt: string;
   updatedAt: string;

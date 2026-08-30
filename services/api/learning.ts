@@ -41,6 +41,32 @@ export interface LearningLesson extends LearningLessonSummary {
   materialUrl: string | null;
 }
 
+export type WatchEventType = "opened" | "heartbeat" | "paused" | "completed";
+
+export interface CreateWatchEventPayload {
+  idempotencyKey: string;
+  eventType: WatchEventType;
+  positionSeconds: number;
+  watchedSeconds: number;
+  durationSeconds: number;
+  clientCreatedAt: string;
+}
+
+export interface LearningLessonProgress {
+  lessonId: string;
+  watchedSeconds: number;
+  lastPositionSeconds: number;
+  watchRatio: number;
+  isWatchComplete: boolean;
+  isLessonComplete: boolean;
+  completedAt: string | null;
+}
+
+export interface LearningWatchEventResponse {
+  lessonProgress: LearningLessonProgress;
+  enrollment: LearningEnrollmentSummary;
+}
+
 export async function getLearningCourse(
   courseId: string,
 ): Promise<LearningCourse> {
@@ -58,6 +84,18 @@ export async function getLearningLesson(
   const { data } = await axiosClient.get<ApiSuccessResponse<LearningLesson>>(
     `/learning/courses/${courseId}/lessons/${lessonId}`,
   );
+
+  return data.data;
+}
+
+export async function sendLessonWatchEvent(
+  courseId: string,
+  lessonId: string,
+  payload: CreateWatchEventPayload,
+): Promise<LearningWatchEventResponse> {
+  const { data } = await axiosClient.post<
+    ApiSuccessResponse<LearningWatchEventResponse>
+  >(`/learning/courses/${courseId}/lessons/${lessonId}/watch-events`, payload);
 
   return data.data;
 }
