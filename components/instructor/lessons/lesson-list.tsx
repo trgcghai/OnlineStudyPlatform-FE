@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   FileText,
   Film,
   GripVertical,
+  ListChecks,
   PencilLine,
   Plus,
   Trash2,
@@ -42,6 +44,7 @@ import type { Lesson } from "@/services/api/lessons";
 interface SortableLessonRowProps {
   lesson: Lesson;
   index: number;
+  courseId: string;
   onEdit: (lesson: Lesson) => void;
   onDelete: (lesson: Lesson) => void;
 }
@@ -49,6 +52,7 @@ interface SortableLessonRowProps {
 function SortableLessonRow({
   lesson,
   index,
+  courseId,
   onEdit,
   onDelete,
 }: SortableLessonRowProps) {
@@ -59,10 +63,7 @@ function SortableLessonRow({
   });
 
   return (
-    <TableRow
-      ref={ref}
-      className={cn(isDragging && "opacity-50")}
-    >
+    <TableRow ref={ref} className={cn(isDragging && "opacity-50")}>
       <TableCell className="w-12 text-center">
         <button
           type="button"
@@ -108,6 +109,14 @@ function SortableLessonRow({
       </TableCell>
       <TableCell className="text-right">
         <div className="flex justify-end gap-1">
+          <Button variant="ghost" size="icon-sm">
+            <Link
+              href={`/instructor/courses/${courseId}/lessons/${lesson.id}/quiz`}
+              aria-label={`Quản lý bài kiểm tra của ${lesson.title}`}
+            >
+              <ListChecks />
+            </Link>
+          </Button>
           <Button
             variant="ghost"
             size="icon-sm"
@@ -158,7 +167,10 @@ export function LessonList({ courseId }: LessonListProps) {
     const reordered = [...items];
     const [moved] = reordered.splice(oldIndex, 1);
     reordered.splice(newIndex, 0, moved);
-    reorderInstructorLessons(courseId, reordered.map((l) => l.id));
+    reorderInstructorLessons(
+      courseId,
+      reordered.map((l) => l.id),
+    );
   }
 
   return (
@@ -166,8 +178,8 @@ export function LessonList({ courseId }: LessonListProps) {
       <CardHeader>
         <CardTitle>Danh sách bài học</CardTitle>
         <CardDescription>
-          Quản lý thứ tự và nội dung bài học trong khóa học. Kéo thả để sắp
-          xếp lại thứ tự.
+          Quản lý thứ tự và nội dung bài học trong khóa học. Kéo thả để sắp xếp
+          lại thứ tự.
         </CardDescription>
         <CardAction>
           <Button size="sm" onClick={() => setCreating(true)}>
@@ -246,6 +258,7 @@ export function LessonList({ courseId }: LessonListProps) {
                         key={lesson.id}
                         lesson={lesson}
                         index={index}
+                        courseId={courseId}
                         onEdit={setEditingLesson}
                         onDelete={setDeletingLesson}
                       />
