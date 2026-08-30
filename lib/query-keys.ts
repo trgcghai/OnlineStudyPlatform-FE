@@ -40,6 +40,14 @@ export const instructorLessonKeys = {
     [...instructorLessonKeys.all, "detail", lessonId] as const,
 };
 
+export const instructorQuizKeys = {
+  all: ["instructor-quizzes"] as const,
+  list: (courseId: string, lessonId: string) =>
+    [...instructorQuizKeys.all, "list", courseId, lessonId] as const,
+  detail: (quizId: string) =>
+    [...instructorQuizKeys.all, "detail", quizId] as const,
+};
+
 export const notificationKeys = {
   all: ["notifications"] as const,
   lists: () => [...notificationKeys.all, "list"] as const,
