@@ -8,6 +8,7 @@ import {
   BookOpen,
   CheckCircle2,
   ExternalLink,
+  FileQuestion,
   Lock,
   PlayCircle,
 } from "lucide-react";
@@ -23,6 +24,8 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useLearnerQuiz } from "@/hooks/useLearnerQuizzes";
 import {
   getLearningErrorStatus,
   mapLearningError,
@@ -36,6 +39,7 @@ import type {
   LearningLessonSummary,
   WatchEventType,
 } from "@/services/api/learning";
+import { LearnerQuizPanel } from "./learner-quiz-panel";
 
 interface LearningPlayerClientProps {
   courseId: string;
@@ -288,7 +292,9 @@ export function LearningPlayerClient({ courseId }: LearningPlayerClientProps) {
     : null;
   const activeLessonId = activeLesson?.id ?? null;
   const lessonQuery = useLearningLesson(courseId, activeLessonId);
+  const quizAvailabilityQuery = useLearnerQuiz(courseId, activeLessonId);
   const watchEventMutation = useSendLessonWatchEvent(courseId, activeLessonId);
+  const hasQuiz = Boolean(quizAvailabilityQuery.data?.quiz);
 
   useEffect(() => {
     if (
@@ -626,27 +632,78 @@ export function LearningPlayerClient({ courseId }: LearningPlayerClientProps) {
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-6">
-                {lessonQuery.data.videoUrl ? (
-                  <video
-                    key={lessonQuery.data.id}
-                    ref={videoRef}
-                    controls
-                    className="aspect-video w-full rounded-2xl bg-black"
-                    src={lessonQuery.data.videoUrl}
-                    onLoadedMetadata={handleLoadedMetadata}
-                    onPause={handleVideoPause}
-                    onTimeUpdate={handleVideoTimeUpdate}
-                  />
+                {hasQuiz ? (
+                  <Tabs defaultValue="lesson" className="gap-5">
+                    <TabsList>
+                      <TabsTrigger value="lesson">
+                        <BookOpen data-icon="inline-start" aria-hidden="true" />
+                        Bài học
+                      </TabsTrigger>
+                      <TabsTrigger value="quiz">
+                        <FileQuestion
+                          data-icon="inline-start"
+                          aria-hidden="true"
+                        />
+                        Bài kiểm tra
+                      </TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="lesson" className="flex flex-col gap-6">
+                      {lessonQuery.data.videoUrl ? (
+                        <video
+                          key={lessonQuery.data.id}
+                          ref={videoRef}
+                          controls
+                          className="aspect-video w-full rounded-2xl bg-black"
+                          src={lessonQuery.data.videoUrl}
+                          onLoadedMetadata={handleLoadedMetadata}
+                          onPause={handleVideoPause}
+                          onTimeUpdate={handleVideoTimeUpdate}
+                        />
+                      ) : (
+                        <Alert>
+                          <PlayCircle aria-hidden="true" />
+                          <AlertTitle>Video đang được cập nhật</AlertTitle>
+                          <AlertDescription>
+                            Nội dung video của bài học chưa sẵn sàng.
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                      <MaterialPanel
+                        materialUrl={lessonQuery.data.materialUrl}
+                      />
+                    </TabsContent>
+                    <TabsContent value="quiz">
+                      <LearnerQuizPanel
+                        courseId={courseId}
+                        lessonId={lessonQuery.data.id}
+                      />
+                    </TabsContent>
+                  </Tabs>
                 ) : (
-                  <Alert>
-                    <PlayCircle aria-hidden="true" />
-                    <AlertTitle>Video đang được cập nhật</AlertTitle>
-                    <AlertDescription>
-                      Nội dung video của bài học chưa sẵn sàng.
-                    </AlertDescription>
-                  </Alert>
+                  <>
+                    {lessonQuery.data.videoUrl ? (
+                      <video
+                        key={lessonQuery.data.id}
+                        ref={videoRef}
+                        controls
+                        className="aspect-video w-full rounded-2xl bg-black"
+                        src={lessonQuery.data.videoUrl}
+                        onLoadedMetadata={handleLoadedMetadata}
+                        onPause={handleVideoPause}
+                        onTimeUpdate={handleVideoTimeUpdate}
+                      />
+                    ) : (
+                      <Alert>
+                        <PlayCircle aria-hidden="true" />
+                        <AlertTitle>Video đang được cập nhật</AlertTitle>
+                        <AlertDescription>
+                          Nội dung video của bài học chưa sẵn sàng.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                    <MaterialPanel materialUrl={lessonQuery.data.materialUrl} />
+                  </>
                 )}
-                <MaterialPanel materialUrl={lessonQuery.data.materialUrl} />
               </CardContent>
             </>
           ) : (
