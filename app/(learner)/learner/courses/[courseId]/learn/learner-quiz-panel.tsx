@@ -266,7 +266,7 @@ function AttemptHistory({ attempts }: { attempts: QuizAttemptResult[] }) {
                 {getAttemptStatusLabel(attempt)}
               </Badge>
               {attempt.attemptId === bestAttemptId ? (
-                <Badge variant="outline">Kết quả tốt nhất</Badge>
+                <Badge variant="default">Kết quả tốt nhất</Badge>
               ) : null}
             </div>
           </div>
