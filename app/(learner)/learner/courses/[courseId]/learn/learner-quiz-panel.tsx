@@ -30,6 +30,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { mapLearningError } from "@/hooks/useLearning";
@@ -42,6 +43,7 @@ import {
 import { cn } from "@/lib/utils";
 import type {
   LearnerQuiz,
+  LearnerQuizQuestion,
   QuizAttemptQuestionStatus,
   QuizAttemptResult,
   SubmitQuizAnswerPayload,
@@ -235,6 +237,103 @@ function AttemptHistory({ attempts }: { attempts: QuizAttemptResult[] }) {
         ))}
       </div>
     </section>
+  );
+}
+
+function LearnerQuizQuestionOptions({
+  question,
+  answer,
+  disabled,
+  onToggleOption,
+  onSelectSingleOption,
+  onUpdateEssay,
+}: {
+  question: LearnerQuizQuestion;
+  answer: SubmitQuizAnswerPayload | undefined;
+  disabled: boolean;
+  onToggleOption: (questionId: string, optionIndex: number) => void;
+  onSelectSingleOption: (questionId: string, optionIndex: number) => void;
+  onUpdateEssay: (questionId: string, text: string) => void;
+}) {
+  if (question.type === QuizQuestionType.ESSAY) {
+    return (
+      <Textarea
+        value={answer?.text ?? ""}
+        disabled={disabled}
+        placeholder="Nhập câu trả lời tự luận của bạn"
+        className="min-h-32"
+        onChange={(event) => onUpdateEssay(question.id, event.target.value)}
+      />
+    );
+  }
+
+  if (!question.isMultipleChoice) {
+    const selectedOption = answer?.selectedOptionIndexes?.[0];
+
+    return (
+      <RadioGroup
+        value={selectedOption === undefined ? "" : String(selectedOption)}
+        className="flex flex-col gap-3"
+        onValueChange={(value) =>
+          onSelectSingleOption(question.id, Number(value))
+        }
+      >
+        {question.options.map((option, optionIndex) => {
+          const optionId = `${question.id}-${optionIndex}`;
+          const checked = selectedOption === optionIndex;
+
+          return (
+            <Label
+              key={optionId}
+              htmlFor={optionId}
+              className={cn(
+                "rounded-2xl border p-3",
+                checked && "border-primary bg-primary/10",
+                disabled && "opacity-80",
+              )}
+            >
+              <RadioGroupItem
+                id={optionId}
+                value={String(optionIndex)}
+                disabled={disabled}
+              />
+              <span>{option}</span>
+            </Label>
+          );
+        })}
+      </RadioGroup>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      {question.options.map((option, optionIndex) => {
+        const optionId = `${question.id}-${optionIndex}`;
+        const checked = Boolean(
+          answer?.selectedOptionIndexes?.includes(optionIndex),
+        );
+
+        return (
+          <Label
+            key={optionId}
+            htmlFor={optionId}
+            className={cn(
+              "rounded-2xl border p-3",
+              checked && "border-primary bg-primary/10",
+              disabled && "opacity-80",
+            )}
+          >
+            <Checkbox
+              id={optionId}
+              checked={checked}
+              disabled={disabled}
+              onCheckedChange={() => onToggleOption(question.id, optionIndex)}
+            />
+            <span>{option}</span>
+          </Label>
+        );
+      })}
+    </div>
   );
 }
 
@@ -449,62 +548,14 @@ function QuizAttemptWorkspace({
                   </div>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-3">
-                  {question.type === QuizQuestionType.MCQ ? (
-                    <div className="flex flex-col gap-3">
-                      {question.options.map((option, optionIndex) => {
-                        const checkboxId = `${question.id}-${optionIndex}`;
-                        const checked = Boolean(
-                          answer?.selectedOptionIndexes?.includes(optionIndex),
-                        );
-
-                        return (
-                          <Label
-                            key={checkboxId}
-                            htmlFor={checkboxId}
-                            className={cn(
-                              "rounded-2xl border p-3",
-                              checked && "border-primary bg-primary/10",
-                              isFormDisabled && "opacity-80",
-                            )}
-                          >
-                            {question.isMultipleChoice ? (
-                              <Checkbox
-                                id={checkboxId}
-                                checked={checked}
-                                disabled={isFormDisabled}
-                                onCheckedChange={() =>
-                                  toggleOption(question.id, optionIndex)
-                                }
-                              />
-                            ) : (
-                              <input
-                                id={checkboxId}
-                                type="radio"
-                                name={question.id}
-                                checked={checked}
-                                disabled={isFormDisabled}
-                                className="size-4 shrink-0 accent-primary disabled:cursor-not-allowed disabled:opacity-50"
-                                onChange={() =>
-                                  selectSingleOption(question.id, optionIndex)
-                                }
-                              />
-                            )}
-                            <span>{option}</span>
-                          </Label>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <Textarea
-                      value={answer?.text ?? ""}
-                      disabled={isFormDisabled}
-                      placeholder="Nhập câu trả lời tự luận của bạn"
-                      className="min-h-32"
-                      onChange={(event) =>
-                        updateEssay(question.id, event.target.value)
-                      }
-                    />
-                  )}
+                  <LearnerQuizQuestionOptions
+                    question={question}
+                    answer={answer}
+                    disabled={isFormDisabled}
+                    onToggleOption={toggleOption}
+                    onSelectSingleOption={selectSingleOption}
+                    onUpdateEssay={updateEssay}
+                  />
                   {error ? (
                     <p className="text-sm text-destructive">{error}</p>
                   ) : null}
