@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { isAxiosError } from "axios";
 import {
   AlertCircle,
@@ -41,12 +41,13 @@ import {
   useSubmitQuizAttempt,
 } from "@/hooks/useLearnerQuizzes";
 import { cn } from "@/lib/utils";
-import type {
-  LearnerQuiz,
-  LearnerQuizQuestion,
-  QuizAttemptQuestionStatus,
-  QuizAttemptResult,
-  SubmitQuizAnswerPayload,
+import {
+  submitQuizAttemptKeepalive,
+  type LearnerQuiz,
+  type LearnerQuizQuestion,
+  type QuizAttemptQuestionStatus,
+  type QuizAttemptResult,
+  type SubmitQuizAnswerPayload,
 } from "@/services/api/learner-quizzes";
 import { QuizQuestionType } from "@/services/api/quizzes";
 
@@ -377,12 +378,58 @@ function QuizAttemptWorkspace({
   const isFormDisabled =
     !activeAttempt || Boolean(result) || submitMutation.isPending;
   const submitErrorMessage = getSubmitErrorMessage(submitMutation.error);
+  const activeAttemptRef = useRef(activeAttempt);
+  const answersRef = useRef(answers);
+  const resultRef = useRef(result);
+  const autoSubmitStartedRef = useRef(false);
+
+  useEffect(() => {
+    activeAttemptRef.current = activeAttempt;
+  }, [activeAttempt]);
+
+  useEffect(() => {
+    answersRef.current = answers;
+  }, [answers]);
+
+  useEffect(() => {
+    resultRef.current = result;
+  }, [result]);
+
+  useEffect(() => {
+    function autoSubmitActiveAttempt() {
+      const attempt = activeAttemptRef.current;
+      if (!attempt || resultRef.current || autoSubmitStartedRef.current) return;
+
+      autoSubmitStartedRef.current = true;
+      submitQuizAttemptKeepalive(
+        courseId,
+        lessonId,
+        quiz.id,
+        attempt.attemptId,
+        {
+          answers: Object.values(answersRef.current),
+        },
+      );
+    }
+
+    function handlePageHide() {
+      autoSubmitActiveAttempt();
+    }
+
+    window.addEventListener("pagehide", handlePageHide);
+
+    return () => {
+      window.removeEventListener("pagehide", handlePageHide);
+      autoSubmitActiveAttempt();
+    };
+  }, [courseId, lessonId, quiz.id]);
 
   async function startAttempt() {
     setResult(null);
     setErrors({});
     setAnswers(buildInitialAnswers(quiz));
     const started = await startMutation.mutateAsync(quiz.id);
+    autoSubmitStartedRef.current = false;
     setActiveAttempt({
       attemptId: started.attemptId,
       startedAt: started.startedAt,
@@ -437,6 +484,9 @@ function QuizAttemptWorkspace({
       answers: Object.values(answers),
     });
     setResult(submitted);
+    activeAttemptRef.current = null;
+    autoSubmitStartedRef.current = true;
+    setActiveAttempt(null);
     setConfirmOpen(false);
   }
 

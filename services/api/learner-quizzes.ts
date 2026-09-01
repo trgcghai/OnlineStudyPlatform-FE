@@ -1,10 +1,14 @@
 import { QuizQuestionType } from "@/services/api/quizzes";
-import axiosClient, { type ApiSuccessResponse } from "@/services/axios";
+import axiosClient, {
+  getCurrentAccessTokenSnapshot,
+  type ApiSuccessResponse,
+} from "@/services/axios";
 
 export enum QuizAttemptStatus {
   IN_PROGRESS = "in_progress",
   PASSED = "passed",
   NOT_PASSED = "not_passed",
+  ABANDONED = "abandoned",
 }
 
 export interface LearnerQuizQuestion {
@@ -127,6 +131,37 @@ export async function submitQuizAttempt(
   );
 
   return data.data;
+}
+
+export function submitQuizAttemptKeepalive(
+  courseId: string,
+  lessonId: string,
+  quizId: string,
+  attemptId: string,
+  payload: SubmitQuizAttemptPayload,
+): void {
+  if (typeof window === "undefined") return;
+
+  const baseURL = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/api$/, "");
+  const accessToken = getCurrentAccessTokenSnapshot();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  void fetch(
+    `${baseURL}/learning/courses/${courseId}/lessons/${lessonId}/quiz/${quizId}/attempts/${attemptId}/submit`,
+    {
+      method: "POST",
+      credentials: "include",
+      keepalive: true,
+      headers,
+      body: JSON.stringify(payload),
+    },
+  );
 }
 
 export async function listQuizAttempts(
