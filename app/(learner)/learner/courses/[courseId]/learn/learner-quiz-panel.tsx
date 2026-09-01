@@ -309,9 +309,12 @@ function LearnerQuizQuestionOptions({
     <div className="flex flex-col gap-3">
       {question.options.map((option, optionIndex) => {
         const optionId = `${question.id}-${optionIndex}`;
-        const checked = Boolean(
-          answer?.selectedOptionIndexes?.includes(optionIndex),
-        );
+        const selectedOptionIndexes = answer?.selectedOptionIndexes ?? [];
+        const maxSelectableOptions = question.maxSelectableOptions ?? 1;
+        const checked = Boolean(selectedOptionIndexes.includes(optionIndex));
+        const optionDisabled =
+          disabled ||
+          (!checked && selectedOptionIndexes.length >= maxSelectableOptions);
 
         return (
           <Label
@@ -320,13 +323,13 @@ function LearnerQuizQuestionOptions({
             className={cn(
               "rounded-2xl border p-3",
               checked && "border-primary bg-primary/10",
-              disabled && "opacity-80",
+              optionDisabled && "opacity-80",
             )}
           >
             <Checkbox
               id={optionId}
               checked={checked}
-              disabled={disabled}
+              disabled={optionDisabled}
               onCheckedChange={() => onToggleOption(question.id, optionIndex)}
             />
             <span>{option}</span>

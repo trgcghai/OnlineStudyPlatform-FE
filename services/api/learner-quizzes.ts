@@ -14,6 +14,7 @@ export interface LearnerQuizQuestion {
   content: string;
   options: string[];
   isMultipleChoice: boolean;
+  maxSelectableOptions: number | null;
   points: number;
   position: number;
 }

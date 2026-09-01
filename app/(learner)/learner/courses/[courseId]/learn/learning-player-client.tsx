@@ -225,15 +225,7 @@ function isPdfUrl(url: string): boolean {
 
 function MaterialPanel({ materialUrl }: { materialUrl: string | null }) {
   if (!materialUrl) {
-    return (
-      <Alert>
-        <BookOpen aria-hidden="true" />
-        <AlertTitle>Tài liệu đang được cập nhật</AlertTitle>
-        <AlertDescription>
-          Nội dung tài liệu của bài học chưa sẵn sàng.
-        </AlertDescription>
-      </Alert>
-    );
+    return null;
   }
 
   const isPdf = isPdfUrl(materialUrl);
