@@ -4,6 +4,8 @@ import axiosClient, {
   type ApiSuccessResponse,
 } from "@/services/axios";
 
+export const QUIZ_MAX_ATTEMPTS = 3;
+
 export enum QuizAttemptStatus {
   IN_PROGRESS = "in_progress",
   PASSED = "passed",

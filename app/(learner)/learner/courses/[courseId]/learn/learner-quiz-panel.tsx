@@ -42,6 +42,7 @@ import {
 } from "@/hooks/useLearnerQuizzes";
 import { cn } from "@/lib/utils";
 import {
+  QUIZ_MAX_ATTEMPTS,
   submitQuizAttemptKeepalive,
   type LearnerQuiz,
   type LearnerQuizQuestion,
@@ -90,6 +91,24 @@ function getQuestionStatusLabel(status: QuizAttemptQuestionStatus): string {
   return "Chưa đúng";
 }
 
+function getBestAttemptId(attempts: QuizAttemptResult[]): string | null {
+  if (attempts.length === 0) return null;
+
+  return attempts.reduce((best, attempt) => {
+    if (attempt.totalScore > best.totalScore) return attempt;
+    if (attempt.totalScore < best.totalScore) return best;
+
+    const attemptSubmittedAt = attempt.submittedAt
+      ? new Date(attempt.submittedAt).getTime()
+      : 0;
+    const bestSubmittedAt = best.submittedAt
+      ? new Date(best.submittedAt).getTime()
+      : 0;
+
+    return attemptSubmittedAt > bestSubmittedAt ? attempt : best;
+  }, attempts[0]).attemptId;
+}
+
 function buildInitialAnswers(quiz: LearnerQuiz): QuizAnswers {
   return Object.fromEntries(
     quiz.questions.map((question) => [
@@ -127,6 +146,15 @@ function getSubmitErrorMessage(error: unknown): string | null {
   if (!error) return null;
   if (isAxiosError(error) && error.response?.status === 409) {
     return "Lượt làm bài này đã được nộp. Vui lòng tải lại lịch sử làm bài.";
+  }
+
+  return mapLearningError(error);
+}
+
+function getStartAttemptErrorMessage(error: unknown): string | null {
+  if (!error) return null;
+  if (isAxiosError(error) && error.response?.status === 409) {
+    return "Bạn đã dùng hết 3 lượt làm bài.";
   }
 
   return mapLearningError(error);
@@ -180,10 +208,10 @@ function QuizResultSummary({ result }: { result: QuizAttemptResult }) {
           Điểm cần đạt: {formatScore(result.passScorePoints)}
         </CardDescription>
       </CardHeader>
-      <CardContent className="grid gap-3 text-sm sm:grid-cols-3">
-        <span>Đúng: {result.correctCount}</span>
-        <span>Sai/chưa đủ: {result.wrongCount}</span>
-        <span>Chờ chấm: {result.pendingEssayCount}</span>
+      <CardContent className="flex flex-col gap-1 text-sm text-muted-foreground">
+        <p>Đúng: {result.correctCount}</p>
+        <p>Sai/chưa đủ: {result.wrongCount}</p>
+        <p>Chờ chấm: {result.pendingEssayCount}</p>
         {result.isLate ? (
           <span className="text-amber-600">
             Nộp muộn {formatDuration(result.lateSeconds)}
@@ -196,6 +224,8 @@ function QuizResultSummary({ result }: { result: QuizAttemptResult }) {
 
 function AttemptHistory({ attempts }: { attempts: QuizAttemptResult[] }) {
   if (attempts.length === 0) return null;
+
+  const bestAttemptId = getBestAttemptId(attempts);
 
   return (
     <section className="rounded-3xl border p-4">
@@ -224,16 +254,21 @@ function AttemptHistory({ attempts }: { attempts: QuizAttemptResult[] }) {
                 "Đúng hạn"
               )}
             </span>
-            <Badge
-              variant={attempt.passed ? "secondary" : "destructive"}
-              className={cn(
-                "justify-self-start",
-                attempt.passed &&
-                  "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300",
-              )}
-            >
-              {getAttemptStatusLabel(attempt)}
-            </Badge>
+            <div className="flex flex-wrap gap-2">
+              <Badge
+                variant={attempt.passed ? "secondary" : "destructive"}
+                className={cn(
+                  "justify-self-start",
+                  attempt.passed &&
+                    "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300",
+                )}
+              >
+                {getAttemptStatusLabel(attempt)}
+              </Badge>
+              {attempt.attemptId === bestAttemptId ? (
+                <Badge variant="outline">Kết quả tốt nhất</Badge>
+              ) : null}
+            </div>
           </div>
         ))}
       </div>
@@ -378,6 +413,10 @@ function QuizAttemptWorkspace({
   const isFormDisabled =
     !activeAttempt || Boolean(result) || submitMutation.isPending;
   const submitErrorMessage = getSubmitErrorMessage(submitMutation.error);
+  const submittedAttemptCount = attemptsQuery.data?.length ?? 0;
+  const hasAttemptsRemaining = submittedAttemptCount < QUIZ_MAX_ATTEMPTS;
+  const canStartAttempt = hasAttemptsRemaining && !attemptsQuery.isLoading;
+  const startErrorMessage = getStartAttemptErrorMessage(startMutation.error);
   const activeAttemptRef = useRef(activeAttempt);
   const answersRef = useRef(answers);
   const resultRef = useRef(result);
@@ -526,22 +565,28 @@ function QuizAttemptWorkspace({
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <div className="grid gap-3 text-sm sm:grid-cols-4">
-            <span>{quiz.questions.length} câu hỏi</span>
-            <span>{formatScore(quiz.totalPoints)} điểm</span>
-            <span>Cần đạt {formatScore(quiz.passScorePoints)} điểm</span>
-            <span>
+          <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+            <p>Số câu hỏi: {quiz.questions.length}</p>
+            <p>Tổng điểm: {formatScore(quiz.totalPoints)}</p>
+            <p>Số điểm cần đạt: {formatScore(quiz.passScorePoints)}</p>
+            <p>
+              Thời gian làm bài:
               {quiz.timeLimitMinutes
-                ? `${quiz.timeLimitMinutes} phút`
-                : "Không giới hạn thời gian"}
-            </span>
+                ? ` ${quiz.timeLimitMinutes} phút`
+                : " Không giới hạn"}
+            </p>
+            <p>
+              {attemptsQuery.isLoading
+                ? "Đang tải lượt làm bài"
+                : `Lượt làm bài: ${submittedAttemptCount}/${QUIZ_MAX_ATTEMPTS}`}
+            </p>
           </div>
-          {!activeAttempt && !result ? (
+          {!activeAttempt && !result && hasAttemptsRemaining ? (
             <Button
               type="button"
               className="w-fit"
               onClick={startAttempt}
-              disabled={startMutation.isPending}
+              disabled={startMutation.isPending || !canStartAttempt}
             >
               {startMutation.isPending ? "Đang bắt đầu..." : "Bắt đầu làm bài"}
             </Button>
@@ -550,15 +595,22 @@ function QuizAttemptWorkspace({
             <Alert variant="destructive">
               <AlertCircle aria-hidden="true" />
               <AlertTitle>Không thể bắt đầu bài kiểm tra</AlertTitle>
+              <AlertDescription>{startErrorMessage}</AlertDescription>
+            </Alert>
+          ) : null}
+          {!attemptsQuery.isLoading && !hasAttemptsRemaining ? (
+            <Alert>
+              <AlertCircle aria-hidden="true" />
+              <AlertTitle>Đã hết lượt làm bài</AlertTitle>
               <AlertDescription>
-                {mapLearningError(startMutation.error)}
+                Bạn đã dùng hết {QUIZ_MAX_ATTEMPTS} lượt làm bài.
               </AlertDescription>
             </Alert>
           ) : null}
         </CardContent>
       </Card>
 
-      {activeAttempt && !result ? (
+      {activeAttempt && !result && remainingSeconds ? (
         <div
           className={cn(
             "flex items-center gap-2 rounded-2xl border p-3 text-sm",
@@ -568,9 +620,7 @@ function QuizAttemptWorkspace({
           )}
         >
           <Clock3 aria-hidden="true" className="size-4" />
-          {remainingSeconds === null ? (
-            <span>Bài làm không giới hạn thời gian.</span>
-          ) : isOverdue ? (
+          {isOverdue ? (
             <span>
               Đã quá thời gian {formatDuration(Math.abs(remainingSeconds))}.
             </span>
@@ -581,6 +631,26 @@ function QuizAttemptWorkspace({
       ) : null}
 
       {result ? <QuizResultSummary result={result} /> : null}
+
+      {result && !result.passed && hasAttemptsRemaining ? (
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-medium">Bạn chưa đạt điểm yêu cầu.</p>
+              <p className="text-sm text-muted-foreground">
+                Bạn có thể làm lại để cải thiện kết quả.
+              </p>
+            </div>
+            <Button
+              type="button"
+              onClick={startAttempt}
+              disabled={startMutation.isPending || attemptsQuery.isLoading}
+            >
+              {startMutation.isPending ? "Đang bắt đầu..." : "Làm lại bài tập"}
+            </Button>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {activeAttempt ? (
         <div className="flex flex-col gap-4">
