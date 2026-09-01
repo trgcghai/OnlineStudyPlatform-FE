@@ -201,19 +201,34 @@ function AttemptHistory({ attempts }: { attempts: QuizAttemptResult[] }) {
         {attempts.map((attempt) => (
           <div
             key={attempt.attemptId}
-            className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-muted/50 p-3 text-sm"
+            className="grid grid-cols-2 items-center gap-2 rounded-2xl bg-muted/50 p-3 text-sm sm:grid-cols-4"
           >
-            <span>{formatDateTime(attempt.submittedAt)}</span>
-            <span>
+            <span className="min-w-0 truncate">
+              {formatDateTime(attempt.submittedAt)}
+            </span>
+            <span className="min-w-0 truncate">
               {formatScore(attempt.totalScore)} /{" "}
               {formatScore(attempt.totalPoints)}
             </span>
-            {attempt.isLate ? (
-              <span className="text-xs text-amber-600">
-                Muộn {formatDuration(attempt.lateSeconds)}
-              </span>
-            ) : null}
-            <Badge variant={attempt.passed ? "secondary" : "outline"}>
+            <span className="min-w-0 truncate text-xs text-muted-foreground">
+              {attempt.isLate ? (
+                <span className="text-amber-600">
+                  Muộn {formatDuration(attempt.lateSeconds)}
+                </span>
+              ) : attempt.pendingEssayCount > 0 ? (
+                `${attempt.pendingEssayCount} câu chờ chấm`
+              ) : (
+                "Đúng hạn"
+              )}
+            </span>
+            <Badge
+              variant={attempt.passed ? "secondary" : "destructive"}
+              className={cn(
+                "justify-self-start",
+                attempt.passed &&
+                  "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300",
+              )}
+            >
               {getAttemptStatusLabel(attempt)}
             </Badge>
           </div>
@@ -289,6 +304,16 @@ function QuizAttemptWorkspace({
         },
       };
     });
+  }
+
+  function selectSingleOption(questionId: string, optionIndex: number) {
+    setAnswers((current) => ({
+      ...current,
+      [questionId]: {
+        questionId,
+        selectedOptionIndexes: [optionIndex],
+      },
+    }));
   }
 
   function updateEssay(questionId: string, text: string) {
@@ -442,14 +467,28 @@ function QuizAttemptWorkspace({
                               isFormDisabled && "opacity-80",
                             )}
                           >
-                            <Checkbox
-                              id={checkboxId}
-                              checked={checked}
-                              disabled={isFormDisabled}
-                              onCheckedChange={() =>
-                                toggleOption(question.id, optionIndex)
-                              }
-                            />
+                            {question.isMultipleChoice ? (
+                              <Checkbox
+                                id={checkboxId}
+                                checked={checked}
+                                disabled={isFormDisabled}
+                                onCheckedChange={() =>
+                                  toggleOption(question.id, optionIndex)
+                                }
+                              />
+                            ) : (
+                              <input
+                                id={checkboxId}
+                                type="radio"
+                                name={question.id}
+                                checked={checked}
+                                disabled={isFormDisabled}
+                                className="size-4 shrink-0 accent-primary disabled:cursor-not-allowed disabled:opacity-50"
+                                onChange={() =>
+                                  selectSingleOption(question.id, optionIndex)
+                                }
+                              />
+                            )}
                             <span>{option}</span>
                           </Label>
                         );

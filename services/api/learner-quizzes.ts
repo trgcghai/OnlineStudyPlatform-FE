@@ -13,6 +13,7 @@ export interface LearnerQuizQuestion {
   type: QuizQuestionType;
   content: string;
   options: string[];
+  isMultipleChoice: boolean;
   points: number;
   position: number;
 }
