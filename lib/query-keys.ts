@@ -78,3 +78,11 @@ export const learningKeys = {
   lesson: (courseId: string, lessonId: string) =>
     [...learningKeys.all, "lesson", courseId, lessonId] as const,
 };
+
+export const learnerQuizKeys = {
+  all: ["learner-quizzes"] as const,
+  detail: (courseId: string, lessonId: string) =>
+    [...learnerQuizKeys.all, "detail", courseId, lessonId] as const,
+  attempts: (courseId: string, lessonId: string, quizId: string) =>
+    [...learnerQuizKeys.all, "attempts", courseId, lessonId, quizId] as const,
+};

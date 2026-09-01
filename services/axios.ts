@@ -28,12 +28,12 @@ export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse;
 export function isApiErrorResponse(data: unknown): data is ApiErrorResponse {
   if (
     !data ||
-    typeof data !== 'object' ||
-    !('success' in data) ||
+    typeof data !== "object" ||
+    !("success" in data) ||
     data.success !== false ||
-    !('statusCode' in data) ||
-    typeof data.statusCode !== 'number' ||
-    !('error' in data)
+    !("statusCode" in data) ||
+    typeof data.statusCode !== "number" ||
+    !("error" in data)
   ) {
     return false;
   }
@@ -42,12 +42,12 @@ export function isApiErrorResponse(data: unknown): data is ApiErrorResponse {
 
   return (
     !!error &&
-    typeof error === 'object' &&
-    'code' in error &&
-    typeof error.code === 'number' &&
-    'message' in error &&
-    typeof error.message === 'string' &&
-    'details' in error &&
+    typeof error === "object" &&
+    "code" in error &&
+    typeof error.code === "number" &&
+    "message" in error &&
+    typeof error.message === "string" &&
+    "details" in error &&
     Array.isArray(error.details)
   );
 }
@@ -102,6 +102,27 @@ async function getCurrentAccessToken(): Promise<string | null> {
   return accessToken || null;
 }
 
+export function getCurrentAccessTokenSnapshot(): string | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const persistedRoot = window.localStorage.getItem("persist:root");
+    if (!persistedRoot) return null;
+
+    const parsedRoot = JSON.parse(persistedRoot) as { auth?: string };
+    const parsedAuth = parsedRoot.auth
+      ? (JSON.parse(parsedRoot.auth) as { accessToken?: string | null })
+      : null;
+    const accessToken = parsedAuth?.accessToken;
+
+    return typeof accessToken === "string" && accessToken.trim()
+      ? accessToken.trim()
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 function redirectToSignIn(): void {
   if (typeof window !== "undefined") {
     // eslint-disable-next-line @next/next/no-location-assign-relative-destination
@@ -116,7 +137,9 @@ function setAuthorizationHeader(
   request.headers.Authorization = `Bearer ${accessToken}`;
 }
 
-function getRequestAccessToken(request: InternalAxiosRequestConfig): string | null {
+function getRequestAccessToken(
+  request: InternalAxiosRequestConfig,
+): string | null {
   const authorization = request.headers.Authorization;
 
   if (typeof authorization !== "string") {
@@ -134,7 +157,8 @@ function getRequestPath(request: InternalAxiosRequestConfig): string | null {
   }
 
   try {
-    return new URL(request.url, request.baseURL ?? axiosClient.defaults.baseURL).pathname;
+    return new URL(request.url, request.baseURL ?? axiosClient.defaults.baseURL)
+      .pathname;
   } catch {
     return request.url.split("?")[0] || null;
   }
@@ -166,9 +190,8 @@ const processQueue = (error: unknown, token?: string) => {
 };
 
 const refreshToken = async (): Promise<RefreshResult> => {
-  const response = await axiosClient.post<
-    ApiSuccessResponse<RefreshResult>
-  >("/auth/refresh");
+  const response =
+    await axiosClient.post<ApiSuccessResponse<RefreshResult>>("/auth/refresh");
   const accessToken = response.data.data.accessToken.trim();
 
   if (!accessToken) {
@@ -226,7 +249,7 @@ axiosClient.interceptors.response.use(
     const isRefreshTokenExpired =
       isApiErrorResponse(error.response?.data) &&
       error.response.data.error.message ===
-        'Refresh token is invalid or expired';
+        "Refresh token is invalid or expired";
 
     if (
       isUnauthorized &&
@@ -283,7 +306,8 @@ axiosClient.interceptors.response.use(
         // Gọi API refresh token
         const result = await refreshToken();
         const auth = await getBrowserAuth();
-        const currentAccessToken = auth?.store.getState().auth.accessToken?.trim() || null;
+        const currentAccessToken =
+          auth?.store.getState().auth.accessToken?.trim() || null;
 
         if (!auth || currentAccessToken !== failedRequestToken) {
           throw new AuthSessionChangedError();
