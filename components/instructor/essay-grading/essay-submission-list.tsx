@@ -32,7 +32,7 @@ export function EssaySubmissionList({
             type="button"
             variant="ghost"
             className={cn(
-              "h-auto justify-start rounded-2xl border p-4 text-left hover:bg-muted/70",
+              "h-auto justify-start rounded-2xl border p-4 text-left hover:bg-muted/70 border-border",
               selected && "border-primary bg-primary/5",
             )}
             onClick={() => onSelect(submission)}
