@@ -61,6 +61,9 @@ export interface QuizAttemptQuestionResult {
   maxScore: number;
   isCorrect: boolean;
   status: QuizAttemptQuestionStatus;
+  feedback?: string;
+  gradedAt?: string;
+  gradedBy?: string;
 }
 
 export interface QuizAttemptResult {

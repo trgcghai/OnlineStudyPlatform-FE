@@ -66,6 +66,16 @@ export default function QuizQuestionCard({
                 {formatScore(questionResult.maxScore)} điểm
               </span>
             </div>
+            {questionResult.feedback ? (
+              <div className="mt-3 rounded-xl bg-background/70 p-3">
+                <p className="text-xs font-medium text-foreground">
+                  Phản hồi của giảng viên
+                </p>
+                <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">
+                  {questionResult.feedback}
+                </p>
+              </div>
+            ) : null}
           </div>
         ) : null}
       </CardContent>
