@@ -83,7 +83,7 @@ export function DeleteQuizDialog({
             disabled={isPending}
             onClick={handleDelete}
           >
-            {isPending ? <Spinner /> : null}
+            {isPending && <Spinner />}
             {isPending ? "Đang xóa..." : "Xóa"}
           </Button>
         </DialogFooter>

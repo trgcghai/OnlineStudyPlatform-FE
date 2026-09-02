@@ -128,11 +128,11 @@ export function EssayGradingWorkbench() {
               luận.
             </CardDescription>
           </div>
-          {quizId ? (
+          {quizId && (
             <Badge variant="secondary" className="w-fit">
               {queueQuery.isPending ? "Đang tải" : `${submissions.length} lượt`}
             </Badge>
-          ) : null}
+          )}
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
@@ -153,68 +153,70 @@ export function EssayGradingWorkbench() {
           onStatusChange={handleStatusChange}
         />
 
-        {courseQuery.isError ? (
+        {courseQuery.isError && (
           <ErrorAlert
             title="Không thể tải khóa học"
             message={mapCourseError(courseQuery.error)}
             onRetry={() => courseQuery.refetch()}
           />
-        ) : null}
+        )}
 
-        {lessonQuery.isError ? (
+        {lessonQuery.isError && (
           <ErrorAlert
             title="Không thể tải bài học"
             message={mapLessonError(lessonQuery.error)}
             onRetry={() => lessonQuery.refetch()}
           />
-        ) : null}
+        )}
 
-        {quizQuery.isError ? (
+        {quizQuery.isError && (
           <ErrorAlert
             title="Không thể tải bài kiểm tra"
             message={mapQuizError(quizQuery.error)}
             onRetry={() => quizQuery.refetch()}
           />
-        ) : null}
+        )}
 
-        {queueQuery.isError ? (
+        {queueQuery.isError && (
           <ErrorAlert
             title="Không thể tải hàng chờ chấm"
             message="Đã xảy ra lỗi khi truy vấn lượt nộp tự luận. Vui lòng thử lại."
             onRetry={() => queueQuery.refetch()}
           />
-        ) : null}
+        )}
 
         {!courseQuery.isPending &&
-        !courseQuery.isError &&
-        courses.length === 0 ? (
-          <EmptyState message="Bạn chưa có khóa học để chấm tự luận." />
-        ) : null}
+          !courseQuery.isError &&
+          courses.length === 0 && (
+            <EmptyState message="Bạn chưa có khóa học để chấm tự luận." />
+          )}
 
         {courseId &&
-        !lessonQuery.isPending &&
-        !lessonQuery.isError &&
-        lessons.length === 0 ? (
-          <EmptyState message="Khóa học này chưa có bài học." />
-        ) : null}
+          !lessonQuery.isPending &&
+          !lessonQuery.isError &&
+          lessons.length === 0 && (
+            <EmptyState message="Khóa học này chưa có bài học." />
+          )}
 
         {lessonId &&
-        !quizQuery.isPending &&
-        !quizQuery.isError &&
-        quizzes.length === 0 ? (
-          <EmptyState message="Bài học này chưa có bài kiểm tra." />
-        ) : null}
+          !quizQuery.isPending &&
+          !quizQuery.isError &&
+          quizzes.length === 0 && (
+            <EmptyState message="Bài học này chưa có bài kiểm tra." />
+          )}
 
-        {!lessonId && !quizId && courses.length > 0 ? (
+        {!lessonId && !quizId && courses.length > 0 && (
           <EmptyState message="Chọn đủ khóa học, bài học và bài kiểm tra để bắt đầu chấm tự luận." />
-        ) : null}
+        )}
 
-        {quizId && queueQuery.isPending ? (
+        {quizId && queueQuery.isPending && (
           <Skeleton className="h-48 rounded-3xl" />
-        ) : null}
+        )}
 
-        {quizId && !queueQuery.isPending && !queueQuery.isError ? (
-          submissions.length > 0 ? (
+        {quizId &&
+          !queueQuery.isPending &&
+          !queueQuery.isError &&
+          (submissions.length > 0 ? (
             <div className="flex flex-col gap-4">
               <div className="grid gap-4 lg:grid-cols-[minmax(280px,380px)_1fr]">
                 <EssaySubmissionList
@@ -243,8 +245,7 @@ export function EssayGradingWorkbench() {
             </div>
           ) : (
             <EmptyState message={emptyQueueMessage} />
-          )
-        ) : null}
+          ))}
       </CardContent>
     </Card>
   );

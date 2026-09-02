@@ -149,11 +149,11 @@ function LessonTree({
             />
             <span className="min-w-0 flex-1">
               <span className="block text-sm font-medium">{lesson.title}</span>
-              {lesson.blockedReason ? (
+              {lesson.blockedReason && (
                 <span className="mt-1 block text-xs text-muted-foreground">
                   {lesson.blockedReason}
                 </span>
-              ) : null}
+              )}
             </span>
           </button>
         );

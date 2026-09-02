@@ -54,8 +54,8 @@ export default function QuizQuestionCard({
           onSelectSingleOption={onSelectSingleOption}
           onUpdateEssay={onUpdateEssay}
         />
-        {error ? <p className="text-sm text-destructive">{error}</p> : null}
-        {questionResult ? (
+        {error && <p className="text-sm text-destructive">{error}</p>}
+        {questionResult && (
           <div className="mt-3 rounded-2xl bg-muted/60 p-3 text-sm">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="outline">
@@ -66,7 +66,7 @@ export default function QuizQuestionCard({
                 {formatScore(questionResult.maxScore)} điểm
               </span>
             </div>
-            {questionResult.feedback ? (
+            {questionResult.feedback && (
               <div className="mt-3 rounded-xl bg-background/70 p-3">
                 <p className="text-xs font-medium text-foreground">
                   Phản hồi của giảng viên
@@ -75,9 +75,9 @@ export default function QuizQuestionCard({
                   {questionResult.feedback}
                 </p>
               </div>
-            ) : null}
+            )}
           </div>
-        ) : null}
+        )}
       </CardContent>
     </Card>
   );

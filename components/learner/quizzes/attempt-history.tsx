@@ -56,9 +56,9 @@ export default function AttemptHistory({ attempts }: AttemptHistoryProps) {
               >
                 {getAttemptStatusLabel(attempt)}
               </Badge>
-              {attempt.attemptId === bestAttemptId ? (
+              {attempt.attemptId === bestAttemptId && (
                 <Badge variant="default">Kết quả tốt nhất</Badge>
-              ) : null}
+              )}
             </div>
           </div>
         ))}

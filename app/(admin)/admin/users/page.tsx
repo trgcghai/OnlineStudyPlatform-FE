@@ -111,7 +111,7 @@ export default function AdminUsersPage() {
             onRefetch={() => refetch()}
           />
 
-          {!isError && !isPending ? (
+          {!isError && !isPending && (
             <Pagination
               page={page}
               totalPages={totalPages}
@@ -120,18 +120,18 @@ export default function AdminUsersPage() {
               onPageChange={setPage}
               onPageSizeChange={setPageSize}
             />
-          ) : null}
+          )}
         </CardContent>
       </Card>
 
-      {formDialogOpen ? (
+      {formDialogOpen && (
         <UserFormDialog
           key={editingUser?.id ?? "create"}
           open={formDialogOpen}
           onOpenChange={setFormDialogOpen}
           user={editingUser}
         />
-      ) : null}
+      )}
 
       <DisableUserDialog
         user={disablingUser}

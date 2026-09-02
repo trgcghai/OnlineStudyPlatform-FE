@@ -96,12 +96,12 @@ export default function RegisterPage() {
             onSubmit={handleSubmit(onSubmit)}
             className="flex flex-col gap-6"
           >
-            {formError ? (
+            {formError && (
               <Alert variant="destructive">
                 <AlertTitle>Không thể đăng ký</AlertTitle>
                 <AlertDescription>{formError}</AlertDescription>
               </Alert>
-            ) : null}
+            )}
 
             <FieldGroup>
               <Field data-invalid={!!errors.name}>

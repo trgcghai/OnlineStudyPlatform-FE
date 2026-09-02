@@ -49,11 +49,11 @@ export default function QuizResultSummary({
         <p>Đúng: {result.correctCount}</p>
         <p>Sai/chưa đủ: {result.wrongCount}</p>
         <p>Chờ chấm: {result.pendingEssayCount}</p>
-        {result.isLate ? (
+        {result.isLate && (
           <span className="text-amber-600">
             Nộp muộn {formatDuration(result.lateSeconds)}
           </span>
-        ) : null}
+        )}
       </CardContent>
     </Card>
   );

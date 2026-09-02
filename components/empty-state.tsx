@@ -18,11 +18,11 @@ export function EmptyState({ title, description, icon }: EmptyStateProps) {
     <div className="flex w-full justify-center p-6">
       <Card className="w-full max-w-md">
         <CardHeader>
-          {icon ? (
+          {icon && (
             <div className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
               {icon}
             </div>
-          ) : null}
+          )}
           <CardTitle>{title}</CardTitle>
           <CardDescription>{description}</CardDescription>
         </CardHeader>

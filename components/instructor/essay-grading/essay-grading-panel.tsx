@@ -76,7 +76,7 @@ export function EssayGradingPanel({
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
-        {submission.essays.length > 1 ? (
+        {submission.essays.length > 1 && (
           <div className="flex flex-wrap gap-2">
             {submission.essays.map((essay, index) => (
               <Button
@@ -94,7 +94,7 @@ export function EssayGradingPanel({
               </Button>
             ))}
           </div>
-        ) : null}
+        )}
 
         <section className="rounded-2xl bg-muted/60 p-4">
           <h3 className="text-sm font-medium">Bài làm của học viên</h3>
@@ -197,7 +197,7 @@ function EssayGradingForm({
           value={points}
           onChange={(event) => setPoints(event.target.value)}
         />
-        {error && validationError ? <FieldError>{error}</FieldError> : null}
+        {error && validationError && <FieldError>{error}</FieldError>}
       </Field>
 
       <Field>
@@ -213,12 +213,12 @@ function EssayGradingForm({
         </p>
       </Field>
 
-      {error && !validationError ? (
+      {error && !validationError && (
         <Alert variant="destructive">
           <AlertTitle>Không thể lưu điểm</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
-      ) : null}
+      )}
 
       <Button
         type="button"

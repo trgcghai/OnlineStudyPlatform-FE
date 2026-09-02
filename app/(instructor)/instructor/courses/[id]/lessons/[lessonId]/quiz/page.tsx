@@ -39,7 +39,7 @@ export default function CourseQuizPage() {
         </Link>
       </Button>
 
-      {isPending ? <Skeleton className="h-96 w-full" /> : null}
+      {isPending && <Skeleton className="h-96 w-full" />}
 
       {isError && (
         <Alert variant="destructive">

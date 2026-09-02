@@ -120,11 +120,11 @@ export default function CoursePage() {
           </Button>
         </div>
 
-        {coursesQuery.isError ? (
+        {coursesQuery.isError && (
           <div className="rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
             Không thể tải danh sách khóa học. Vui lòng thử lại.
           </div>
-        ) : null}
+        )}
 
         {coursesQuery.isLoading ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -154,7 +154,6 @@ export default function CoursePage() {
           </>
         )}
       </section>
-
     </main>
   );
 }

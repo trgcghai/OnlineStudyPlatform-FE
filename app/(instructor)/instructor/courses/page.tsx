@@ -133,7 +133,7 @@ export default function InstructorCoursesPage() {
             onRequestPublish={handleRequestPublish}
           />
 
-          {!isError && !isPending ? (
+          {!isError && !isPending && (
             <Pagination
               page={page}
               totalPages={totalPages}
@@ -142,7 +142,7 @@ export default function InstructorCoursesPage() {
               onPageChange={setPage}
               onPageSizeChange={setPageSize}
             />
-          ) : null}
+          )}
         </CardContent>
       </Card>
 

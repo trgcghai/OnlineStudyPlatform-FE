@@ -66,9 +66,7 @@ export default function SignInPage() {
     <section className="flex flex-1 items-center justify-center px-6 py-12">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            Đăng nhập
-          </CardTitle>
+          <CardTitle className="flex items-center gap-2">Đăng nhập</CardTitle>
           <CardDescription>Đăng nhập để tiếp tục học tập.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -76,12 +74,12 @@ export default function SignInPage() {
             onSubmit={handleSubmit(onSubmit)}
             className="flex flex-col gap-6"
           >
-            {formError ? (
+            {formError && (
               <Alert variant="destructive">
                 <AlertTitle>Không thể đăng nhập</AlertTitle>
                 <AlertDescription>{formError}</AlertDescription>
               </Alert>
-            ) : null}
+            )}
 
             <FieldGroup>
               <Field data-invalid={!!errors.email}>

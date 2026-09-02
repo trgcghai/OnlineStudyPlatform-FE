@@ -115,9 +115,9 @@ export function QuizList({ courseId, lessonId, onBuild }: QuizListProps) {
                     </Badge>
                     <Badge variant="outline">Điểm đạt: {quiz.passScore}%</Badge>
                     <span>{quiz.questionCount} câu hỏi</span>
-                    {quiz.timeLimitMinutes ? (
+                    {quiz.timeLimitMinutes && (
                       <span>{quiz.timeLimitMinutes} phút</span>
-                    ) : null}
+                    )}
                   </div>
                 </div>
 
