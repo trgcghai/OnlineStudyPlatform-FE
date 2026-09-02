@@ -55,6 +55,19 @@ export function EssayGradingSelectors({
   onQuizChange,
   onStatusChange,
 }: EssayGradingSelectorsProps) {
+  const courseItems = Object.fromEntries(
+    courses.map((course) => [course.id, course.title]),
+  );
+  const lessonItems = Object.fromEntries(
+    lessons.map((lesson) => [lesson.id, lesson.title]),
+  );
+  const quizItems = Object.fromEntries(
+    quizzes.map((quiz) => [quiz.id, quiz.title]),
+  );
+  const statusItems = Object.fromEntries(
+    statusOptions.map((option) => [option.value, option.label]),
+  );
+
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       <Field>
@@ -63,6 +76,7 @@ export function EssayGradingSelectors({
           value={courseId}
           onValueChange={(value) => onCourseChange(value ?? "")}
           disabled={coursesLoading || courses.length === 0}
+          items={courseItems}
         >
           <SelectTrigger className="w-full">
             <SelectValue
@@ -85,6 +99,7 @@ export function EssayGradingSelectors({
           value={lessonId}
           onValueChange={(value) => onLessonChange(value ?? "")}
           disabled={!courseId || lessonsLoading || lessons.length === 0}
+          items={lessonItems}
         >
           <SelectTrigger className="w-full">
             <SelectValue
@@ -107,6 +122,7 @@ export function EssayGradingSelectors({
           value={quizId}
           onValueChange={(value) => onQuizChange(value ?? "")}
           disabled={!lessonId || quizzesLoading || quizzes.length === 0}
+          items={quizItems}
         >
           <SelectTrigger className="w-full">
             <SelectValue
@@ -130,6 +146,7 @@ export function EssayGradingSelectors({
           onValueChange={(value) =>
             onStatusChange(value as EssayGradingStatusFilter)
           }
+          items={statusItems}
         >
           <SelectTrigger className="w-full">
             <SelectValue />
