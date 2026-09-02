@@ -12,6 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Pagination } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EssayGradingPanel } from "@/components/instructor/essay-grading/essay-grading-panel";
 import { EssayGradingSelectors } from "@/components/instructor/essay-grading/essay-grading-selectors";
@@ -37,6 +38,7 @@ import {
 } from "@/services/api/essay-grading";
 
 const EMPTY_SUBMISSIONS: EssayGradingSubmission[] = [];
+const ESSAY_GRADING_PAGE_SIZE = 10;
 
 export function EssayGradingWorkbench() {
   const [courseId, setCourseId] = useState("");
@@ -45,6 +47,8 @@ export function EssayGradingWorkbench() {
   const [status, setStatus] = useState<EssayGradingStatusFilter>(
     ESSAY_GRADING_STATUS_FILTERS.PENDING,
   );
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(ESSAY_GRADING_PAGE_SIZE);
   const [selectedAttemptId, setSelectedAttemptId] = useState<string | null>(
     null,
   );
@@ -57,12 +61,20 @@ export function EssayGradingWorkbench() {
   });
   const lessonQuery = useInstructorLessonsList(courseId);
   const quizQuery = useInstructorQuizzes(courseId, lessonId);
-  const queueQuery = useEssayGradingSubmissions(courseId, quizId, status);
+  const queueQuery = useEssayGradingSubmissions(
+    courseId,
+    quizId,
+    status,
+    page,
+    pageSize,
+  );
 
   const courses = courseQuery.data?.items ?? [];
   const lessons = lessonQuery.data?.items ?? [];
   const quizzes = quizQuery.data ?? [];
-  const submissions = queueQuery.data ?? EMPTY_SUBMISSIONS;
+  const submissions = queueQuery.data?.items ?? EMPTY_SUBMISSIONS;
+  const totalPages = queueQuery.data?.totalPages ?? 0;
+  const totalItems = queueQuery.data?.total ?? 0;
   const selectedSubmission =
     submissions.find((item) => item.attemptId === selectedAttemptId) ?? null;
   const emptyQueueMessage =
@@ -77,21 +89,32 @@ export function EssayGradingWorkbench() {
     setLessonId("");
     setQuizId("");
     setSelectedAttemptId(null);
+    setPage(1);
   }
 
   function handleLessonChange(value: string) {
     setLessonId(value);
     setQuizId("");
     setSelectedAttemptId(null);
+    setPage(1);
   }
 
   function handleQuizChange(value: string) {
     setQuizId(value);
     setSelectedAttemptId(null);
+    setPage(1);
   }
 
   function handleStatusChange(value: EssayGradingStatusFilter) {
     setStatus(value);
+    setSelectedAttemptId(null);
+    setPage(1);
+  }
+
+  function handlePageSizeChange(value: number) {
+    setPageSize(value);
+    setSelectedAttemptId(null);
+    setPage(1);
   }
 
   return (
@@ -182,7 +205,7 @@ export function EssayGradingWorkbench() {
           <EmptyState message="Bài học này chưa có bài kiểm tra." />
         ) : null}
 
-        {!quizId && courses.length > 0 ? (
+        {!lessonId && !quizId && courses.length > 0 ? (
           <EmptyState message="Chọn đủ khóa học, bài học và bài kiểm tra để bắt đầu chấm tự luận." />
         ) : null}
 
@@ -192,20 +215,30 @@ export function EssayGradingWorkbench() {
 
         {quizId && !queueQuery.isPending && !queueQuery.isError ? (
           submissions.length > 0 ? (
-            <div className="grid gap-4 lg:grid-cols-[minmax(280px,380px)_1fr]">
-              <EssaySubmissionList
-                submissions={submissions}
-                selectedAttemptId={selectedAttemptId}
-                onSelect={(submission) =>
-                  setSelectedAttemptId(submission.attemptId)
-                }
-              />
-              <EssayGradingPanel
-                courseId={courseId}
-                lessonId={lessonId}
-                quizId={quizId}
-                status={status}
-                submission={selectedSubmission}
+            <div className="flex flex-col gap-4">
+              <div className="grid gap-4 lg:grid-cols-[minmax(280px,380px)_1fr]">
+                <EssaySubmissionList
+                  submissions={submissions}
+                  selectedAttemptId={selectedAttemptId}
+                  onSelect={(submission) =>
+                    setSelectedAttemptId(submission.attemptId)
+                  }
+                />
+                <EssayGradingPanel
+                  courseId={courseId}
+                  lessonId={lessonId}
+                  quizId={quizId}
+                  status={status}
+                  submission={selectedSubmission}
+                />
+              </div>
+              <Pagination
+                page={page}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={handlePageSizeChange}
               />
             </div>
           ) : (

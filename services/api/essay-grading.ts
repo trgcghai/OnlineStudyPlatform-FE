@@ -43,6 +43,20 @@ export interface EssayGradingSubmission {
   essays: EssayGradingQuestion[];
 }
 
+export interface EssayGradingSubmissionListResult {
+  items: EssayGradingSubmission[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface EssayGradingSubmissionListFilters {
+  status: EssayGradingStatusFilter;
+  page: number;
+  limit: number;
+}
+
 export interface GradeEssayAnswerPayload {
   points: number;
   feedback?: string;
@@ -51,12 +65,12 @@ export interface GradeEssayAnswerPayload {
 export async function listEssayGradingSubmissions(
   courseId: string,
   quizId: string,
-  status: EssayGradingStatusFilter,
-): Promise<EssayGradingSubmission[]> {
+  filters: EssayGradingSubmissionListFilters,
+): Promise<EssayGradingSubmissionListResult> {
   const { data } = await axiosClient.get<
-    ApiSuccessResponse<EssayGradingSubmission[]>
+    ApiSuccessResponse<EssayGradingSubmissionListResult>
   >(`/courses/${courseId}/quizzes/${quizId}/essay-grading`, {
-    params: { status },
+    params: filters,
   });
 
   return data.data;

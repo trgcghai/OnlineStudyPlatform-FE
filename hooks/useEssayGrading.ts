@@ -47,15 +47,23 @@ export function useEssayGradingSubmissions(
   courseId: string | null,
   quizId: string | null,
   status: EssayGradingStatusFilter,
+  page: number,
+  limit: number,
 ) {
   return useQuery({
     queryKey: instructorEssayGradingKeys.list(
       courseId ?? "",
       quizId ?? "",
       status,
+      page,
+      limit,
     ),
     queryFn: () =>
-      listEssayGradingSubmissions(courseId ?? "", quizId ?? "", status),
+      listEssayGradingSubmissions(courseId ?? "", quizId ?? "", {
+        status,
+        page,
+        limit,
+      }),
     enabled: Boolean(courseId?.trim()) && Boolean(quizId?.trim()),
   });
 }
@@ -85,11 +93,13 @@ export function useGradeEssayAnswer() {
     onSuccess: async (_result, variables) => {
       await Promise.all([
         queryClient.invalidateQueries({
-          queryKey: instructorEssayGradingKeys.list(
+          queryKey: [
+            ...instructorEssayGradingKeys.all,
+            "list",
             variables.courseId,
             variables.quizId,
             variables.status,
-          ),
+          ],
         }),
         queryClient.invalidateQueries({
           queryKey: instructorQuizKeys.list(
