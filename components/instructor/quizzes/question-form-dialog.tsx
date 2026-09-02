@@ -154,7 +154,7 @@ export function QuestionFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[min(90vh,720px)] overflow-y-auto">
+      <DialogContent className="max-w-4xl! max-h-[min(90vh,720px)] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? "Chỉnh sửa câu hỏi" : "Thêm câu hỏi"}

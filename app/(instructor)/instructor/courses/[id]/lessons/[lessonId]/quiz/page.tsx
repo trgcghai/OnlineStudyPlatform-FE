@@ -29,7 +29,7 @@ export default function CourseQuizPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
+    <div className="mx-auto flex w-full flex-col gap-4">
       <Button variant="ghost" size="sm" className="w-fit">
         <Link
           href={`/instructor/courses/${courseId}/lessons`}

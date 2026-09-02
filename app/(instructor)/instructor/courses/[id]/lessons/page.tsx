@@ -19,7 +19,7 @@ export default function CourseLessonsPage() {
     useInstructorCourse(courseId);
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
+    <div className="mx-auto flex w-full flex-col gap-4">
       <Button variant="ghost" size="sm" className="w-fit">
         <Link href="/instructor/courses" className="flex items-center gap-2">
           <ArrowLeft /> Quay lại danh sách khóa học
