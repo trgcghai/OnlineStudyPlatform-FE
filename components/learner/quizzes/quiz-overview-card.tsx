@@ -31,6 +31,7 @@ interface QuizOverviewCardProps {
   canStartAttempt: boolean;
   hasAttemptsRemaining: boolean;
   quiz: LearnerQuiz;
+  showStartAction: boolean;
   startError: unknown;
   startPending: boolean;
   submittedAttemptCount: number;
@@ -42,6 +43,7 @@ export default function QuizOverviewCard({
   canStartAttempt,
   hasAttemptsRemaining,
   quiz,
+  showStartAction,
   startError,
   startPending,
   submittedAttemptCount,
@@ -79,7 +81,7 @@ export default function QuizOverviewCard({
               : `Lượt làm bài: ${submittedAttemptCount}/${QUIZ_MAX_ATTEMPTS}`}
           </p>
         </div>
-        {hasAttemptsRemaining ? (
+        {showStartAction ? (
           <Button
             type="button"
             className="w-fit"

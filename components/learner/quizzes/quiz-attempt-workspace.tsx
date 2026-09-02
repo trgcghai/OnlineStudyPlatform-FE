@@ -49,7 +49,8 @@ export function QuizAttemptWorkspace({
       <QuizOverviewCard
         attemptsLoading={session.attemptsQuery.isLoading}
         canStartAttempt={session.canStartAttempt}
-        hasAttemptsRemaining={
+        hasAttemptsRemaining={session.hasAttemptsRemaining}
+        showStartAction={
           !session.activeAttempt &&
           !session.result &&
           session.hasAttemptsRemaining
