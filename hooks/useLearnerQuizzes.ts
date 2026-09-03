@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   enrollmentKeys,
+  learnerDashboardKeys,
   learnerQuizKeys,
   learningKeys,
 } from "@/lib/query-keys";
@@ -72,6 +73,9 @@ export function useSubmitQuizAttempt(
           queryKey: learningKeys.lesson(courseId, lessonId),
         }),
         queryClient.invalidateQueries({ queryKey: enrollmentKeys.mine() }),
+        queryClient.invalidateQueries({
+          queryKey: learnerDashboardKeys.detail(),
+        }),
         queryClient.invalidateQueries({
           queryKey: learnerQuizKeys.detail(courseId, lessonId),
         }),

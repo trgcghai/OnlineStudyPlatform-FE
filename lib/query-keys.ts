@@ -92,6 +92,11 @@ export const enrollmentKeys = {
   mine: () => [...enrollmentKeys.all, "mine"] as const,
 };
 
+export const learnerDashboardKeys = {
+  all: ["learner-dashboard"] as const,
+  detail: () => [...learnerDashboardKeys.all, "detail"] as const,
+};
+
 export const learningKeys = {
   all: ["learning"] as const,
   course: (courseId: string) =>

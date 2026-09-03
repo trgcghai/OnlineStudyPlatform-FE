@@ -27,11 +27,11 @@ export default function LearnerLayout({
               Khóa học của tôi
             </Link>
             <Link
-              href="/profile"
+              href="/learner/dashboard"
               className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
             >
               <CircleUserRound data-icon="inline-start" aria-hidden="true" />
-              Hồ sơ
+              Tổng quan
             </Link>
           </div>
         </div>
