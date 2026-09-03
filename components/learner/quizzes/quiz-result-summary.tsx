@@ -49,7 +49,7 @@ export default function QuizResultSummary({
   return (
     <Card
       className={cn(
-        "border-2",
+        "border",
         result.passed ? "border-emerald-500/40" : "border-destructive/40",
       )}
     >
