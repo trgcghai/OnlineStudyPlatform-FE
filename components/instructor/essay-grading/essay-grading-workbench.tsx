@@ -28,7 +28,7 @@ import {
 } from "@/hooks/useInstructorLessons";
 import {
   mapQuizError,
-  useInstructorQuizzes,
+  useInstructorLessonQuiz,
 } from "@/hooks/useInstructorQuizzes";
 import { COURSE_LIST_PAGE_SIZE } from "@/lib/schemas/course";
 import {
@@ -60,7 +60,7 @@ export function EssayGradingWorkbench() {
     sortOrder: "DESC",
   });
   const lessonQuery = useInstructorLessonsList(courseId);
-  const quizQuery = useInstructorQuizzes(courseId, lessonId);
+  const quizQuery = useInstructorLessonQuiz(courseId, lessonId);
   const queueQuery = useEssayGradingSubmissions(
     courseId,
     quizId,
@@ -71,7 +71,7 @@ export function EssayGradingWorkbench() {
 
   const courses = courseQuery.data?.items ?? [];
   const lessons = lessonQuery.data?.items ?? [];
-  const quizzes = quizQuery.data ?? [];
+  const quizzes = quizQuery.data ? [quizQuery.data] : [];
   const submissions = queueQuery.data?.items ?? EMPTY_SUBMISSIONS;
   const totalPages = queueQuery.data?.totalPages ?? 0;
   const totalItems = queueQuery.data?.total ?? 0;

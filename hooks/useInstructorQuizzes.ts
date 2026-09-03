@@ -14,7 +14,7 @@ import {
   deleteQuestion,
   deleteQuiz,
   getQuiz,
-  listQuizzes,
+  getLessonQuiz,
   reorderQuestions,
   updateQuestion,
   updateQuiz,
@@ -48,10 +48,10 @@ export function mapQuizError(error: unknown): string {
   return data.error.message || GENERIC_ERROR_MESSAGE;
 }
 
-export function useInstructorQuizzes(courseId: string, lessonId: string) {
+export function useInstructorLessonQuiz(courseId: string, lessonId: string) {
   return useQuery({
     queryKey: instructorQuizKeys.list(courseId, lessonId),
-    queryFn: () => listQuizzes(courseId, lessonId),
+    queryFn: () => getLessonQuiz(courseId, lessonId),
     enabled: courseId.trim().length > 0 && lessonId.trim().length > 0,
   });
 }

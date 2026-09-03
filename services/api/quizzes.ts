@@ -73,13 +73,13 @@ export type UpdateQuizPayload = Partial<{
 
 export type UpdateQuestionPayload = Partial<CreateQuestionPayload>;
 
-export async function listQuizzes(
+export async function getLessonQuiz(
   courseId: string,
   lessonId: string,
-): Promise<QuizSummary[]> {
-  const { data } = await axiosClient.get<ApiSuccessResponse<QuizSummary[]>>(
-    `/courses/${courseId}/lessons/${lessonId}/quiz`,
-  );
+): Promise<QuizSummary | null> {
+  const { data } = await axiosClient.get<
+    ApiSuccessResponse<QuizSummary | null>
+  >(`/courses/${courseId}/lessons/${lessonId}/quiz`);
 
   return data.data;
 }

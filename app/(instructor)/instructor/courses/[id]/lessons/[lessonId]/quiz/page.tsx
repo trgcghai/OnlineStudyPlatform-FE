@@ -73,7 +73,7 @@ export default function CourseQuizPage() {
                 className="w-fit"
                 onClick={() => setSelectedQuizId(null)}
               >
-                <ArrowLeft /> Quay lại danh sách bài kiểm tra
+                <ArrowLeft /> Quay lại bài kiểm tra
               </Button>
               <QuestionBuilder
                 key={selectedQuizId}
