@@ -69,7 +69,9 @@ export function QuizAttemptWorkspace({
         />
       )}
 
-      {session.result && <QuizResultSummary result={session.result} />}
+      {session.result && (
+        <QuizResultSummary quiz={quiz} result={session.result} />
+      )}
 
       {session.result &&
         !session.result.passed &&
@@ -141,7 +143,7 @@ export function QuizAttemptWorkspace({
         <Skeleton className="h-28 rounded-3xl" />
       ) : (
         session.attemptsQuery.data && (
-          <AttemptHistory attempts={session.attemptsQuery.data} />
+          <AttemptHistory attempts={session.attemptsQuery.data} quiz={quiz} />
         )
       )}
 

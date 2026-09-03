@@ -1,6 +1,13 @@
+"use client";
+
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { type QuizAttemptResult } from "@/services/api/learner-quizzes";
+import {
+  type LearnerQuiz,
+  type QuizAttemptResult,
+} from "@/services/api/learner-quizzes";
 import {
   formatDateTime,
   formatDuration,
@@ -8,15 +15,26 @@ import {
   getAttemptStatusLabel,
   getBestAttemptId,
 } from "@/utils/quizUtil";
+import QuizResultSummary from "@/components/learner/quizzes/quiz-result-summary";
 
 interface AttemptHistoryProps {
   attempts: QuizAttemptResult[];
+  quiz: LearnerQuiz;
 }
 
-export default function AttemptHistory({ attempts }: AttemptHistoryProps) {
+export default function AttemptHistory({
+  attempts,
+  quiz,
+}: AttemptHistoryProps) {
+  const [selectedAttemptId, setSelectedAttemptId] = useState<string | null>(
+    null,
+  );
+
   if (attempts.length === 0) return null;
 
   const bestAttemptId = getBestAttemptId(attempts);
+  const selectedAttempt =
+    attempts.find((attempt) => attempt.attemptId === selectedAttemptId) ?? null;
 
   return (
     <section className="rounded-3xl border p-4">
@@ -25,7 +43,7 @@ export default function AttemptHistory({ attempts }: AttemptHistoryProps) {
         {attempts.map((attempt) => (
           <div
             key={attempt.attemptId}
-            className="grid grid-cols-2 items-center gap-2 rounded-2xl bg-muted/50 p-3 text-sm sm:grid-cols-4"
+            className="grid grid-cols-2 items-center gap-2 rounded-2xl bg-muted/50 p-3 text-sm sm:grid-cols-[1fr_1fr_1fr_auto]"
           >
             <span className="min-w-0 truncate">
               {formatDateTime(attempt.submittedAt)}
@@ -45,7 +63,7 @@ export default function AttemptHistory({ attempts }: AttemptHistoryProps) {
                 "Đúng hạn"
               )}
             </span>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Badge
                 variant={attempt.passed ? "secondary" : "destructive"}
                 className={cn(
@@ -59,10 +77,29 @@ export default function AttemptHistory({ attempts }: AttemptHistoryProps) {
               {attempt.attemptId === bestAttemptId && (
                 <Badge variant="default">Kết quả tốt nhất</Badge>
               )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setSelectedAttemptId((current) =>
+                    current === attempt.attemptId ? null : attempt.attemptId,
+                  )
+                }
+              >
+                {selectedAttemptId === attempt.attemptId
+                  ? "Ẩn chi tiết"
+                  : "Xem chi tiết"}
+              </Button>
             </div>
           </div>
         ))}
       </div>
+      {selectedAttempt && (
+        <div className="mt-4">
+          <QuizResultSummary quiz={quiz} result={selectedAttempt} />
+        </div>
+      )}
     </section>
   );
 }
