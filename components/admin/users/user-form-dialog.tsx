@@ -131,7 +131,8 @@ export function UserFormDialog({
       ...values,
       // Re-enabling happens here; disabling must use the row action
       // with its explicit confirmation dialog.
-      status: status === "Active" && status !== user.status ? status : undefined,
+      status:
+        status === "Active" && status !== user.status ? status : undefined,
     });
 
     if (!result.ok) {
@@ -165,12 +166,12 @@ export function UserFormDialog({
           className="flex flex-col gap-4"
           noValidate
         >
-          {formError ? (
+          {formError && (
             <Alert variant="destructive">
               <AlertTitle>Không thể lưu</AlertTitle>
               <AlertDescription>{formError}</AlertDescription>
             </Alert>
-          ) : null}
+          )}
 
           <FieldGroup>
             <Field data-invalid={!!errors.name}>
@@ -219,7 +220,12 @@ export function UserFormDialog({
               <FieldError errors={[errors.password]} />
             </Field>
 
-            <div className={cn("grid gap-4", isEdit ? "sm:grid-cols-2" : "sm:grid-cols-1")}>
+            <div
+              className={cn(
+                "grid gap-4",
+                isEdit ? "sm:grid-cols-2" : "sm:grid-cols-1",
+              )}
+            >
               <Field data-invalid={!!errors.role}>
                 <FieldLabel>Vai trò</FieldLabel>
                 <Controller
@@ -252,7 +258,7 @@ export function UserFormDialog({
                 <FieldError errors={[errors.role]} />
               </Field>
 
-              {isEdit ? (
+              {isEdit && (
                 <Field>
                   <FieldLabel>Trạng thái</FieldLabel>
                   <Select
@@ -272,7 +278,7 @@ export function UserFormDialog({
                     </SelectContent>
                   </Select>
                 </Field>
-              ) : null}
+              )}
             </div>
           </FieldGroup>
 

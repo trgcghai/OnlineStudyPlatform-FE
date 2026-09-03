@@ -2,6 +2,7 @@
 
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
+  BookEditIcon,
   CircleUserRound,
   DashboardSquare01Icon,
   Presentation,
@@ -33,6 +34,11 @@ const adminNavItems = [
     title: "Khóa học",
     href: "/instructor/courses",
     icon: Presentation,
+  },
+  {
+    title: "Chấm tự luận",
+    href: "/instructor/essay-grading",
+    icon: BookEditIcon,
   },
   {
     title: "Hồ sơ",

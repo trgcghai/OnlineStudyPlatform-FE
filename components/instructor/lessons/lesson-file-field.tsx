@@ -33,7 +33,9 @@ function getMaxSize(type: "video" | "material") {
 }
 
 function getAcceptDescription(type: "video" | "material") {
-  return type === "video" ? "MP4, WebM (tối đa 200MB)" : "PDF, DOCX, PPTX (tối đa 20MB)";
+  return type === "video"
+    ? "MP4, WebM (tối đa 200MB)"
+    : "PDF, DOCX, PPTX (tối đa 20MB)";
 }
 
 function getFileRejectionMessage(
@@ -131,7 +133,8 @@ export function LessonFileField({
             <Icon className="size-5 text-muted-foreground" aria-hidden="true" />
             <div className="flex flex-col">
               <span className="text-sm font-medium">
-                {previewName ?? (currentUrl ? getFileNameFromUrl(currentUrl) : "")}
+                {previewName ??
+                  (currentUrl ? getFileNameFromUrl(currentUrl) : "")}
               </span>
               {previewSize !== null && (
                 <span className="text-xs text-muted-foreground">
@@ -150,7 +153,7 @@ export function LessonFileField({
             <span className="text-xs">{getAcceptDescription(type)}</span>
           </div>
         )}
-        {value ? (
+        {value && (
           <Button
             type="button"
             variant="destructive"
@@ -165,7 +168,7 @@ export function LessonFileField({
           >
             <X className="size-3" aria-hidden="true" />
           </Button>
-        ) : null}
+        )}
       </div>
     </div>
   );

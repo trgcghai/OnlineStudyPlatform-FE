@@ -101,7 +101,7 @@ export default function AdminCourseApprovalsPage() {
             onReject={setRejectingCourse}
           />
 
-          {!isError && !isPending ? (
+          {!isError && !isPending && (
             <Pagination
               page={page}
               totalPages={totalPages}
@@ -110,7 +110,7 @@ export default function AdminCourseApprovalsPage() {
               onPageChange={setPage}
               onPageSizeChange={setPageSize}
             />
-          ) : null}
+          )}
         </CardContent>
       </Card>
 

@@ -49,7 +49,8 @@ export function QuizAttemptWorkspace({
       <QuizOverviewCard
         attemptsLoading={session.attemptsQuery.isLoading}
         canStartAttempt={session.canStartAttempt}
-        hasAttemptsRemaining={
+        hasAttemptsRemaining={session.hasAttemptsRemaining}
+        showStartAction={
           !session.activeAttempt &&
           !session.result &&
           session.hasAttemptsRemaining
@@ -61,43 +62,45 @@ export function QuizAttemptWorkspace({
         onStartAttempt={session.startAttempt}
       />
 
-      {session.activeAttempt && !session.result ? (
+      {session.activeAttempt && !session.result && (
         <QuizTimerBanner
           isOverdue={session.isOverdue}
           remainingSeconds={session.remainingSeconds}
         />
-      ) : null}
+      )}
 
-      {session.result ? <QuizResultSummary result={session.result} /> : null}
+      {session.result && (
+        <QuizResultSummary quiz={quiz} result={session.result} />
+      )}
 
       {session.result &&
-      !session.result.passed &&
-      session.hasAttemptsRemaining ? (
-        <Card className="border-dashed">
-          <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="font-medium">Bạn chưa đạt điểm yêu cầu.</p>
-              <p className="text-sm text-muted-foreground">
-                Bạn có thể làm lại để cải thiện kết quả.
-              </p>
-            </div>
-            <Button
-              type="button"
-              onClick={session.startAttempt}
-              disabled={
-                session.startMutation.isPending ||
-                session.attemptsQuery.isLoading
-              }
-            >
-              {session.startMutation.isPending
-                ? "Đang bắt đầu..."
-                : "Làm lại bài tập"}
-            </Button>
-          </CardContent>
-        </Card>
-      ) : null}
+        !session.result.passed &&
+        session.hasAttemptsRemaining && (
+          <Card className="border-dashed">
+            <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="font-medium">Bạn chưa đạt điểm yêu cầu.</p>
+                <p className="text-sm text-muted-foreground">
+                  Bạn có thể làm lại để cải thiện kết quả.
+                </p>
+              </div>
+              <Button
+                type="button"
+                onClick={session.startAttempt}
+                disabled={
+                  session.startMutation.isPending ||
+                  session.attemptsQuery.isLoading
+                }
+              >
+                {session.startMutation.isPending
+                  ? "Đang bắt đầu..."
+                  : "Làm lại bài tập"}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
-      {session.activeAttempt ? (
+      {session.activeAttempt && (
         <div className="flex flex-col gap-4">
           {quiz.questions.map((question, index) => (
             <QuizQuestionCard
@@ -114,15 +117,15 @@ export function QuizAttemptWorkspace({
             />
           ))}
 
-          {!session.result ? (
+          {!session.result && (
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              {submitErrorMessage ? (
+              {submitErrorMessage && (
                 <Alert variant="destructive" className="sm:max-w-xl">
                   <AlertCircle aria-hidden="true" />
                   <AlertTitle>Không thể nộp bài</AlertTitle>
                   <AlertDescription>{submitErrorMessage}</AlertDescription>
                 </Alert>
-              ) : null}
+              )}
               <Button
                 type="button"
                 className="self-start sm:ml-auto"
@@ -132,15 +135,17 @@ export function QuizAttemptWorkspace({
                 {session.submitMutation.isPending ? "Đang nộp..." : "Nộp bài"}
               </Button>
             </div>
-          ) : null}
+          )}
         </div>
-      ) : null}
+      )}
 
       {session.attemptsQuery.isLoading ? (
         <Skeleton className="h-28 rounded-3xl" />
-      ) : session.attemptsQuery.data ? (
-        <AttemptHistory attempts={session.attemptsQuery.data} />
-      ) : null}
+      ) : (
+        session.attemptsQuery.data && (
+          <AttemptHistory attempts={session.attemptsQuery.data} quiz={quiz} />
+        )
+      )}
 
       <SubmitQuizDialog
         open={session.confirmOpen}

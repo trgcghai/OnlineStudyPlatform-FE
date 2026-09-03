@@ -16,7 +16,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { DeleteQuizDialog } from "@/components/instructor/quizzes/delete-quiz-dialog";
 import { QuizFormDialog } from "@/components/instructor/quizzes/quiz-form-dialog";
-import { useInstructorQuizzes } from "@/hooks/useInstructorQuizzes";
+import { useInstructorLessonQuiz } from "@/hooks/useInstructorQuizzes";
 import type { QuizSummary } from "@/services/api/quizzes";
 
 interface QuizListProps {
@@ -30,25 +30,28 @@ export function QuizList({ courseId, lessonId, onBuild }: QuizListProps) {
   const [editingQuiz, setEditingQuiz] = useState<QuizSummary | null>(null);
   const [deletingQuiz, setDeletingQuiz] = useState<QuizSummary | null>(null);
 
-  const { data, isError, isPending, refetch } = useInstructorQuizzes(
-    courseId,
-    lessonId,
-  );
-  const quizzes = data ?? [];
+  const {
+    data: quiz,
+    isError,
+    isPending,
+    refetch,
+  } = useInstructorLessonQuiz(courseId, lessonId);
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Bài kiểm tra</CardTitle>
         <CardDescription>
-          Quản lý các bài kiểm tra gắn với bài học này. Tạo bài kiểm tra rồi
-          thêm câu hỏi trắc nghiệm hoặc tự luận.
+          Quản lý bài kiểm tra gắn với bài học này. Mỗi bài học chỉ có một bài
+          kiểm tra.
         </CardDescription>
-        <CardAction>
-          <Button size="sm" onClick={() => setCreating(true)}>
-            <Plus /> Tạo bài kiểm tra
-          </Button>
-        </CardAction>
+        {!quiz && (
+          <CardAction>
+            <Button size="sm" onClick={() => setCreating(true)}>
+              <Plus /> Tạo bài kiểm tra
+            </Button>
+          </CardAction>
+        )}
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {isError && (
@@ -80,7 +83,7 @@ export function QuizList({ courseId, lessonId, onBuild }: QuizListProps) {
           </div>
         )}
 
-        {!isError && !isPending && quizzes.length === 0 && (
+        {!isError && !isPending && !quiz && (
           <div className="flex flex-col items-center gap-2 py-12 text-center">
             <ListChecks
               className="size-10 text-muted-foreground"
@@ -100,55 +103,46 @@ export function QuizList({ courseId, lessonId, onBuild }: QuizListProps) {
           </div>
         )}
 
-        {!isError && !isPending && quizzes.length > 0 && (
-          <div className="flex flex-col gap-3">
-            {quizzes.map((quiz) => (
-              <div
-                key={quiz.id}
-                className="flex flex-col gap-3 rounded-xl border bg-card p-4 sm:flex-row sm:items-center"
-              >
-                <div className="flex flex-1 flex-col gap-1">
-                  <span className="font-medium">{quiz.title}</span>
-                  <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                    <Badge variant="secondary">
-                      Tổng điểm: {quiz.totalPoints}
-                    </Badge>
-                    <Badge variant="outline">Điểm đạt: {quiz.passScore}%</Badge>
-                    <span>{quiz.questionCount} câu hỏi</span>
-                    {quiz.timeLimitMinutes ? (
-                      <span>{quiz.timeLimitMinutes} phút</span>
-                    ) : null}
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  <Button
-                    size="sm"
-                    onClick={() => onBuild(quiz)}
-                    aria-label={`Xây dựng câu hỏi cho ${quiz.title}`}
-                  >
-                    <Settings2 /> Xây dựng
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setEditingQuiz(quiz)}
-                    aria-label={`Chỉnh sửa ${quiz.title}`}
-                  >
-                    <PencilLine /> Sửa
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    className="text-destructive hover:text-destructive"
-                    onClick={() => setDeletingQuiz(quiz)}
-                    aria-label={`Xóa ${quiz.title}`}
-                  >
-                    <Trash2 />
-                  </Button>
-                </div>
+        {!isError && !isPending && quiz && (
+          <div className="flex flex-col gap-3 rounded-xl border bg-card p-4 sm:flex-row sm:items-center">
+            <div className="flex flex-1 flex-col gap-1">
+              <span className="font-medium">{quiz.title}</span>
+              <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                <Badge variant="secondary">Tổng điểm: {quiz.totalPoints}</Badge>
+                <Badge variant="outline">Điểm đạt: {quiz.passScore}%</Badge>
+                <span>{quiz.questionCount} câu hỏi</span>
+                {quiz.timeLimitMinutes && (
+                  <span>{quiz.timeLimitMinutes} phút</span>
+                )}
               </div>
-            ))}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                size="sm"
+                onClick={() => onBuild(quiz)}
+                aria-label={`Xây dựng câu hỏi cho ${quiz.title}`}
+              >
+                <Settings2 /> Xây dựng
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setEditingQuiz(quiz)}
+                aria-label={`Chỉnh sửa ${quiz.title}`}
+              >
+                <PencilLine /> Sửa
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="text-destructive hover:text-destructive"
+                onClick={() => setDeletingQuiz(quiz)}
+                aria-label={`Xóa ${quiz.title}`}
+              >
+                <Trash2 />
+              </Button>
+            </div>
           </div>
         )}
 

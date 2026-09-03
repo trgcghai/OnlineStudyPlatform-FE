@@ -50,7 +50,7 @@ function CourseRowActions({
 }) {
   return (
     <div className="flex justify-end gap-1">
-      {course.status === COURSE_STATUSES.DRAFT ? (
+      {course.status === COURSE_STATUSES.DRAFT && (
         <Tooltip>
           <TooltipTrigger
             render={
@@ -76,7 +76,7 @@ function CourseRowActions({
             <p>Yêu cầu xuất bản khóa học</p>
           </TooltipContent>
         </Tooltip>
-      ) : null}
+      )}
       <Tooltip>
         <TooltipTrigger
           render={

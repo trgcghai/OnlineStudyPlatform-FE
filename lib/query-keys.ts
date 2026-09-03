@@ -1,4 +1,5 @@
 import type { CourseListFilters } from "@/services/api/courses";
+import type { EssayGradingStatusFilter } from "@/services/api/essay-grading";
 import type { PublicCourseListFilters } from "@/services/api/public-courses";
 import type { AdminUserFilters } from "@/services/api/users";
 
@@ -46,6 +47,26 @@ export const instructorQuizKeys = {
     [...instructorQuizKeys.all, "list", courseId, lessonId] as const,
   detail: (quizId: string) =>
     [...instructorQuizKeys.all, "detail", quizId] as const,
+};
+
+export const instructorEssayGradingKeys = {
+  all: ["instructor-essay-grading"] as const,
+  list: (
+    courseId: string,
+    quizId: string,
+    status: EssayGradingStatusFilter,
+    page: number,
+    limit: number,
+  ) =>
+    [
+      ...instructorEssayGradingKeys.all,
+      "list",
+      courseId,
+      quizId,
+      status,
+      page,
+      limit,
+    ] as const,
 };
 
 export const notificationKeys = {

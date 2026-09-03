@@ -107,7 +107,7 @@ export function CourseThumbnailField({
             <span>JPEG, PNG, WebP hoặc GIF, tối đa 5MB</span>
           </div>
         )}
-        {value ? (
+        {value && (
           <Button
             type="button"
             variant="destructive"
@@ -122,7 +122,7 @@ export function CourseThumbnailField({
           >
             <X className="size-4" aria-hidden="true" />
           </Button>
-        ) : null}
+        )}
       </div>
     </div>
   );

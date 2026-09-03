@@ -20,19 +20,15 @@ export default function EditCoursePage() {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
-      <Button
-        variant="ghost"
-        size="sm"
-        className="w-fit"
-      >
+      <Button variant="ghost" size="sm" className="w-fit">
         <Link href="/instructor/courses" className="flex items-center gap-2">
           <ArrowLeft /> Quay lại danh sách
         </Link>
       </Button>
 
-      {isPending ? <Skeleton className="h-128 w-full" /> : null}
+      {isPending && <Skeleton className="h-128 w-full" />}
 
-      {isError ? (
+      {isError && (
         <Alert variant="destructive">
           <AlertTitle>Không thể tải khóa học</AlertTitle>
           <AlertDescription>{mapCourseError(error)}</AlertDescription>
@@ -45,11 +41,9 @@ export default function EditCoursePage() {
             Thử lại
           </Button>
         </Alert>
-      ) : null}
+      )}
 
-      {data ? (
-        <CourseForm mode="edit" course={data} />
-      ) : null}
+      {data && <CourseForm mode="edit" course={data} />}
     </div>
   );
 }

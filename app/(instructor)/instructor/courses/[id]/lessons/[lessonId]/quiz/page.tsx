@@ -29,7 +29,7 @@ export default function CourseQuizPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
+    <div className="mx-auto flex w-full flex-col gap-4">
       <Button variant="ghost" size="sm" className="w-fit">
         <Link
           href={`/instructor/courses/${courseId}/lessons`}
@@ -39,7 +39,7 @@ export default function CourseQuizPage() {
         </Link>
       </Button>
 
-      {isPending ? <Skeleton className="h-96 w-full" /> : null}
+      {isPending && <Skeleton className="h-96 w-full" />}
 
       {isError && (
         <Alert variant="destructive">
@@ -73,7 +73,7 @@ export default function CourseQuizPage() {
                 className="w-fit"
                 onClick={() => setSelectedQuizId(null)}
               >
-                <ArrowLeft /> Quay lại danh sách bài kiểm tra
+                <ArrowLeft /> Quay lại bài kiểm tra
               </Button>
               <QuestionBuilder
                 key={selectedQuizId}
