@@ -1,10 +1,7 @@
-export const activeLessonStorageKey = (courseId: string) =>
-  `learning-player:${courseId}:activeLessonId`;
-
 export const videoPositionStorageKey = (courseId: string, lessonId: string) =>
   `learning-player:${courseId}:${lessonId}:position`;
 
-export function safeReadLocalStorage(key: string): string | null {
+function safeReadLocalStorage(key: string): string | null {
   try {
     return window.localStorage.getItem(key);
   } catch {
@@ -12,7 +9,7 @@ export function safeReadLocalStorage(key: string): string | null {
   }
 }
 
-export function safeWriteLocalStorage(key: string, value: string): void {
+function safeWriteLocalStorage(key: string, value: string): void {
   try {
     window.localStorage.setItem(key, value);
   } catch {}

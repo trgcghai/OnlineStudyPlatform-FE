@@ -1,11 +1,18 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  selectVideoPlayback,
+  setPlaybackRate,
+  setVolume,
+} from "@/lib/features/videoPlaybackSlice";
 import {
   videoPositionStorageKey,
   safeReadNumber,
   safeWriteNumber,
 } from "@/lib/learning-player-storage";
+import type { AppDispatch } from "@/lib/store";
 import type { LearningLesson, WatchEventType } from "@/services/api/learning";
 
 const WATCH_EVENT_BUCKET_SECONDS = 15;
@@ -79,6 +86,8 @@ export function useLessonVideoTracking({
     ) => void;
   };
 }) {
+  const dispatch = useDispatch<AppDispatch>();
+  const videoPlayback = useSelector(selectVideoPlayback);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const sessionIdRef = useRef(createSessionId());
   const openedLessonIdsRef = useRef(new Set<string>());
@@ -89,6 +98,14 @@ export function useLessonVideoTracking({
   useEffect(() => {
     lastHeartbeatBucketRef.current = null;
   }, [activeLessonId]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.playbackRate = videoPlayback.playbackRate;
+    video.volume = videoPlayback.volume;
+  }, [activeLessonId, videoPlayback.playbackRate, videoPlayback.volume]);
 
   useEffect(() => {
     function saveCurrentVideoPosition() {
@@ -191,8 +208,28 @@ export function useLessonVideoTracking({
   }
 
   function handleLoadedMetadata() {
+    const video = videoRef.current;
+    if (video) {
+      video.playbackRate = videoPlayback.playbackRate;
+      video.volume = videoPlayback.volume;
+    }
+
     restoreVideoPosition();
     sendWatchEvent("opened");
+  }
+
+  function handleRateChange() {
+    const video = videoRef.current;
+    if (!video) return;
+
+    dispatch(setPlaybackRate(video.playbackRate));
+  }
+
+  function handleVolumeChange() {
+    const video = videoRef.current;
+    if (!video) return;
+
+    dispatch(setVolume(video.volume));
   }
 
   function handleVideoPause() {
@@ -224,5 +261,7 @@ export function useLessonVideoTracking({
     handleLoadedMetadata,
     handleVideoPause,
     handleVideoTimeUpdate,
+    handleRateChange,
+    handleVolumeChange,
   };
 }

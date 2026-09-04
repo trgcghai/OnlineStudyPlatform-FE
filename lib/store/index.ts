@@ -11,7 +11,9 @@ import {
 } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import type { WebStorage } from "redux-persist/lib/types";
+import activeLearningLessonReducer from "@/lib/features/activeLearningLessonSlice";
 import authReducer from "@/lib/features/authSlice";
+import videoPlaybackReducer from "@/lib/features/videoPlaybackSlice";
 
 const noopStorage: WebStorage = {
   getItem: () => Promise.resolve(null),
@@ -22,11 +24,13 @@ const noopStorage: WebStorage = {
 const persistConfig = {
   key: "root",
   storage: typeof window === "undefined" ? noopStorage : storage,
-  whitelist: ["auth"],
+  whitelist: ["auth", "activeLearningLesson", "videoPlayback"],
 };
 
 const rootReducer = combineReducers({
+  activeLearningLesson: activeLearningLessonReducer,
   auth: authReducer,
+  videoPlayback: videoPlaybackReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

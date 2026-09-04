@@ -8,6 +8,7 @@ import {
   setCredentials,
   type AuthUser,
 } from "@/lib/features/authSlice";
+import { resetActiveLessons } from "@/lib/features/activeLearningLessonSlice";
 import type { AppDispatch } from "@/lib/store";
 import type { LoginFormValues } from "@/lib/schemas/login";
 import { isApiErrorResponse } from "@/services/axios";
@@ -17,7 +18,10 @@ import {
   logout as logoutApi,
 } from "@/services/api/auth";
 import type { UserRole } from "@/services/api/users";
-import { GENERIC_ERROR_MESSAGE, NETWORK_ERROR_MESSAGE } from "@/constants/constants";
+import {
+  GENERIC_ERROR_MESSAGE,
+  NETWORK_ERROR_MESSAGE,
+} from "@/constants/constants";
 import { authKeys } from "@/lib/query-keys";
 
 export type LoginResult =
@@ -70,6 +74,7 @@ export function useLogin() {
   return useMutation({
     mutationFn: (values: LoginFormValues) => loginApi(values),
     onSuccess: (result) => {
+      dispatch(resetActiveLessons());
       dispatch(setCredentials(result));
     },
   });

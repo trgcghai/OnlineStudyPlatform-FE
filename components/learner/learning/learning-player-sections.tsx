@@ -262,13 +262,17 @@ export function LessonVideo({
   videoRef,
   onLoadedMetadata,
   onPause,
+  onRateChange,
   onTimeUpdate,
+  onVolumeChange,
 }: {
   lesson: LearningLesson;
   videoRef: React.RefObject<HTMLVideoElement | null>;
   onLoadedMetadata: () => void;
   onPause: () => void;
+  onRateChange: () => void;
   onTimeUpdate: () => void;
+  onVolumeChange: () => void;
 }) {
   if (!lesson.videoUrl) {
     return (
@@ -291,7 +295,9 @@ export function LessonVideo({
       src={lesson.videoUrl}
       onLoadedMetadata={onLoadedMetadata}
       onPause={onPause}
+      onRateChange={onRateChange}
       onTimeUpdate={onTimeUpdate}
+      onVolumeChange={onVolumeChange}
     />
   );
 }
@@ -301,13 +307,17 @@ function LessonMedia({
   videoRef,
   onLoadedMetadata,
   onPause,
+  onRateChange,
   onTimeUpdate,
+  onVolumeChange,
 }: {
   lesson: LearningLesson;
   videoRef: React.RefObject<HTMLVideoElement | null>;
   onLoadedMetadata: () => void;
   onPause: () => void;
+  onRateChange: () => void;
   onTimeUpdate: () => void;
+  onVolumeChange: () => void;
 }) {
   return (
     <>
@@ -316,7 +326,9 @@ function LessonMedia({
         videoRef={videoRef}
         onLoadedMetadata={onLoadedMetadata}
         onPause={onPause}
+        onRateChange={onRateChange}
         onTimeUpdate={onTimeUpdate}
+        onVolumeChange={onVolumeChange}
       />
       <MaterialPanel materialUrl={lesson.materialUrl} />
     </>
@@ -335,7 +347,9 @@ export function LessonContentCard({
   videoRef,
   onLoadedMetadata,
   onPause,
+  onRateChange,
   onTimeUpdate,
+  onVolumeChange,
 }: {
   tab: "lesson" | "quiz";
   onTabChange: (tab: "lesson" | "quiz") => void;
@@ -348,7 +362,9 @@ export function LessonContentCard({
   videoRef: React.RefObject<HTMLVideoElement | null>;
   onLoadedMetadata: () => void;
   onPause: () => void;
+  onRateChange: () => void;
   onTimeUpdate: () => void;
+  onVolumeChange: () => void;
 }) {
   return (
     <main>
@@ -399,7 +415,9 @@ export function LessonContentCard({
                   </TabsList>
                   <TabsContent value="lesson" className="flex flex-col gap-6">
                     <LessonMedia
+                      onRateChange={onRateChange}
                       lesson={lesson}
+                      onVolumeChange={onVolumeChange}
                       videoRef={videoRef}
                       onLoadedMetadata={onLoadedMetadata}
                       onPause={onPause}
@@ -415,7 +433,9 @@ export function LessonContentCard({
                 </Tabs>
               ) : (
                 <LessonMedia
+                  onRateChange={onRateChange}
                   lesson={lesson}
+                  onVolumeChange={onVolumeChange}
                   videoRef={videoRef}
                   onLoadedMetadata={onLoadedMetadata}
                   onPause={onPause}
