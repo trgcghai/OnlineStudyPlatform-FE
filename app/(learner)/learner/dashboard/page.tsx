@@ -129,11 +129,11 @@ function CourseDashboardCard({ course }: { course: LearnerDashboardCourse }) {
             </div>
           </div>
         </div>
-        <div className="grid gap-3 text-sm sm:grid-cols-2 lg:w-80">
+        <div className="grid gap-3 text-sm sm:grid-cols-2 lg:w-80 h-full">
           <div className="rounded-2xl bg-muted/50 p-4">
             <p className="text-muted-foreground">Hoàn thành</p>
             <p className="mt-1 text-lg font-semibold">
-              {formatPercent(course.completionRatePercent)}
+              {formatPercent(course.progressPercent)}
             </p>
           </div>
           <div className="rounded-2xl bg-muted/50 p-4">
