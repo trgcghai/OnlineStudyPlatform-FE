@@ -324,6 +324,8 @@ function LessonMedia({
 }
 
 export function LessonContentCard({
+  tab,
+  onTabChange,
   courseId,
   hasQuiz,
   isError,
@@ -335,6 +337,8 @@ export function LessonContentCard({
   onPause,
   onTimeUpdate,
 }: {
+  tab: "lesson" | "quiz";
+  onTabChange: (tab: "lesson" | "quiz") => void;
   courseId: string;
   hasQuiz: boolean;
   isError: boolean;
@@ -375,7 +379,11 @@ export function LessonContentCard({
             </CardHeader>
             <CardContent className="flex flex-col gap-6">
               {hasQuiz ? (
-                <Tabs defaultValue="lesson" className="gap-5">
+                <Tabs
+                  defaultValue={tab}
+                  onValueChange={onTabChange}
+                  className="gap-5"
+                >
                   <TabsList>
                     <TabsTrigger value="lesson">
                       <BookOpen data-icon="inline-start" aria-hidden="true" />

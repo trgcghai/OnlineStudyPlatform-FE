@@ -34,6 +34,8 @@ export function LearningPlayerClient({ courseId }: LearningPlayerClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryLessonId = searchParams.get("lessonId");
+  const tab: "lesson" | "quiz" = (searchParams.get("tab") ?? "lesson") as
+    "lesson" | "quiz";
   const courseQuery = useLearningCourse(courseId);
   const { activeLessonId, selectLesson } = useActiveLearningLesson({
     course: courseQuery.data,
@@ -51,6 +53,16 @@ export function LearningPlayerClient({ courseId }: LearningPlayerClientProps) {
     lesson: lessonQuery.data,
     mutation: watchEventMutation,
   });
+
+  const handleTabChange = (newTab: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    params.set("tab", newTab);
+
+    router.replace(`?${params.toString()}`, {
+      scroll: false,
+    });
+  };
 
   useEffect(() => {
     if (
@@ -112,6 +124,8 @@ export function LearningPlayerClient({ courseId }: LearningPlayerClientProps) {
         onSelectLesson={selectLesson}
       />
       <LessonContentCard
+        tab={tab}
+        onTabChange={handleTabChange}
         courseId={courseId}
         hasQuiz={hasQuiz}
         isError={lessonQuery.isError}
