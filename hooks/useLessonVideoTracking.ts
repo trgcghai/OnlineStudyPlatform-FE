@@ -7,11 +7,6 @@ import {
   setPlaybackRate,
   setVolume,
 } from "@/lib/features/videoPlaybackSlice";
-import {
-  videoPositionStorageKey,
-  safeReadNumber,
-  safeWriteNumber,
-} from "@/lib/learning-player-storage";
 import type { AppDispatch } from "@/lib/store";
 import type { LearningLesson, WatchEventType } from "@/services/api/learning";
 
@@ -93,7 +88,6 @@ export function useLessonVideoTracking({
   const openedLessonIdsRef = useRef(new Set<string>());
   const completedLessonIdsRef = useRef(new Set<string>());
   const lastHeartbeatBucketRef = useRef<string | null>(null);
-  const activeLessonForStorage = lesson?.id ?? null;
 
   useEffect(() => {
     lastHeartbeatBucketRef.current = null;
@@ -106,26 +100,6 @@ export function useLessonVideoTracking({
     video.playbackRate = videoPlayback.playbackRate;
     video.volume = videoPlayback.volume;
   }, [activeLessonId, videoPlayback.playbackRate, videoPlayback.volume]);
-
-  useEffect(() => {
-    function saveCurrentVideoPosition() {
-      const video = videoRef.current;
-      if (!activeLessonForStorage || !video) return;
-
-      safeWriteNumber(
-        videoPositionStorageKey(courseId, activeLessonForStorage),
-        video.currentTime,
-      );
-    }
-
-    window.addEventListener("offline", saveCurrentVideoPosition);
-    window.addEventListener("beforeunload", saveCurrentVideoPosition);
-
-    return () => {
-      window.removeEventListener("offline", saveCurrentVideoPosition);
-      window.removeEventListener("beforeunload", saveCurrentVideoPosition);
-    };
-  }, [activeLessonForStorage, courseId]);
 
   function sendWatchEvent(eventType: WatchEventType) {
     const video = videoRef.current;
@@ -180,33 +154,6 @@ export function useLessonVideoTracking({
     );
   }
 
-  function saveVideoPosition() {
-    const lessonId = lesson?.id;
-    const video = videoRef.current;
-    if (!lessonId || !video) return;
-
-    safeWriteNumber(
-      videoPositionStorageKey(courseId, lessonId),
-      video.currentTime,
-    );
-  }
-
-  function restoreVideoPosition() {
-    const lessonId = lesson?.id;
-    const video = videoRef.current;
-    if (!lessonId || !video) return;
-
-    const savedPosition = safeReadNumber(
-      videoPositionStorageKey(courseId, lessonId),
-    );
-    if (!savedPosition || savedPosition <= 0) return;
-
-    const duration = Number.isFinite(video.duration) ? video.duration : 0;
-    if (duration > 0 && savedPosition < duration - 2) {
-      video.currentTime = savedPosition;
-    }
-  }
-
   function handleLoadedMetadata() {
     const video = videoRef.current;
     if (video) {
@@ -214,7 +161,6 @@ export function useLessonVideoTracking({
       video.volume = videoPlayback.volume;
     }
 
-    restoreVideoPosition();
     sendWatchEvent("opened");
   }
 
@@ -233,12 +179,10 @@ export function useLessonVideoTracking({
   }
 
   function handleVideoPause() {
-    saveVideoPosition();
     sendWatchEvent("paused");
   }
 
   function handleVideoTimeUpdate() {
-    saveVideoPosition();
     if (!lesson) return;
 
     const video = videoRef.current;

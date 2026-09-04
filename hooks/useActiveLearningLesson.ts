@@ -13,7 +13,7 @@ import type {
   LearningLessonSummary,
 } from "@/services/api/learning";
 
-export function findAccessibleLesson(
+function findSpecificAccessibleLesson(
   course: LearningCourse,
   preferredLessonId: string | null,
 ): LearningLessonSummary | null {
@@ -23,6 +23,16 @@ export function findAccessibleLesson(
     );
     if (preferred) return preferred;
   }
+
+  return null;
+}
+
+export function findAccessibleLesson(
+  course: LearningCourse,
+  preferredLessonId: string | null,
+): LearningLessonSummary | null {
+  const preferred = findSpecificAccessibleLesson(course, preferredLessonId);
+  if (preferred) return preferred;
 
   if (course.firstAccessibleLessonId) {
     const firstAccessible = course.lessons.find(
@@ -52,8 +62,8 @@ export function useActiveLearningLesson({
     selectActiveLessonIdForCourse(state, courseId),
   );
   const activeLesson = course
-    ? (findAccessibleLesson(course, queryLessonId) ??
-      findAccessibleLesson(course, savedLessonId) ??
+    ? (findSpecificAccessibleLesson(course, queryLessonId) ??
+      findSpecificAccessibleLesson(course, savedLessonId) ??
       findAccessibleLesson(course, null))
     : null;
   const activeLessonId = activeLesson?.id ?? null;
