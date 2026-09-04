@@ -1,18 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import {
-  activeLessonStorageKey,
-  safeReadLocalStorage,
-  safeWriteLocalStorage,
-} from "@/lib/learning-player-storage";
+  selectActiveLessonIdForCourse,
+  setActiveLesson,
+} from "@/lib/features/activeLearningLessonSlice";
+import type { AppDispatch, RootState } from "@/lib/store";
 import type {
   LearningCourse,
   LearningLessonSummary,
 } from "@/services/api/learning";
 
-export function findAccessibleLesson(
+function findSpecificAccessibleLesson(
   course: LearningCourse,
   preferredLessonId: string | null,
 ): LearningLessonSummary | null {
@@ -22,6 +23,16 @@ export function findAccessibleLesson(
     );
     if (preferred) return preferred;
   }
+
+  return null;
+}
+
+export function findAccessibleLesson(
+  course: LearningCourse,
+  preferredLessonId: string | null,
+): LearningLessonSummary | null {
+  const preferred = findSpecificAccessibleLesson(course, preferredLessonId);
+  if (preferred) return preferred;
 
   if (course.firstAccessibleLessonId) {
     const firstAccessible = course.lessons.find(
@@ -37,19 +48,22 @@ export function useActiveLearningLesson({
   course,
   courseId,
   queryLessonId,
+  searchParamsText,
   router,
 }: {
   course: LearningCourse | undefined;
   courseId: string;
   queryLessonId: string | null;
+  searchParamsText: string;
   router: AppRouterInstance;
 }) {
-  const [preferredLessonId, setPreferredLessonId] = useState<string | null>(
-    () => safeReadLocalStorage(activeLessonStorageKey(courseId)),
+  const dispatch = useDispatch<AppDispatch>();
+  const savedLessonId = useSelector((state: RootState) =>
+    selectActiveLessonIdForCourse(state, courseId),
   );
   const activeLesson = course
-    ? (findAccessibleLesson(course, queryLessonId) ??
-      findAccessibleLesson(course, preferredLessonId) ??
+    ? (findSpecificAccessibleLesson(course, queryLessonId) ??
+      findSpecificAccessibleLesson(course, savedLessonId) ??
       findAccessibleLesson(course, null))
     : null;
   const activeLessonId = activeLesson?.id ?? null;
@@ -57,21 +71,30 @@ export function useActiveLearningLesson({
   useEffect(() => {
     if (!activeLessonId) return;
 
-    safeWriteLocalStorage(activeLessonStorageKey(courseId), activeLessonId);
+    dispatch(setActiveLesson({ courseId, lessonId: activeLessonId }));
     if (queryLessonId === activeLessonId) return;
 
-    router.replace(
-      `/learner/courses/${courseId}/learn?lessonId=${activeLessonId}`,
-      { scroll: false },
-    );
-  }, [activeLessonId, courseId, queryLessonId, router]);
+    const params = new URLSearchParams(searchParamsText);
+    params.set("lessonId", activeLessonId);
+    router.replace(`/learner/courses/${courseId}/learn?${params.toString()}`, {
+      scroll: false,
+    });
+  }, [
+    activeLessonId,
+    courseId,
+    dispatch,
+    queryLessonId,
+    router,
+    searchParamsText,
+  ]);
 
   function selectLesson(lesson: LearningLessonSummary) {
     if (!lesson.isAccessible) return;
 
-    setPreferredLessonId(lesson.id);
-    safeWriteLocalStorage(activeLessonStorageKey(courseId), lesson.id);
-    router.replace(`/learner/courses/${courseId}/learn?lessonId=${lesson.id}`, {
+    dispatch(setActiveLesson({ courseId, lessonId: lesson.id }));
+    const params = new URLSearchParams(searchParamsText);
+    params.set("lessonId", lesson.id);
+    router.replace(`/learner/courses/${courseId}/learn?${params.toString()}`, {
       scroll: false,
     });
   }

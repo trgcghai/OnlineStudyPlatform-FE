@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
-  videoPositionStorageKey,
-  safeReadNumber,
-  safeWriteNumber,
-} from "@/lib/learning-player-storage";
+  selectVideoPlayback,
+  setPlaybackRate,
+  setVolume,
+} from "@/lib/features/videoPlaybackSlice";
+import type { AppDispatch } from "@/lib/store";
 import type { LearningLesson, WatchEventType } from "@/services/api/learning";
 
 const WATCH_EVENT_BUCKET_SECONDS = 15;
@@ -79,36 +81,25 @@ export function useLessonVideoTracking({
     ) => void;
   };
 }) {
+  const dispatch = useDispatch<AppDispatch>();
+  const videoPlayback = useSelector(selectVideoPlayback);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const sessionIdRef = useRef(createSessionId());
   const openedLessonIdsRef = useRef(new Set<string>());
   const completedLessonIdsRef = useRef(new Set<string>());
   const lastHeartbeatBucketRef = useRef<string | null>(null);
-  const activeLessonForStorage = lesson?.id ?? null;
 
   useEffect(() => {
     lastHeartbeatBucketRef.current = null;
   }, [activeLessonId]);
 
   useEffect(() => {
-    function saveCurrentVideoPosition() {
-      const video = videoRef.current;
-      if (!activeLessonForStorage || !video) return;
+    const video = videoRef.current;
+    if (!video) return;
 
-      safeWriteNumber(
-        videoPositionStorageKey(courseId, activeLessonForStorage),
-        video.currentTime,
-      );
-    }
-
-    window.addEventListener("offline", saveCurrentVideoPosition);
-    window.addEventListener("beforeunload", saveCurrentVideoPosition);
-
-    return () => {
-      window.removeEventListener("offline", saveCurrentVideoPosition);
-      window.removeEventListener("beforeunload", saveCurrentVideoPosition);
-    };
-  }, [activeLessonForStorage, courseId]);
+    video.playbackRate = videoPlayback.playbackRate;
+    video.volume = videoPlayback.volume;
+  }, [activeLessonId, videoPlayback.playbackRate, videoPlayback.volume]);
 
   function sendWatchEvent(eventType: WatchEventType) {
     const video = videoRef.current;
@@ -163,45 +154,35 @@ export function useLessonVideoTracking({
     );
   }
 
-  function saveVideoPosition() {
-    const lessonId = lesson?.id;
-    const video = videoRef.current;
-    if (!lessonId || !video) return;
-
-    safeWriteNumber(
-      videoPositionStorageKey(courseId, lessonId),
-      video.currentTime,
-    );
-  }
-
-  function restoreVideoPosition() {
-    const lessonId = lesson?.id;
-    const video = videoRef.current;
-    if (!lessonId || !video) return;
-
-    const savedPosition = safeReadNumber(
-      videoPositionStorageKey(courseId, lessonId),
-    );
-    if (!savedPosition || savedPosition <= 0) return;
-
-    const duration = Number.isFinite(video.duration) ? video.duration : 0;
-    if (duration > 0 && savedPosition < duration - 2) {
-      video.currentTime = savedPosition;
-    }
-  }
-
   function handleLoadedMetadata() {
-    restoreVideoPosition();
+    const video = videoRef.current;
+    if (video) {
+      video.playbackRate = videoPlayback.playbackRate;
+      video.volume = videoPlayback.volume;
+    }
+
     sendWatchEvent("opened");
   }
 
+  function handleRateChange() {
+    const video = videoRef.current;
+    if (!video) return;
+
+    dispatch(setPlaybackRate(video.playbackRate));
+  }
+
+  function handleVolumeChange() {
+    const video = videoRef.current;
+    if (!video) return;
+
+    dispatch(setVolume(video.volume));
+  }
+
   function handleVideoPause() {
-    saveVideoPosition();
     sendWatchEvent("paused");
   }
 
   function handleVideoTimeUpdate() {
-    saveVideoPosition();
     if (!lesson) return;
 
     const video = videoRef.current;
@@ -224,5 +205,7 @@ export function useLessonVideoTracking({
     handleLoadedMetadata,
     handleVideoPause,
     handleVideoTimeUpdate,
+    handleRateChange,
+    handleVolumeChange,
   };
 }

@@ -20,6 +20,13 @@ export default function LearnerLayout({
         <div className="border-b bg-muted/30">
           <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-2 px-6 py-3">
             <Link
+              href="/learner/dashboard"
+              className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+            >
+              <CircleUserRound data-icon="inline-start" aria-hidden="true" />
+              Tổng quan
+            </Link>
+            <Link
               href="/learner/courses"
               className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
             >
@@ -31,7 +38,7 @@ export default function LearnerLayout({
               className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
             >
               <CircleUserRound data-icon="inline-start" aria-hidden="true" />
-              Hồ sơ
+              Hồ sơ của tôi
             </Link>
           </div>
         </div>

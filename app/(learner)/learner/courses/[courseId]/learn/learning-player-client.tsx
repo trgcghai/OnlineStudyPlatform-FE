@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   EmptyLearningCourse,
@@ -21,23 +22,26 @@ import {
   useLearningLesson,
   useSendLessonWatchEvent,
 } from "@/hooks/useLearning";
-import {
-  activeLessonStorageKey,
-  safeWriteLocalStorage,
-} from "@/lib/learning-player-storage";
+import { setActiveLesson } from "@/lib/features/activeLearningLessonSlice";
+import type { AppDispatch } from "@/lib/store";
 
 interface LearningPlayerClientProps {
   courseId: string;
 }
 
 export function LearningPlayerClient({ courseId }: LearningPlayerClientProps) {
+  const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryLessonId = searchParams.get("lessonId");
+  const searchParamsText = searchParams.toString();
+  const tab: "lesson" | "quiz" = (searchParams.get("tab") ?? "lesson") as
+    "lesson" | "quiz";
   const courseQuery = useLearningCourse(courseId);
   const { activeLessonId, selectLesson } = useActiveLearningLesson({
     course: courseQuery.data,
     courseId,
+    searchParamsText,
     queryLessonId,
     router,
   });
@@ -51,6 +55,16 @@ export function LearningPlayerClient({ courseId }: LearningPlayerClientProps) {
     lesson: lessonQuery.data,
     mutation: watchEventMutation,
   });
+
+  const handleTabChange = (newTab: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    params.set("tab", newTab);
+
+    router.replace(`?${params.toString()}`, {
+      scroll: false,
+    });
+  };
 
   useEffect(() => {
     if (
@@ -78,17 +92,20 @@ export function LearningPlayerClient({ courseId }: LearningPlayerClientProps) {
 
     if (!fallbackLesson || fallbackLesson.id === activeLessonId) return;
 
-    safeWriteLocalStorage(activeLessonStorageKey(courseId), fallbackLesson.id);
-    router.replace(
-      `/learner/courses/${courseId}/learn?lessonId=${fallbackLesson.id}`,
-      { scroll: false },
-    );
+    dispatch(setActiveLesson({ courseId, lessonId: fallbackLesson.id }));
+    const params = new URLSearchParams(searchParamsText);
+    params.set("lessonId", fallbackLesson.id);
+    router.replace(`/learner/courses/${courseId}/learn?${params.toString()}`, {
+      scroll: false,
+    });
   }, [
     activeLessonId,
     courseId,
+    dispatch,
     courseQuery.data,
     lessonQuery.error,
     lessonQuery.isError,
+    searchParamsText,
     router,
   ]);
 
@@ -112,6 +129,8 @@ export function LearningPlayerClient({ courseId }: LearningPlayerClientProps) {
         onSelectLesson={selectLesson}
       />
       <LessonContentCard
+        tab={tab}
+        onTabChange={handleTabChange}
         courseId={courseId}
         hasQuiz={hasQuiz}
         isError={lessonQuery.isError}
@@ -120,7 +139,9 @@ export function LearningPlayerClient({ courseId }: LearningPlayerClientProps) {
         lessonError={lessonQuery.error}
         videoRef={videoTracking.videoRef}
         onLoadedMetadata={videoTracking.handleLoadedMetadata}
+        onRateChange={videoTracking.handleRateChange}
         onPause={videoTracking.handleVideoPause}
+        onVolumeChange={videoTracking.handleVolumeChange}
         onTimeUpdate={videoTracking.handleVideoTimeUpdate}
       />
     </div>

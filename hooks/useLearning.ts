@@ -4,7 +4,11 @@ import {
   GENERIC_ERROR_MESSAGE,
   NETWORK_ERROR_MESSAGE,
 } from "@/constants/constants";
-import { enrollmentKeys, learningKeys } from "@/lib/query-keys";
+import {
+  enrollmentKeys,
+  learnerDashboardKeys,
+  learningKeys,
+} from "@/lib/query-keys";
 import {
   getLearningCourse,
   getLearningLesson,
@@ -80,6 +84,9 @@ export function useSendLessonWatchEvent(
           queryKey: learningKeys.lesson(courseId, lessonId),
         }),
         queryClient.invalidateQueries({ queryKey: enrollmentKeys.mine() }),
+        queryClient.invalidateQueries({
+          queryKey: learnerDashboardKeys.detail(),
+        }),
       ]);
     },
     onError: async (error) => {
