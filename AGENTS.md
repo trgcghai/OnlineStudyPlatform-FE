@@ -30,8 +30,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - No `src/` directory. App Router files live under `app/`; `@/*` maps to the repo root.
 - Route groups split public, auth, and RBAC areas: `app/(public)`, `app/(auth)`, `app/(admin)`, `app/(instructor)`, `app/(learner)`. Admin/instructor/learner layouts wrap pages with `AuthGuard` and role constants from `services/api/users.ts`.
 - Root providers are wired in `app/layout.tsx`: `ThemeProvider` -> `ReduxProvider` -> `QueryProvider` -> `TooltipProvider` plus `Toaster`.
-- Client auth state is Redux Toolkit + redux-persist in `lib/store/index.ts`; only `auth` is persisted and SSR uses a noop storage.
-- Server state uses TanStack Query. Hooks live in `hooks/`; typed backend functions live in `services/api/`.
+- Client state is Redux Toolkit + redux-persist in `lib/store/index.ts`; persisted slices are `auth`, `activeLearningLesson`, and `videoPlayback`; SSR uses a noop storage.
+- Server state uses TanStack Query. Query keys are centralized in `lib/query-keys.ts`; hooks live in `hooks/`; typed backend functions live in `services/api/`.
 - Use the shared `axiosClient` from `services/axios.ts` for backend calls. It sends cookies, attaches the persisted bearer token, queues refreshes through `/auth/refresh`, and redirects to `/signin` on refresh failure.
 - `api-calls.md` documents another Vite/manga project and is stale for this frontend; do not use it as endpoint truth.
 
@@ -43,5 +43,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## Build And Deploy
 
 - `next.config.ts` sets `output: "standalone"`; Docker copies `.next/standalone`, `.next/static`, and `public` into the production image.
+- Docker uses `node:22-alpine`; production starts the standalone server with `node server.js`.
+- Next image config only whitelists Unsplash and `http://localhost:9000/**`, with local IP images allowed.
 - `pnpm-workspace.yaml` blocks dependency build scripts by default via `allowBuilds` (`sharp: false`, `unrs-resolver: false`). New dependencies with native/build steps may need this file updated.
 - No CI workflows are present. `CLAUDE.md` only points to `AGENTS.md`; keep repo guidance here.
