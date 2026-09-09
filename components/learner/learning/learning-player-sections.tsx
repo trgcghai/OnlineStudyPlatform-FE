@@ -8,7 +8,9 @@ import {
   ExternalLink,
   FileQuestion,
   Lock,
+  PanelRightClose,
   PlayCircle,
+  X,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -22,8 +24,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LearnerQuizPanel } from "@/app/(learner)/learner/courses/[courseId]/learn/learner-quiz-panel";
+import { LearnerQuizPanel } from "@/app/(learning)/learner/courses/[courseId]/learn/learner-quiz-panel";
 import { mapLearningError } from "@/hooks/useLearning";
 import { cn } from "@/lib/utils";
 import type {
@@ -50,9 +51,19 @@ export function getProgressValue(progress: string): number {
 
 export function LearningPlayerSkeleton() {
   return (
-    <div className="container grid w-full max-w-7xl gap-6 px-6 lg:grid-cols-[320px_1fr]">
-      <Skeleton className="h-96 rounded-3xl" />
-      <Skeleton className="h-[520px] rounded-3xl" />
+    <div className="flex min-h-dvh flex-col bg-background">
+      <div className="flex h-14 shrink-0 items-center justify-between border-b px-4 sm:px-6">
+        <Skeleton className="h-5 w-40" />
+        <Skeleton className="h-9 w-24" />
+      </div>
+      <div className="flex flex-1 flex-col lg:flex-row">
+        <div className="flex w-full flex-1 flex-col gap-6 px-4 py-6 sm:px-6 lg:py-8">
+          <Skeleton className="aspect-video w-full rounded-2xl" />
+          <Skeleton className="h-8 w-2/3" />
+          <Skeleton className="h-24 w-full rounded-2xl" />
+        </div>
+        <Skeleton className="h-96 w-full lg:w-[26rem]" />
+      </div>
     </div>
   );
 }
@@ -162,52 +173,100 @@ function LessonTree({
   );
 }
 
+export function LearningPlayerTopbar({
+  learningCourse,
+}: {
+  learningCourse: LearningCourse;
+}) {
+  return (
+    <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center justify-between gap-3 border-b bg-card px-4 sm:px-6">
+      <h1 className="min-w-0 truncate text-sm font-semibold">
+        {learningCourse.course.title}
+      </h1>
+      <div className="flex shrink-0 items-center gap-2">
+        <span className="hidden text-sm text-muted-foreground md:inline">
+          {learningCourse.course.learningOrder === "sequential"
+            ? "Học tuần tự"
+            : "Học tự do"}
+        </span>
+        <Link
+          href={`/courses/${learningCourse.course.id}`}
+          className={buttonVariants({ variant: "outline", size: "sm" })}
+        >
+          <X aria-hidden="true" />
+          Thoát
+        </Link>
+      </div>
+    </header>
+  );
+}
+
 export function LearningSidebar({
   activeLessonId,
+  lessonPanelOpen,
   learningCourse,
   onSelectLesson,
+  onToggleLessonPanel,
 }: {
   activeLessonId: string | null;
+  lessonPanelOpen: boolean;
   learningCourse: LearningCourse;
   onSelectLesson: (lesson: LearningLessonSummary) => void;
+  onToggleLessonPanel: () => void;
 }) {
   const progressLabel = formatProgress(learningCourse.enrollment.progress);
   const progressValue = getProgressValue(learningCourse.enrollment.progress);
 
   return (
-    <aside className="flex flex-col gap-4">
-      <Card>
-        <CardHeader>
-          <Badge variant="secondary" className="w-fit">
-            {learningCourse.course.learningOrder === "sequential"
-              ? "Học tuần tự"
-              : "Học tự do"}
-          </Badge>
-          <CardTitle>{learningCourse.course.title}</CardTitle>
-          <CardDescription>{learningCourse.course.description}</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-medium">Tiến độ</span>
-              <span className="text-muted-foreground">{progressLabel}</span>
-            </div>
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
-              <div
-                className="h-full rounded-full bg-primary"
-                style={{ width: `${progressValue}%` }}
-              />
-            </div>
-          </div>
-          <Separator />
+    <div className="flex flex-col gap-4 p-4 sm:p-5 lg:p-6">
+      <div className="flex items-center justify-between gap-2">
+        <Badge variant="secondary" className="shrink-0">
+          {learningCourse.course.learningOrder === "sequential"
+            ? "Học tuần tự"
+            : "Học tự do"}
+        </Badge>
+        <div className="flex shrink-0 items-center gap-2">
+          <span className="text-sm font-medium text-muted-foreground">
+            {progressLabel}
+          </span>
+          <button
+            type="button"
+            onClick={onToggleLessonPanel}
+            aria-pressed={lessonPanelOpen}
+            title={
+              lessonPanelOpen
+                ? "Ẩn danh sách bài học"
+                : "Hiện danh sách bài học"
+            }
+            className={buttonVariants({ variant: "ghost", size: "icon-sm" })}
+          >
+            <PanelRightClose aria-hidden="true" />
+          </button>
+        </div>
+      </div>
+      <h2 className="truncate text-sm font-semibold">
+        {learningCourse.course.title}
+      </h2>
+      <div className="h-2 overflow-hidden rounded-full bg-muted">
+        <div
+          className="h-full rounded-full bg-primary"
+          style={{ width: `${progressValue}%` }}
+        />
+      </div>
+      <Separator />
+      <div className="flex flex-col gap-2">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Nội dung khóa học · {learningCourse.lessons.length} bài học
+        </h3>
+        <div className="max-h-[50vh] overflow-y-auto lg:max-h-none">
           <LessonTree
             lessons={learningCourse.lessons}
             activeLessonId={activeLessonId}
             onSelectLesson={onSelectLesson}
           />
-        </CardContent>
-      </Card>
-    </aside>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -291,7 +350,7 @@ export function LessonVideo({
       key={lesson.id}
       ref={videoRef}
       controls
-      className="aspect-video w-full rounded-2xl bg-black"
+      className="aspect-video w-full bg-black"
       src={lesson.videoUrl}
       onLoadedMetadata={onLoadedMetadata}
       onPause={onPause}
@@ -302,42 +361,7 @@ export function LessonVideo({
   );
 }
 
-function LessonMedia({
-  lesson,
-  videoRef,
-  onLoadedMetadata,
-  onPause,
-  onRateChange,
-  onTimeUpdate,
-  onVolumeChange,
-}: {
-  lesson: LearningLesson;
-  videoRef: React.RefObject<HTMLVideoElement | null>;
-  onLoadedMetadata: () => void;
-  onPause: () => void;
-  onRateChange: () => void;
-  onTimeUpdate: () => void;
-  onVolumeChange: () => void;
-}) {
-  return (
-    <>
-      <LessonVideo
-        lesson={lesson}
-        videoRef={videoRef}
-        onLoadedMetadata={onLoadedMetadata}
-        onPause={onPause}
-        onRateChange={onRateChange}
-        onTimeUpdate={onTimeUpdate}
-        onVolumeChange={onVolumeChange}
-      />
-      <MaterialPanel materialUrl={lesson.materialUrl} />
-    </>
-  );
-}
-
 export function LessonContentCard({
-  tab,
-  onTabChange,
   courseId,
   hasQuiz,
   isError,
@@ -351,8 +375,6 @@ export function LessonContentCard({
   onTimeUpdate,
   onVolumeChange,
 }: {
-  tab: "lesson" | "quiz";
-  onTabChange: (tab: "lesson" | "quiz") => void;
   courseId: string;
   hasQuiz: boolean;
   isError: boolean;
@@ -367,91 +389,54 @@ export function LessonContentCard({
   onVolumeChange: () => void;
 }) {
   return (
-    <main>
-      <Card className="min-h-[520px]">
-        {isLoading ? (
-          <CardContent className="flex flex-col gap-4 p-6">
-            <Skeleton className="h-8 w-2/3" />
-            <Skeleton className="aspect-video w-full rounded-2xl" />
-            <Skeleton className="h-40 w-full rounded-2xl" />
-          </CardContent>
-        ) : isError ? (
-          <CardContent className="p-6">
-            <Alert variant="destructive">
-              <AlertCircle aria-hidden="true" />
-              <AlertTitle>Không tải được bài học</AlertTitle>
-              <AlertDescription>
-                {mapLearningError(lessonError)}
-              </AlertDescription>
-            </Alert>
-          </CardContent>
-        ) : lesson ? (
-          <>
-            <CardHeader>
-              <CardTitle>{lesson.title}</CardTitle>
-              <CardDescription>
+    <main className="flex flex-col gap-6">
+      {isLoading ? (
+        <>
+          <Skeleton className="aspect-video w-full bg-black" />
+          <Skeleton className="h-8 w-2/3" />
+          <Skeleton className="h-24 w-full rounded-2xl" />
+        </>
+      ) : isError ? (
+        <Alert variant="destructive">
+          <AlertCircle aria-hidden="true" />
+          <AlertTitle>Không tải được bài học</AlertTitle>
+          <AlertDescription>{mapLearningError(lessonError)}</AlertDescription>
+        </Alert>
+      ) : lesson ? (
+        <>
+          <div className="flex flex-col">
+            <LessonVideo
+              lesson={lesson}
+              videoRef={videoRef}
+              onLoadedMetadata={onLoadedMetadata}
+              onPause={onPause}
+              onRateChange={onRateChange}
+              onTimeUpdate={onTimeUpdate}
+              onVolumeChange={onVolumeChange}
+            />
+            <div className="flex flex-col gap-1 pt-3">
+              <h1 className="text-xl font-bold sm:text-2xl">{lesson.title}</h1>
+              <p className="text-sm text-muted-foreground">
                 {lesson.description || "Không có mô tả bài học."}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-6">
-              {hasQuiz ? (
-                <Tabs
-                  defaultValue={tab}
-                  onValueChange={onTabChange}
-                  className="gap-5"
-                >
-                  <TabsList>
-                    <TabsTrigger value="lesson">
-                      <BookOpen data-icon="inline-start" aria-hidden="true" />
-                      Bài học
-                    </TabsTrigger>
-                    <TabsTrigger value="quiz">
-                      <FileQuestion
-                        data-icon="inline-start"
-                        aria-hidden="true"
-                      />
-                      Bài kiểm tra
-                    </TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="lesson" className="flex flex-col gap-6">
-                    <LessonMedia
-                      onRateChange={onRateChange}
-                      lesson={lesson}
-                      onVolumeChange={onVolumeChange}
-                      videoRef={videoRef}
-                      onLoadedMetadata={onLoadedMetadata}
-                      onPause={onPause}
-                      onTimeUpdate={onTimeUpdate}
-                    />
-                  </TabsContent>
-                  <TabsContent value="quiz">
-                    <LearnerQuizPanel
-                      courseId={courseId}
-                      lessonId={lesson.id}
-                    />
-                  </TabsContent>
-                </Tabs>
-              ) : (
-                <LessonMedia
-                  onRateChange={onRateChange}
-                  lesson={lesson}
-                  onVolumeChange={onVolumeChange}
-                  videoRef={videoRef}
-                  onLoadedMetadata={onLoadedMetadata}
-                  onPause={onPause}
-                  onTimeUpdate={onTimeUpdate}
-                />
-              )}
-            </CardContent>
-          </>
-        ) : (
-          <CardContent className="p-6">
-            <p className="text-sm text-muted-foreground">
-              Chọn một bài học có thể truy cập để bắt đầu.
-            </p>
-          </CardContent>
-        )}
-      </Card>
+              </p>
+            </div>
+          </div>
+          <MaterialPanel materialUrl={lesson.materialUrl} />
+          {hasQuiz && (
+            <section className="flex flex-col gap-4">
+              <h2 className="flex items-center gap-2 text-lg font-semibold">
+                <FileQuestion className="size-5" aria-hidden="true" />
+                Bài kiểm tra
+              </h2>
+              <LearnerQuizPanel courseId={courseId} lessonId={lesson.id} />
+            </section>
+          )}
+        </>
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          Chọn một bài học có thể truy cập để bắt đầu.
+        </p>
+      )}
     </main>
   );
 }
