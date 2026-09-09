@@ -1,6 +1,7 @@
 "use client";
 
-import { BookOpen, CheckCircle2, XCircle } from "lucide-react";
+import Link from "next/link";
+import { BookOpen, CheckCircle2, Eye, XCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -68,6 +69,27 @@ function CourseApprovalRow({
       </TableCell>
       <TableCell className="text-right">
         <div className="flex justify-end gap-1">
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={`Xem bài học và bài kiểm tra của ${course.title}`}
+                >
+                  <Link
+                    href={`/admin/courses/approvals/${course.id}/lessons`}
+                    className="flex items-center"
+                  >
+                    <Eye />
+                  </Link>
+                </Button>
+              }
+            />
+            <TooltipContent>
+              <p>Xem bài học &amp; bài kiểm tra</p>
+            </TooltipContent>
+          </Tooltip>
           <Tooltip>
             <TooltipTrigger
               render={
