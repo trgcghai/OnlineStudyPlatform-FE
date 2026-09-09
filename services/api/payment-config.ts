@@ -29,7 +29,7 @@ export interface PaymentConfigSnapshot extends UpdatePaymentConfigPayload {
 export interface PaymentConfigAudit {
   id: string;
   configId: string;
-  actorId: string;
+  actorEmail: string;
   previousValue: PaymentConfigSnapshot;
   newValue: PaymentConfigSnapshot;
   changedFields: Array<keyof PaymentConfigSnapshot>;

@@ -29,6 +29,7 @@ import type {
   PaymentConfigAudit,
   PaymentConfigSnapshot,
 } from "@/services/api/payment-config";
+import { formatDateTime } from "@/utils/dateTimeUtil";
 
 interface PaymentConfigAuditTableProps {
   enabled: boolean;
@@ -67,7 +68,7 @@ function AuditChangeSummary({ audit }: { audit: PaymentConfigAudit }) {
           <div className="font-medium">
             {PAYMENT_CONFIG_FIELD_LABELS[field] ?? field}
           </div>
-          <div className="mt-1 grid gap-1 text-xs text-muted-foreground sm:grid-cols-2">
+          <div className="mt-1 grid gap-1 text-sm text-muted-foreground sm:grid-cols-2">
             <span>
               Trước: {formatAuditValue(field, audit.previousValue[field])}
             </span>
@@ -125,11 +126,11 @@ export function PaymentConfigAuditTable({
             <TableBody>
               {data.items.map((audit) => (
                 <TableRow key={audit.id}>
+                  <TableCell>{formatDateTime(audit.createdAt)}</TableCell>
                   <TableCell>
-                    {new Date(audit.createdAt).toLocaleString("vi-VN")}
-                  </TableCell>
-                  <TableCell className="font-mono text-xs">
-                    {audit.actorId}
+                    <div className="flex flex-col">
+                      {audit.actorEmail ? audit.actorEmail : "Không xác định"}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <AuditChangeSummary audit={audit} />

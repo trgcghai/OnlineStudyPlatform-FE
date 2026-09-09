@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Minus, Plus, X } from "lucide-react";
 import { useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -23,11 +24,17 @@ import { Input } from "@/components/ui/input";
 import {
   InputGroup,
   InputGroupAddon,
-  InputGroupButton,
   InputGroupInput,
 } from "@/components/ui/input-group";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   formatVndAmount,
+  MINIMUM_WITHDRAWAL_AMOUNT_MIN,
+  MINIMUM_WITHDRAWAL_AMOUNT_STEP,
   paymentConfigSchema,
   sortPrices,
   type PaymentConfigFormValues,
@@ -35,6 +42,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useUpdatePaymentConfig } from "@/hooks/useAdminPaymentConfig";
 import type { PaymentConfig } from "@/services/api/payment-config";
+import { Badge } from "@/components/ui/badge";
 
 interface PaymentConfigFormProps {
   config: PaymentConfig;
@@ -48,6 +56,29 @@ function toFormValues(config: PaymentConfig): PaymentConfigFormValues {
     freeCourseLimit: config.freeCourseLimit,
     minimumWithdrawalAmount: config.minimumWithdrawalAmount,
   };
+}
+
+function formatNumberInputValue(value: number): string {
+  return Number.isNaN(value)
+    ? ""
+    : new Intl.NumberFormat("vi-VN").format(value);
+}
+
+function formatNullableNumberInputValue(value: number | null): number | "" {
+  return value === null || Number.isNaN(value) ? "" : value;
+}
+
+function parseRequiredNumberInput(value: string): number {
+  return value === "" ? Number.NaN : Number(value);
+}
+
+function adjustWithdrawalAmount(value: number, direction: -1 | 1): number {
+  const currentValue = Number.isNaN(value)
+    ? MINIMUM_WITHDRAWAL_AMOUNT_MIN
+    : value;
+  const nextValue = currentValue + direction * MINIMUM_WITHDRAWAL_AMOUNT_STEP;
+
+  return Math.max(MINIMUM_WITHDRAWAL_AMOUNT_MIN, nextValue);
 }
 
 export function PaymentConfigForm({ config }: PaymentConfigFormProps) {
@@ -146,7 +177,11 @@ export function PaymentConfigForm({ config }: PaymentConfigFormProps) {
                         value={Number.isNaN(field.value) ? "" : field.value}
                         aria-invalid={fieldState.invalid}
                         onBlur={field.onBlur}
-                        onChange={field.onChange}
+                        onChange={(event) =>
+                          field.onChange(
+                            parseRequiredNumberInput(event.target.value),
+                          )
+                        }
                       />
                       <InputGroupAddon align="inline-end">%</InputGroupAddon>
                     </InputGroup>
@@ -167,20 +202,79 @@ export function PaymentConfigForm({ config }: PaymentConfigFormProps) {
                       Rút tiền tối thiểu
                     </FieldLabel>
                     <InputGroup>
+                      <InputGroupAddon align="inline-start">
+                        <Tooltip>
+                          <TooltipTrigger
+                            render={
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon-xs"
+                                aria-label="Giảm số tiền rút tối thiểu"
+                                disabled={
+                                  isPending ||
+                                  field.value <= MINIMUM_WITHDRAWAL_AMOUNT_MIN
+                                }
+                                onClick={() =>
+                                  field.onChange(
+                                    adjustWithdrawalAmount(field.value, -1),
+                                  )
+                                }
+                              >
+                                <Minus />
+                              </Button>
+                            }
+                          />
+                          <TooltipContent>
+                            <p>
+                              Giảm{" "}
+                              {formatVndAmount(MINIMUM_WITHDRAWAL_AMOUNT_STEP)}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </InputGroupAddon>
                       <InputGroupInput
                         id="minimumWithdrawalAmount"
-                        type="number"
-                        min={1}
-                        step={1000}
-                        value={Number.isNaN(field.value) ? "" : field.value}
+                        value={formatNumberInputValue(field.value)}
+                        placeholder="1.000.000"
                         aria-invalid={fieldState.invalid}
                         onBlur={field.onBlur}
-                        onChange={field.onChange}
+                        readOnly
                       />
-                      <InputGroupAddon align="inline-end">VND</InputGroupAddon>
+                      <InputGroupAddon align="inline-end">
+                        <span>VND</span>
+                        <Tooltip>
+                          <TooltipTrigger
+                            render={
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon-xs"
+                                aria-label="Tăng số tiền rút tối thiểu"
+                                disabled={isPending}
+                                onClick={() =>
+                                  field.onChange(
+                                    adjustWithdrawalAmount(field.value, 1),
+                                  )
+                                }
+                              >
+                                <Plus />
+                              </Button>
+                            }
+                          />
+                          <TooltipContent>
+                            <p>
+                              Tăng{" "}
+                              {formatVndAmount(MINIMUM_WITHDRAWAL_AMOUNT_STEP)}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </InputGroupAddon>
                     </InputGroup>
                     <FieldDescription>
-                      Số dư tối thiểu để giảng viên tạo yêu cầu rút tiền.
+                      Tối thiểu {formatVndAmount(MINIMUM_WITHDRAWAL_AMOUNT_MIN)}
+                      , tăng theo bội số{" "}
+                      {formatVndAmount(MINIMUM_WITHDRAWAL_AMOUNT_STEP)}.
                     </FieldDescription>
                     <FieldError errors={[fieldState.error]} />
                   </Field>
@@ -202,7 +296,7 @@ export function PaymentConfigForm({ config }: PaymentConfigFormProps) {
                       type="number"
                       min={0}
                       step={1}
-                      value={field.value ? field.value : ""}
+                      value={formatNullableNumberInputValue(field.value)}
                       placeholder="Không giới hạn"
                       aria-invalid={fieldState.invalid}
                       onBlur={field.onBlur}
@@ -266,13 +360,15 @@ export function PaymentConfigForm({ config }: PaymentConfigFormProps) {
                             Bắt buộc
                           </span>
                         ) : (
-                          <button
+                          <Button
                             type="button"
-                            className="text-muted-foreground transition hover:text-destructive"
+                            size="icon-xs"
+                            variant="ghost"
+                            className="rounded-full p-1 text-destructive hover:bg-destructive/10 hover:text-destructive"
                             onClick={() => removePrice(price)}
                           >
-                            Xóa
-                          </button>
+                            <X className="size-3" />
+                          </Button>
                         )}
                       </span>
                     ))}
@@ -294,13 +390,15 @@ export function PaymentConfigForm({ config }: PaymentConfigFormProps) {
                         }}
                       />
                       <InputGroupAddon align="inline-end">VND</InputGroupAddon>
-                      <InputGroupButton onClick={addPrice}>
-                        Thêm
-                      </InputGroupButton>
                     </InputGroup>
+                    <Button type="button" onClick={addPrice}>
+                      <Plus className="size-4" />
+                      Thêm
+                    </Button>
                   </div>
                   <FieldDescription>
-                    `0 VND` được khóa để tiếp tục hỗ trợ khóa học miễn phí.
+                    <Badge>0 VND</Badge> được khóa để tiếp tục hỗ trợ khóa học
+                    miễn phí.
                   </FieldDescription>
                   <FieldError>{priceError}</FieldError>
                   <FieldError errors={[fieldState.error]} />
