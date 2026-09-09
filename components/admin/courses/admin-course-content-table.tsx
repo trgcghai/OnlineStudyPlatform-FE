@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { AdminCourseLessonItem } from "@/services/api/admin-course-content";
+import type { AdminCourseLessonItem } from "@/services/api/courses";
 
 function QuizCell({ item }: { item: AdminCourseLessonItem }) {
   const quiz = item.quiz;

@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { AdminCourseContentTable } from "@/components/admin/courses/admin-course-content-table";
 import { Button } from "@/components/ui/button";
-import { useAdminCourseLessons } from "@/hooks/useAdminCourseContent";
+import { useAdminCourseLessons } from "@/hooks/useAdminCourseApprovals";
 
 export default function AdminCourseContentPage() {
   const params = useParams<{ courseId: string }>();
