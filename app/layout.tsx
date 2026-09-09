@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Figtree } from "next/font/google";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -48,8 +49,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           <ReduxProvider>
             <QueryProvider>
-              <TooltipProvider>{children}</TooltipProvider>
-              <Toaster />
+              <NuqsAdapter>
+                <TooltipProvider>{children}</TooltipProvider>
+                <Toaster />
+              </NuqsAdapter>
             </QueryProvider>
           </ReduxProvider>
         </ThemeProvider>

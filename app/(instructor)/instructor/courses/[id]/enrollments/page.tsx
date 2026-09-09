@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useQueryStates } from "nuqs";
 import { ArrowLeft, Search } from "lucide-react";
 import { InstructorCourseEnrollmentsTable } from "@/components/instructor/courses/instructor-course-enrollments-table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -17,12 +18,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useClampUrlPage } from "@/hooks/useClampUrlPage";
 import { useCourseEnrollments } from "@/hooks/useEnrollments";
 import {
   mapCourseError,
   useInstructorCourse,
 } from "@/hooks/useInstructorCourses";
+import {
+  limitParser,
+  pageParser,
+  searchParser,
+  URL_FILTER_HISTORY,
+} from "@/lib/search-params/filter-parsers";
 import type { CourseEnrollmentListFilters } from "@/services/api/enrollments";
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -30,18 +37,22 @@ const DEFAULT_PAGE_SIZE = 10;
 export default function CourseEnrollmentsPage() {
   const params = useParams<{ id: string }>();
   const courseId = params.id;
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-  const debouncedSearch = useDebounce(search.trim(), 500);
+  const [filtersState, setFiltersState] = useQueryStates(
+    {
+      q: searchParser,
+      page: pageParser,
+      limit: limitParser(DEFAULT_PAGE_SIZE),
+    },
+    { history: URL_FILTER_HISTORY },
+  );
 
   const filters = useMemo<CourseEnrollmentListFilters>(
     () => ({
-      page,
-      limit: pageSize,
-      q: debouncedSearch || undefined,
+      page: filtersState.page,
+      limit: filtersState.limit,
+      q: filtersState.q || undefined,
     }),
-    [debouncedSearch, page, pageSize],
+    [filtersState],
   );
 
   const {
@@ -61,17 +72,16 @@ export default function CourseEnrollmentsPage() {
   const items = enrollments?.items ?? [];
   const totalItems = enrollments?.total ?? 0;
   const totalPages = enrollments?.totalPages ?? 0;
-  const hasSearch = Boolean(debouncedSearch);
+  const hasSearch = Boolean(filtersState.q);
 
-  function handleSearchChange(value: string) {
-    setSearch(value);
-    setPage(1);
-  }
-
-  function handlePageSizeChange(size: number) {
-    setPageSize(size);
-    setPage(1);
-  }
+  useClampUrlPage({
+    page: filtersState.page,
+    totalPages,
+    enabled: !isEnrollmentsPending && !isEnrollmentsError,
+    onPageChange: (nextPage) => {
+      void setFiltersState({ page: nextPage });
+    },
+  });
 
   return (
     <div className="mx-auto flex w-full flex-col gap-4">
@@ -122,8 +132,10 @@ export default function CourseEnrollmentsPage() {
                   aria-hidden="true"
                 />
                 <Input
-                  value={search}
-                  onChange={(event) => handleSearchChange(event.target.value)}
+                  value={filtersState.q}
+                  onChange={(event) => {
+                    void setFiltersState({ q: event.target.value, page: 1 });
+                  }}
                   placeholder="Tìm theo tên hoặc email học viên..."
                   className="pl-9"
                 />
@@ -141,12 +153,16 @@ export default function CourseEnrollmentsPage() {
                 !isEnrollmentsPending &&
                 totalItems > 0 && (
                   <Pagination
-                    page={page}
+                    page={filtersState.page}
                     totalPages={totalPages}
                     totalItems={totalItems}
-                    pageSize={pageSize}
-                    onPageChange={setPage}
-                    onPageSizeChange={handlePageSizeChange}
+                    pageSize={filtersState.limit}
+                    onPageChange={(nextPage) => {
+                      void setFiltersState({ page: nextPage });
+                    }}
+                    onPageSizeChange={(size) => {
+                      void setFiltersState({ limit: size, page: 1 });
+                    }}
                   />
                 )}
             </CardContent>

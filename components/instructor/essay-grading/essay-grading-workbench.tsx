@@ -2,6 +2,7 @@
 
 import { AlertCircle, Inbox } from "lucide-react";
 import { useState } from "react";
+import { parseAsString, useQueryStates } from "nuqs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import { EssayGradingPanel } from "@/components/instructor/essay-grading/essay-g
 import { EssayGradingSelectors } from "@/components/instructor/essay-grading/essay-grading-selectors";
 import { EssaySubmissionList } from "@/components/instructor/essay-grading/essay-submission-list";
 import { useEssayGradingSubmissions } from "@/hooks/useEssayGrading";
+import { useClampUrlPage } from "@/hooks/useClampUrlPage";
 import {
   mapCourseError,
   useInstructorCoursesList,
@@ -32,6 +34,12 @@ import {
 } from "@/hooks/useInstructorQuizzes";
 import { COURSE_LIST_PAGE_SIZE } from "@/lib/schemas/course";
 import {
+  essayGradingStatusParser,
+  limitParser,
+  pageParser,
+  URL_FILTER_HISTORY,
+} from "@/lib/search-params/filter-parsers";
+import {
   ESSAY_GRADING_STATUS_FILTERS,
   type EssayGradingSubmission,
   type EssayGradingStatusFilter,
@@ -41,14 +49,17 @@ const EMPTY_SUBMISSIONS: EssayGradingSubmission[] = [];
 const ESSAY_GRADING_PAGE_SIZE = 10;
 
 export function EssayGradingWorkbench() {
-  const [courseId, setCourseId] = useState("");
-  const [lessonId, setLessonId] = useState("");
-  const [quizId, setQuizId] = useState("");
-  const [status, setStatus] = useState<EssayGradingStatusFilter>(
-    ESSAY_GRADING_STATUS_FILTERS.PENDING,
+  const [filtersState, setFiltersState] = useQueryStates(
+    {
+      courseId: parseAsString.withDefault(""),
+      lessonId: parseAsString.withDefault(""),
+      quizId: parseAsString.withDefault(""),
+      status: essayGradingStatusParser,
+      page: pageParser,
+      limit: limitParser(ESSAY_GRADING_PAGE_SIZE),
+    },
+    { history: URL_FILTER_HISTORY },
   );
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(ESSAY_GRADING_PAGE_SIZE);
   const [selectedAttemptId, setSelectedAttemptId] = useState<string | null>(
     null,
   );
@@ -59,14 +70,17 @@ export function EssayGradingWorkbench() {
     sortBy: "updatedAt",
     sortOrder: "DESC",
   });
-  const lessonQuery = useInstructorLessonsList(courseId);
-  const quizQuery = useInstructorLessonQuiz(courseId, lessonId);
+  const lessonQuery = useInstructorLessonsList(filtersState.courseId);
+  const quizQuery = useInstructorLessonQuiz(
+    filtersState.courseId,
+    filtersState.lessonId,
+  );
   const queueQuery = useEssayGradingSubmissions(
-    courseId,
-    quizId,
-    status,
-    page,
-    pageSize,
+    filtersState.courseId,
+    filtersState.quizId,
+    filtersState.status,
+    filtersState.page,
+    filtersState.limit,
   );
 
   const courses = courseQuery.data?.items ?? [];
@@ -78,43 +92,52 @@ export function EssayGradingWorkbench() {
   const selectedSubmission =
     submissions.find((item) => item.attemptId === selectedAttemptId) ?? null;
   const emptyQueueMessage =
-    status === ESSAY_GRADING_STATUS_FILTERS.PENDING
+    filtersState.status === ESSAY_GRADING_STATUS_FILTERS.PENDING
       ? "Không có bài tự luận đang chờ chấm."
-      : status === ESSAY_GRADING_STATUS_FILTERS.GRADED
+      : filtersState.status === ESSAY_GRADING_STATUS_FILTERS.GRADED
         ? "Chưa có bài tự luận đã chấm."
         : "Chưa có bài tự luận nào được nộp.";
 
+  useClampUrlPage({
+    page: filtersState.page,
+    totalPages,
+    enabled:
+      Boolean(filtersState.quizId) &&
+      !queueQuery.isPending &&
+      !queueQuery.isError,
+    onPageChange: (nextPage) => {
+      void setFiltersState({ page: nextPage });
+    },
+  });
+
   function handleCourseChange(value: string) {
-    setCourseId(value);
-    setLessonId("");
-    setQuizId("");
     setSelectedAttemptId(null);
-    setPage(1);
+    void setFiltersState({
+      courseId: value,
+      lessonId: "",
+      quizId: "",
+      page: 1,
+    });
   }
 
   function handleLessonChange(value: string) {
-    setLessonId(value);
-    setQuizId("");
     setSelectedAttemptId(null);
-    setPage(1);
+    void setFiltersState({ lessonId: value, quizId: "", page: 1 });
   }
 
   function handleQuizChange(value: string) {
-    setQuizId(value);
     setSelectedAttemptId(null);
-    setPage(1);
+    void setFiltersState({ quizId: value, page: 1 });
   }
 
   function handleStatusChange(value: EssayGradingStatusFilter) {
-    setStatus(value);
     setSelectedAttemptId(null);
-    setPage(1);
+    void setFiltersState({ status: value, page: 1 });
   }
 
   function handlePageSizeChange(value: number) {
-    setPageSize(value);
     setSelectedAttemptId(null);
-    setPage(1);
+    void setFiltersState({ limit: value, page: 1 });
   }
 
   return (
@@ -128,7 +151,7 @@ export function EssayGradingWorkbench() {
               luận.
             </CardDescription>
           </div>
-          {quizId && (
+          {filtersState.quizId && (
             <Badge variant="secondary" className="w-fit">
               {queueQuery.isPending ? "Đang tải" : `${submissions.length} lượt`}
             </Badge>
@@ -140,10 +163,10 @@ export function EssayGradingWorkbench() {
           courses={courses}
           lessons={lessons}
           quizzes={quizzes}
-          courseId={courseId}
-          lessonId={lessonId}
-          quizId={quizId}
-          status={status}
+          courseId={filtersState.courseId}
+          lessonId={filtersState.lessonId}
+          quizId={filtersState.quizId}
+          status={filtersState.status}
           coursesLoading={courseQuery.isPending}
           lessonsLoading={lessonQuery.isPending}
           quizzesLoading={quizQuery.isPending}
@@ -191,29 +214,31 @@ export function EssayGradingWorkbench() {
             <EmptyState message="Bạn chưa có khóa học để chấm tự luận." />
           )}
 
-        {courseId &&
+        {filtersState.courseId &&
           !lessonQuery.isPending &&
           !lessonQuery.isError &&
           lessons.length === 0 && (
             <EmptyState message="Khóa học này chưa có bài học." />
           )}
 
-        {lessonId &&
+        {filtersState.lessonId &&
           !quizQuery.isPending &&
           !quizQuery.isError &&
           quizzes.length === 0 && (
             <EmptyState message="Bài học này chưa có bài kiểm tra." />
           )}
 
-        {!lessonId && !quizId && courses.length > 0 && (
-          <EmptyState message="Chọn đủ khóa học, bài học và bài kiểm tra để bắt đầu chấm tự luận." />
-        )}
+        {!filtersState.lessonId &&
+          !filtersState.quizId &&
+          courses.length > 0 && (
+            <EmptyState message="Chọn đủ khóa học, bài học và bài kiểm tra để bắt đầu chấm tự luận." />
+          )}
 
-        {quizId && queueQuery.isPending && (
+        {filtersState.quizId && queueQuery.isPending && (
           <Skeleton className="h-48 rounded-3xl" />
         )}
 
-        {quizId &&
+        {filtersState.quizId &&
           !queueQuery.isPending &&
           !queueQuery.isError &&
           (submissions.length > 0 ? (
@@ -227,19 +252,21 @@ export function EssayGradingWorkbench() {
                   }
                 />
                 <EssayGradingPanel
-                  courseId={courseId}
-                  lessonId={lessonId}
-                  quizId={quizId}
-                  status={status}
+                  courseId={filtersState.courseId}
+                  lessonId={filtersState.lessonId}
+                  quizId={filtersState.quizId}
+                  status={filtersState.status}
                   submission={selectedSubmission}
                 />
               </div>
               <Pagination
-                page={page}
+                page={filtersState.page}
                 totalPages={totalPages}
                 totalItems={totalItems}
-                pageSize={pageSize}
-                onPageChange={setPage}
+                pageSize={filtersState.limit}
+                onPageChange={(nextPage) => {
+                  void setFiltersState({ page: nextPage });
+                }}
                 onPageSizeChange={handlePageSizeChange}
               />
             </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useQueryStates } from "nuqs";
 import { DeleteCourseDialog } from "@/components/instructor/courses/delete-course-dialog";
 import {
   InstructorCoursesCreateAction,
@@ -19,38 +20,48 @@ import {
 } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import { toast } from "@/components/ui/toast";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useClampUrlPage } from "@/hooks/useClampUrlPage";
 import {
   useInstructorCoursesList,
   useRequestPublishCourse,
 } from "@/hooks/useInstructorCourses";
 import { COURSE_LIST_PAGE_SIZE } from "@/lib/schemas/course";
+import {
+  courseCategoryFilterParser,
+  courseStatusFilterParser,
+  limitParser,
+  pageParser,
+  searchParser,
+  URL_FILTER_HISTORY,
+} from "@/lib/search-params/filter-parsers";
 import type { Course, CourseListFilters } from "@/services/api/courses";
 
 const ALL_OPTION = "";
 
 export default function InstructorCoursesPage() {
-  const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] =
-    useState<InstructorCategoryFilter>(ALL_OPTION);
-  const [statusFilter, setStatusFilter] =
-    useState<InstructorStatusFilter>(ALL_OPTION);
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(COURSE_LIST_PAGE_SIZE);
   const [deletingCourse, setDeletingCourse] = useState<Course | null>(null);
-  const debouncedSearch = useDebounce(search.trim(), 500);
+  const [filtersState, setFiltersState] = useQueryStates(
+    {
+      q: searchParser,
+      category: courseCategoryFilterParser,
+      status: courseStatusFilterParser,
+      page: pageParser,
+      limit: limitParser(COURSE_LIST_PAGE_SIZE),
+    },
+    { history: URL_FILTER_HISTORY },
+  );
 
   const filters = useMemo<CourseListFilters>(
     () => ({
-      page,
-      limit: pageSize,
-      q: debouncedSearch || undefined,
-      category: categoryFilter || undefined,
-      status: statusFilter || undefined,
+      page: filtersState.page,
+      limit: filtersState.limit,
+      q: filtersState.q || undefined,
+      category: filtersState.category || undefined,
+      status: filtersState.status || undefined,
       sortBy: "updatedAt",
       sortOrder: "DESC",
     }),
-    [categoryFilter, debouncedSearch, page, pageSize, statusFilter],
+    [filtersState],
   );
 
   const { data, isError, isPending, refetch } =
@@ -64,20 +75,26 @@ export default function InstructorCoursesPage() {
   const totalPages = data?.totalPages ?? 0;
   const totalItems = data?.total ?? 0;
   const hasActiveFilters =
-    Boolean(debouncedSearch) ||
-    categoryFilter !== ALL_OPTION ||
-    statusFilter !== ALL_OPTION;
+    Boolean(filtersState.q) ||
+    filtersState.category !== ALL_OPTION ||
+    filtersState.status !== ALL_OPTION;
 
-  function handleFilterChange(apply: () => void) {
-    apply();
-    setPage(1);
-  }
+  useClampUrlPage({
+    page: filtersState.page,
+    totalPages,
+    enabled: !isPending && !isError,
+    onPageChange: (nextPage) => {
+      void setFiltersState({ page: nextPage });
+    },
+  });
 
   function clearFilters() {
-    setSearch("");
-    setCategoryFilter(ALL_OPTION);
-    setStatusFilter(ALL_OPTION);
-    setPage(1);
+    void setFiltersState({
+      q: "",
+      category: ALL_OPTION,
+      status: ALL_OPTION,
+      page: 1,
+    });
   }
 
   async function handleRequestPublish(course: Course) {
@@ -105,21 +122,20 @@ export default function InstructorCoursesPage() {
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <InstructorCoursesToolbar
-            categoryFilter={categoryFilter}
+            categoryFilter={filtersState.category as InstructorCategoryFilter}
             hasActiveFilters={hasActiveFilters}
-            search={search}
-            statusFilter={statusFilter}
-            onCategoryChange={(value) =>
-              handleFilterChange(() => setCategoryFilter(value))
-            }
+            search={filtersState.q}
+            statusFilter={filtersState.status as InstructorStatusFilter}
+            onCategoryChange={(value) => {
+              void setFiltersState({ category: value, page: 1 });
+            }}
             onClearFilters={clearFilters}
             onSearchChange={(value) => {
-              setSearch(value);
-              setPage(1);
+              void setFiltersState({ q: value, page: 1 });
             }}
-            onStatusChange={(value) =>
-              handleFilterChange(() => setStatusFilter(value))
-            }
+            onStatusChange={(value) => {
+              void setFiltersState({ status: value, page: 1 });
+            }}
           />
 
           <InstructorCoursesTable
@@ -135,12 +151,16 @@ export default function InstructorCoursesPage() {
 
           {!isError && !isPending && (
             <Pagination
-              page={page}
+              page={filtersState.page}
               totalPages={totalPages}
               totalItems={totalItems}
-              pageSize={pageSize}
-              onPageChange={setPage}
-              onPageSizeChange={setPageSize}
+              pageSize={filtersState.limit}
+              onPageChange={(nextPage) => {
+                void setFiltersState({ page: nextPage });
+              }}
+              onPageSizeChange={(size) => {
+                void setFiltersState({ limit: size, page: 1 });
+              }}
             />
           )}
         </CardContent>
