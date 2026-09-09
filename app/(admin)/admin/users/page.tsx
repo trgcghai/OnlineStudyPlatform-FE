@@ -20,6 +20,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useAdminUsersList } from "@/hooks/useAdminUsers";
 import type { AdminUserFilters, UserProfile } from "@/services/api/users";
 
@@ -29,34 +30,29 @@ const ALL_OPTION = "";
 export default function AdminUsersPage() {
   const [roleFilter, setRoleFilter] = useState<RoleFilter>(ALL_OPTION);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>(ALL_OPTION);
-  const [searchDraft, setSearchDraft] = useState("");
-  const [appliedSearch, setAppliedSearch] = useState("");
+  const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(USER_LIST_PAGE_SIZE);
   const [formDialogOpen, setFormDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
   const [disablingUser, setDisablingUser] = useState<UserProfile | null>(null);
+  const debouncedSearch = useDebounce(search.trim(), 500);
 
   const filters = useMemo<AdminUserFilters>(
     () => ({
       role: roleFilter || undefined,
       status: statusFilter || undefined,
-      q: appliedSearch || undefined,
+      q: debouncedSearch || undefined,
       page,
       limit: pageSize,
     }),
-    [appliedSearch, page, pageSize, roleFilter, statusFilter],
+    [debouncedSearch, page, pageSize, roleFilter, statusFilter],
   );
 
   const { data, isPending, isError, refetch } = useAdminUsersList(filters);
   const items = data?.items ?? [];
   const totalPages = data?.totalPages ?? 0;
   const totalUsers = data?.total ?? items.length;
-
-  function applySearch() {
-    setPage(1);
-    setAppliedSearch(searchDraft.trim());
-  }
 
   function openCreateDialog() {
     setEditingUser(null);
@@ -90,13 +86,15 @@ export default function AdminUsersPage() {
         <CardContent className="flex flex-col gap-4">
           <AdminUsersToolbar
             roleFilter={roleFilter}
-            searchDraft={searchDraft}
+            search={search}
             statusFilter={statusFilter}
-            onApplySearch={applySearch}
             onRoleChange={(value) =>
               handleFilterChange(() => setRoleFilter(value))
             }
-            onSearchDraftChange={setSearchDraft}
+            onSearchChange={(value) => {
+              setSearch(value);
+              setPage(1);
+            }}
             onStatusChange={(value) =>
               handleFilterChange(() => setStatusFilter(value))
             }

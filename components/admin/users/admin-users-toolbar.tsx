@@ -36,36 +36,31 @@ const STATUS_FILTER_ITEMS: Record<StatusFilter, string> = {
 
 export function AdminUsersToolbar({
   roleFilter,
-  searchDraft,
+  search,
   statusFilter,
-  onApplySearch,
   onRoleChange,
-  onSearchDraftChange,
+  onSearchChange,
   onStatusChange,
 }: {
   roleFilter: RoleFilter;
-  searchDraft: string;
+  search: string;
   statusFilter: StatusFilter;
-  onApplySearch: () => void;
   onRoleChange: (value: RoleFilter) => void;
-  onSearchDraftChange: (value: string) => void;
+  onSearchChange: (value: string) => void;
   onStatusChange: (value: StatusFilter) => void;
 }) {
   return (
     <div className="flex flex-col gap-3 xl:flex-row xl:flex-wrap xl:items-center">
       <form
         className="xl:min-w-80 xl:flex-1"
-        onSubmit={(event) => {
-          event.preventDefault();
-          onApplySearch();
-        }}
+        onSubmit={(event) => event.preventDefault()}
       >
         <InputGroup>
           <InputGroupInput
             placeholder="Tìm theo tên hoặc email..."
             aria-label="Tìm kiếm người dùng"
-            value={searchDraft}
-            onChange={(event) => onSearchDraftChange(event.target.value)}
+            value={search}
+            onChange={(event) => onSearchChange(event.target.value)}
           />
           <Button
             type="submit"
