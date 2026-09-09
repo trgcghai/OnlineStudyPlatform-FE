@@ -1,13 +1,14 @@
-"use client"
+"use client";
 
-import { HugeiconsIcon } from "@hugeicons/react"
+import { HugeiconsIcon } from "@hugeicons/react";
 import {
+  CreditCardIcon,
   DashboardSquare01Icon,
   GraduationCapIcon,
   UserMultipleIcon,
-} from "@hugeicons/core-free-icons"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+} from "@hugeicons/core-free-icons";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import {
   Sidebar,
@@ -21,7 +22,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
   SidebarSeparator,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 const adminNavItems = [
   {
@@ -39,17 +40,28 @@ const adminNavItems = [
     href: "/admin/courses/approvals",
     icon: GraduationCapIcon,
   },
-]
+  {
+    title: "Cấu hình thanh toán",
+    href: "/admin/payment-config",
+    icon: CreditCardIcon,
+  },
+];
 
-export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const pathname = usePathname()
+export function AdminSidebar({
+  ...props
+}: React.ComponentProps<typeof Sidebar>) {
+  const pathname = usePathname();
 
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" tooltip="Online Study" render={<Link href="/admin" />}>
+            <SidebarMenuButton
+              size="lg"
+              tooltip="Online Study"
+              render={<Link href="/admin" />}
+            >
               <span className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                 <HugeiconsIcon icon={GraduationCapIcon} strokeWidth={2} />
               </span>
@@ -75,7 +87,8 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
                 const isActive =
                   item.href === "/admin"
                     ? pathname === item.href
-                    : pathname === item.href || pathname.startsWith(`${item.href}/`)
+                    : pathname === item.href ||
+                      pathname.startsWith(`${item.href}/`);
 
                 return (
                   <SidebarMenuItem key={item.href}>
@@ -88,7 +101,7 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
                       <span>{item.title}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                )
+                );
               })}
             </SidebarMenu>
           </SidebarGroupContent>
@@ -96,5 +109,5 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
       </SidebarContent>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }
