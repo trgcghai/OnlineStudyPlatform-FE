@@ -92,6 +92,7 @@ export default function SignInPage() {
                     id="email"
                     type="email"
                     autoComplete="email"
+                    placeholder="Nhập email..."
                     aria-invalid={!!errors.email}
                     aria-describedby={errors.email ? EMAIL_ERROR_ID : undefined}
                     {...register("email")}
@@ -110,6 +111,7 @@ export default function SignInPage() {
                     id="password"
                     type="password"
                     autoComplete="current-password"
+                    placeholder="Nhập mật khẩu..."
                     aria-invalid={!!errors.password}
                     aria-describedby={
                       errors.password ? PASSWORD_ERROR_ID : undefined

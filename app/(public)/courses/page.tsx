@@ -1,14 +1,20 @@
 "use client";
 
-import { useState } from "react";
 import { Search, X } from "lucide-react";
+import { useQueryStates } from "nuqs";
 import { PublicCourseCard } from "@/components/courses/public-course-card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useDebounce } from "@/hooks/useDebounce";
 import { usePublishedCoursesList } from "@/hooks/usePublicCourses";
 import { Pagination } from "@/components/ui/pagination";
+import { useClampUrlPage } from "@/hooks/useClampUrlPage";
 import { COURSE_CATEGORY_LABELS, CourseCategory } from "@/lib/schemas/course";
+import {
+  courseCategoryFilterParser,
+  pageParser,
+  searchParser,
+  URL_FILTER_HISTORY,
+} from "@/lib/search-params/filter-parsers";
 import {
   Select,
   SelectContent,
@@ -27,27 +33,34 @@ const CATEGORY_FILTER_ITEMS: Record<CategoryFilter, string> = {
 };
 
 export default function CoursePage() {
-  const [page, setPage] = useState(1);
-  const [keyword, setKeyword] = useState("");
-  const [categoryFilter, setCategoryFilter] =
-    useState<CategoryFilter>(ALL_OPTION);
-  const debouncedKeyword = useDebounce(keyword, 350);
+  const [filters, setFilters] = useQueryStates(
+    {
+      q: searchParser,
+      category: courseCategoryFilterParser,
+      page: pageParser,
+    },
+    { history: URL_FILTER_HISTORY },
+  );
 
   const coursesQuery = usePublishedCoursesList({
-    page,
+    page: filters.page,
     limit: CATALOG_LIMIT,
-    q: debouncedKeyword,
-    category: categoryFilter || undefined,
+    q: filters.q || undefined,
+    category: filters.category || undefined,
   });
   const courses = coursesQuery.data?.items ?? [];
   const total = coursesQuery.data?.total ?? 0;
   const totalPages = coursesQuery.data?.totalPages ?? 1;
   const isEmpty = !coursesQuery.isLoading && total === 0;
 
-  function handleFilterChange(apply: () => void) {
-    apply();
-    setPage(1);
-  }
+  useClampUrlPage({
+    page: filters.page,
+    totalPages,
+    enabled: !coursesQuery.isLoading && !coursesQuery.isError,
+    onPageChange: (nextPage) => {
+      void setFilters({ page: nextPage });
+    },
+  });
 
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-10 px-6 py-10">
@@ -69,10 +82,9 @@ export default function CoursePage() {
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              value={keyword}
+              value={filters.q}
               onChange={(event) => {
-                setKeyword(event.target.value);
-                setPage(1);
+                void setFilters({ q: event.target.value, page: 1 });
               }}
               placeholder="Tìm theo tên hoặc mô tả khóa học"
               aria-label="Tìm kiếm khóa học"
@@ -80,12 +92,10 @@ export default function CoursePage() {
             />
           </div>
           <Select
-            value={categoryFilter}
-            onValueChange={(value) =>
-              handleFilterChange(() =>
-                setCategoryFilter(value as CategoryFilter),
-              )
-            }
+            value={filters.category}
+            onValueChange={(value) => {
+              void setFilters({ category: value as CategoryFilter, page: 1 });
+            }}
             items={CATEGORY_FILTER_ITEMS}
           >
             <SelectTrigger
@@ -108,11 +118,9 @@ export default function CoursePage() {
           <Button
             className="ml-3"
             variant="destructive"
-            disabled={!debouncedKeyword && categoryFilter === ALL_OPTION}
+            disabled={!filters.q && filters.category === ALL_OPTION}
             onClick={() => {
-              setKeyword("");
-              setCategoryFilter(ALL_OPTION);
-              setPage(1);
+              void setFilters({ q: "", category: ALL_OPTION, page: 1 });
             }}
           >
             <X className="size-4" aria-hidden="true" />
@@ -144,11 +152,13 @@ export default function CoursePage() {
               ))}
             </div>
             <Pagination
-              page={page}
+              page={filters.page}
               pageSize={CATALOG_LIMIT}
               totalPages={totalPages}
               totalItems={total}
-              onPageChange={setPage}
+              onPageChange={(nextPage) => {
+                void setFilters({ page: nextPage });
+              }}
               allowPageSizeChange={false}
             />
           </>

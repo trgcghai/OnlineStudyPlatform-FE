@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useQueryStates } from "nuqs";
 import { ApproveCourseDialog } from "@/components/admin/courses/approve-course-dialog";
 import { CourseApprovalsTable } from "@/components/admin/courses/course-approvals-table";
 import {
@@ -17,36 +18,46 @@ import {
 } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import { useCourseApprovalsList } from "@/hooks/useAdminCourseApprovals";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useClampUrlPage } from "@/hooks/useClampUrlPage";
 import { COURSE_LIST_PAGE_SIZE } from "@/lib/schemas/course";
+import {
+  courseCategoryFilterParser,
+  limitParser,
+  pageParser,
+  searchParser,
+  URL_FILTER_HISTORY,
+} from "@/lib/search-params/filter-parsers";
 import type { CourseApproval, CourseListFilters } from "@/services/api/courses";
 
 const ALL_OPTION = "";
 
 export default function AdminCourseApprovalsPage() {
-  const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] =
-    useState<ApprovalCategoryFilter>(ALL_OPTION);
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(COURSE_LIST_PAGE_SIZE);
   const [approvingCourse, setApprovingCourse] = useState<CourseApproval | null>(
     null,
   );
   const [rejectingCourse, setRejectingCourse] = useState<CourseApproval | null>(
     null,
   );
-  const debouncedSearch = useDebounce(search.trim(), 500);
+  const [filtersState, setFiltersState] = useQueryStates(
+    {
+      q: searchParser,
+      category: courseCategoryFilterParser,
+      page: pageParser,
+      limit: limitParser(COURSE_LIST_PAGE_SIZE),
+    },
+    { history: URL_FILTER_HISTORY },
+  );
 
   const filters = useMemo<CourseListFilters>(
     () => ({
-      page,
-      limit: pageSize,
-      q: debouncedSearch || undefined,
-      category: categoryFilter || undefined,
+      page: filtersState.page,
+      limit: filtersState.limit,
+      q: filtersState.q || undefined,
+      category: filtersState.category || undefined,
       sortBy: "updatedAt",
       sortOrder: "DESC",
     }),
-    [categoryFilter, debouncedSearch, page, pageSize],
+    [filtersState],
   );
 
   const { data, isError, isPending, refetch } = useCourseApprovalsList(filters);
@@ -54,17 +65,19 @@ export default function AdminCourseApprovalsPage() {
   const totalPages = data?.totalPages ?? 0;
   const totalItems = data?.total ?? 0;
   const hasActiveFilters =
-    Boolean(debouncedSearch) || categoryFilter !== ALL_OPTION;
+    Boolean(filtersState.q) || filtersState.category !== ALL_OPTION;
 
-  function handleFilterChange(apply: () => void) {
-    apply();
-    setPage(1);
-  }
+  useClampUrlPage({
+    page: filtersState.page,
+    totalPages,
+    enabled: !isPending && !isError,
+    onPageChange: (nextPage) => {
+      void setFiltersState({ page: nextPage });
+    },
+  });
 
   function clearFilters() {
-    setSearch("");
-    setCategoryFilter(ALL_OPTION);
-    setPage(1);
+    void setFiltersState({ q: "", category: ALL_OPTION, page: 1 });
   }
 
   return (
@@ -79,16 +92,15 @@ export default function AdminCourseApprovalsPage() {
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <CourseApprovalsToolbar
-            categoryFilter={categoryFilter}
+            categoryFilter={filtersState.category as ApprovalCategoryFilter}
             hasActiveFilters={hasActiveFilters}
-            search={search}
-            onCategoryChange={(value) =>
-              handleFilterChange(() => setCategoryFilter(value))
-            }
+            search={filtersState.q}
+            onCategoryChange={(value) => {
+              void setFiltersState({ category: value, page: 1 });
+            }}
             onClearFilters={clearFilters}
             onSearchChange={(value) => {
-              setSearch(value);
-              setPage(1);
+              void setFiltersState({ q: value, page: 1 });
             }}
           />
 
@@ -103,12 +115,16 @@ export default function AdminCourseApprovalsPage() {
 
           {!isError && !isPending && (
             <Pagination
-              page={page}
+              page={filtersState.page}
               totalPages={totalPages}
               totalItems={totalItems}
-              pageSize={pageSize}
-              onPageChange={setPage}
-              onPageSizeChange={setPageSize}
+              pageSize={filtersState.limit}
+              onPageChange={(nextPage) => {
+                void setFiltersState({ page: nextPage });
+              }}
+              onPageSizeChange={(size) => {
+                void setFiltersState({ limit: size, page: 1 });
+              }}
             />
           )}
         </CardContent>

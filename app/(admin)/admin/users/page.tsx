@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useQueryStates } from "nuqs";
 import { DisableUserDialog } from "@/components/admin/users/disable-user-dialog";
 import { AdminUsersStats } from "@/components/admin/users/admin-users-stats";
 import { AdminUsersTable } from "@/components/admin/users/admin-users-table";
@@ -21,31 +22,43 @@ import {
 } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import { useAdminUsersList } from "@/hooks/useAdminUsers";
+import { useClampUrlPage } from "@/hooks/useClampUrlPage";
+import {
+  limitParser,
+  pageParser,
+  searchParser,
+  URL_FILTER_HISTORY,
+  userRoleFilterParser,
+  userStatusFilterParser,
+} from "@/lib/search-params/filter-parsers";
 import type { AdminUserFilters, UserProfile } from "@/services/api/users";
 
 const USER_LIST_PAGE_SIZE = 10;
-const ALL_OPTION = "";
 
 export default function AdminUsersPage() {
-  const [roleFilter, setRoleFilter] = useState<RoleFilter>(ALL_OPTION);
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>(ALL_OPTION);
-  const [searchDraft, setSearchDraft] = useState("");
-  const [appliedSearch, setAppliedSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(USER_LIST_PAGE_SIZE);
   const [formDialogOpen, setFormDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
   const [disablingUser, setDisablingUser] = useState<UserProfile | null>(null);
+  const [filtersState, setFiltersState] = useQueryStates(
+    {
+      q: searchParser,
+      role: userRoleFilterParser,
+      status: userStatusFilterParser,
+      page: pageParser,
+      limit: limitParser(USER_LIST_PAGE_SIZE),
+    },
+    { history: URL_FILTER_HISTORY },
+  );
 
   const filters = useMemo<AdminUserFilters>(
     () => ({
-      role: roleFilter || undefined,
-      status: statusFilter || undefined,
-      q: appliedSearch || undefined,
-      page,
-      limit: pageSize,
+      role: filtersState.role || undefined,
+      status: filtersState.status || undefined,
+      q: filtersState.q || undefined,
+      page: filtersState.page,
+      limit: filtersState.limit,
     }),
-    [appliedSearch, page, pageSize, roleFilter, statusFilter],
+    [filtersState],
   );
 
   const { data, isPending, isError, refetch } = useAdminUsersList(filters);
@@ -53,10 +66,14 @@ export default function AdminUsersPage() {
   const totalPages = data?.totalPages ?? 0;
   const totalUsers = data?.total ?? items.length;
 
-  function applySearch() {
-    setPage(1);
-    setAppliedSearch(searchDraft.trim());
-  }
+  useClampUrlPage({
+    page: filtersState.page,
+    totalPages,
+    enabled: !isPending && !isError,
+    onPageChange: (nextPage) => {
+      void setFiltersState({ page: nextPage });
+    },
+  });
 
   function openCreateDialog() {
     setEditingUser(null);
@@ -66,11 +83,6 @@ export default function AdminUsersPage() {
   function openEditDialog(user: UserProfile) {
     setEditingUser(user);
     setFormDialogOpen(true);
-  }
-
-  function handleFilterChange(apply: () => void) {
-    apply();
-    setPage(1);
   }
 
   return (
@@ -89,17 +101,18 @@ export default function AdminUsersPage() {
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <AdminUsersToolbar
-            roleFilter={roleFilter}
-            searchDraft={searchDraft}
-            statusFilter={statusFilter}
-            onApplySearch={applySearch}
-            onRoleChange={(value) =>
-              handleFilterChange(() => setRoleFilter(value))
-            }
-            onSearchDraftChange={setSearchDraft}
-            onStatusChange={(value) =>
-              handleFilterChange(() => setStatusFilter(value))
-            }
+            roleFilter={filtersState.role as RoleFilter}
+            search={filtersState.q}
+            statusFilter={filtersState.status as StatusFilter}
+            onRoleChange={(value) => {
+              void setFiltersState({ role: value, page: 1 });
+            }}
+            onSearchChange={(value) => {
+              void setFiltersState({ q: value, page: 1 });
+            }}
+            onStatusChange={(value) => {
+              void setFiltersState({ status: value, page: 1 });
+            }}
           />
 
           <AdminUsersTable
@@ -113,12 +126,16 @@ export default function AdminUsersPage() {
 
           {!isError && !isPending && (
             <Pagination
-              page={page}
+              page={filtersState.page}
               totalPages={totalPages}
               totalItems={totalUsers}
-              pageSize={pageSize}
-              onPageChange={setPage}
-              onPageSizeChange={setPageSize}
+              pageSize={filtersState.limit}
+              onPageChange={(nextPage) => {
+                void setFiltersState({ page: nextPage });
+              }}
+              onPageSizeChange={(size) => {
+                void setFiltersState({ limit: size, page: 1 });
+              }}
             />
           )}
         </CardContent>

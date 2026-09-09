@@ -1,6 +1,7 @@
 import type { CourseListFilters } from "@/services/api/courses";
 import type { CourseEnrollmentListFilters } from "@/services/api/enrollments";
 import type { EssayGradingStatusFilter } from "@/services/api/essay-grading";
+import type { PaymentConfigAuditFilters } from "@/services/api/payment-config";
 import type { PublicCourseListFilters } from "@/services/api/public-courses";
 import type { AdminUserFilters } from "@/services/api/users";
 
@@ -30,6 +31,13 @@ export const adminCourseContentKeys = {
   all: ["admin-course-content"] as const,
   lessons: (courseId: string) =>
     [...adminCourseContentKeys.all, "lessons", courseId] as const,
+};
+
+export const adminPaymentConfigKeys = {
+  all: ["admin-payment-config"] as const,
+  detail: () => [...adminPaymentConfigKeys.all, "detail"] as const,
+  audits: (filters: PaymentConfigAuditFilters) =>
+    [...adminPaymentConfigKeys.all, "audits", filters] as const,
 };
 
 export const instructorCourseKeys = {
