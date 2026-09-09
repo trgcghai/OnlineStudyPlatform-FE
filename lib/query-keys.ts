@@ -26,6 +26,12 @@ export const adminCourseApprovalKeys = {
     [...adminCourseApprovalKeys.all, "list", filters] as const,
 };
 
+export const adminCourseContentKeys = {
+  all: ["admin-course-content"] as const,
+  lessons: (courseId: string) =>
+    [...adminCourseContentKeys.all, "lessons", courseId] as const,
+};
+
 export const instructorCourseKeys = {
   all: ["instructor-courses"] as const,
   list: (filters: CourseListFilters) =>

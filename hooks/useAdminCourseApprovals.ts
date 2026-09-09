@@ -3,14 +3,22 @@ import { isAxiosError } from "axios";
 import { toast } from "@/components/ui/toast";
 import {
   COURSE_STATUSES,
+  listAdminCourseLessons,
   listCourseApprovals,
   reviewCourseStatus,
+  type AdminCourseContentListResult,
   type Course,
   type CourseListFilters,
 } from "@/services/api/courses";
 import { isApiErrorResponse } from "@/services/axios";
-import { GENERIC_ERROR_MESSAGE, NETWORK_ERROR_MESSAGE } from "@/constants/constants";
-import { adminCourseApprovalKeys } from "@/lib/query-keys";
+import {
+  GENERIC_ERROR_MESSAGE,
+  NETWORK_ERROR_MESSAGE,
+} from "@/constants/constants";
+import {
+  adminCourseApprovalKeys,
+  adminCourseContentKeys,
+} from "@/lib/query-keys";
 
 export interface CourseApprovalMutationResult<T = Course> {
   ok: boolean;
@@ -42,6 +50,31 @@ export function useCourseApprovalsList(filters: CourseListFilters) {
   return useQuery({
     queryKey: adminCourseApprovalKeys.list(filters),
     queryFn: () => listCourseApprovals(filters),
+  });
+}
+
+export function mapAdminCourseContentError(error: unknown): string {
+  if (!isAxiosError(error) || !error.response) {
+    return NETWORK_ERROR_MESSAGE;
+  }
+
+  const { status, data } = error.response;
+
+  if (!isApiErrorResponse(data)) {
+    return GENERIC_ERROR_MESSAGE;
+  }
+
+  if (status === 403) return "Bạn không có quyền xem nội dung khóa học.";
+  if (status === 404) return "Khóa học không tồn tại hoặc đã bị xóa.";
+
+  return data.error.message || GENERIC_ERROR_MESSAGE;
+}
+
+export function useAdminCourseLessons(courseId: string) {
+  return useQuery<AdminCourseContentListResult>({
+    queryKey: adminCourseContentKeys.lessons(courseId),
+    queryFn: () => listAdminCourseLessons(courseId),
+    enabled: courseId.trim().length > 0,
   });
 }
 
