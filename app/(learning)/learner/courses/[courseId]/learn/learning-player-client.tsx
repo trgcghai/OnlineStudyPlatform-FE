@@ -1,15 +1,19 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useRouter, useSearchParams } from "next/navigation";
+import { PanelRightOpen } from "lucide-react";
 import {
   EmptyLearningCourse,
   LearningCourseError,
   LearningPlayerSkeleton,
+  LearningPlayerTopbar,
   LearningSidebar,
   LessonContentCard,
 } from "@/components/learner/learning/learning-player-sections";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   useActiveLearningLesson,
   findAccessibleLesson,
@@ -35,8 +39,6 @@ export function LearningPlayerClient({ courseId }: LearningPlayerClientProps) {
   const searchParams = useSearchParams();
   const queryLessonId = searchParams.get("lessonId");
   const searchParamsText = searchParams.toString();
-  const tab: "lesson" | "quiz" = (searchParams.get("tab") ?? "lesson") as
-    "lesson" | "quiz";
   const courseQuery = useLearningCourse(courseId);
   const { activeLessonId, selectLesson } = useActiveLearningLesson({
     course: courseQuery.data,
@@ -49,22 +51,13 @@ export function LearningPlayerClient({ courseId }: LearningPlayerClientProps) {
   const quizAvailabilityQuery = useLearnerQuiz(courseId, activeLessonId);
   const watchEventMutation = useSendLessonWatchEvent(courseId, activeLessonId);
   const hasQuiz = Boolean(quizAvailabilityQuery.data?.quiz);
+  const [lessonPanelOpen, setLessonPanelOpen] = useState(true);
   const videoTracking = useLessonVideoTracking({
     activeLessonId,
     courseId,
     lesson: lessonQuery.data,
     mutation: watchEventMutation,
   });
-
-  const handleTabChange = (newTab: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-
-    params.set("tab", newTab);
-
-    router.replace(`?${params.toString()}`, {
-      scroll: false,
-    });
-  };
 
   useEffect(() => {
     if (
@@ -122,28 +115,52 @@ export function LearningPlayerClient({ courseId }: LearningPlayerClientProps) {
   if (courseQuery.data.lessons.length === 0) return <EmptyLearningCourse />;
 
   return (
-    <div className="container grid w-full max-w-7xl gap-6 px-6 lg:grid-cols-[320px_1fr]">
-      <LearningSidebar
-        activeLessonId={activeLessonId}
-        learningCourse={courseQuery.data}
-        onSelectLesson={selectLesson}
-      />
-      <LessonContentCard
-        tab={tab}
-        onTabChange={handleTabChange}
-        courseId={courseId}
-        hasQuiz={hasQuiz}
-        isError={lessonQuery.isError}
-        isLoading={lessonQuery.isLoading}
-        lesson={lessonQuery.data}
-        lessonError={lessonQuery.error}
-        videoRef={videoTracking.videoRef}
-        onLoadedMetadata={videoTracking.handleLoadedMetadata}
-        onRateChange={videoTracking.handleRateChange}
-        onPause={videoTracking.handleVideoPause}
-        onVolumeChange={videoTracking.handleVolumeChange}
-        onTimeUpdate={videoTracking.handleVideoTimeUpdate}
-      />
+    <div className="flex min-h-dvh flex-col bg-background">
+      <LearningPlayerTopbar learningCourse={courseQuery.data} />
+      <div className="relative flex flex-1 flex-col lg:flex-row">
+        <main className="min-w-0 flex-1">
+          <div className="flex w-full flex-col gap-6 px-4 py-6 sm:px-6 lg:py-8">
+            <LessonContentCard
+              courseId={courseId}
+              hasQuiz={hasQuiz}
+              isError={lessonQuery.isError}
+              isLoading={lessonQuery.isLoading}
+              lesson={lessonQuery.data}
+              lessonError={lessonQuery.error}
+              videoRef={videoTracking.videoRef}
+              onLoadedMetadata={videoTracking.handleLoadedMetadata}
+              onRateChange={videoTracking.handleRateChange}
+              onPause={videoTracking.handleVideoPause}
+              onVolumeChange={videoTracking.handleVolumeChange}
+              onTimeUpdate={videoTracking.handleVideoTimeUpdate}
+            />
+          </div>
+        </main>
+        {lessonPanelOpen ? (
+          <aside className="w-full shrink-0 border-t bg-card lg:sticky lg:top-14 lg:h-[calc(100dvh-3.5rem)] lg:w-[26rem] lg:overflow-y-auto lg:border-l lg:border-t-0">
+            <LearningSidebar
+              activeLessonId={activeLessonId}
+              lessonPanelOpen={lessonPanelOpen}
+              learningCourse={courseQuery.data}
+              onSelectLesson={selectLesson}
+              onToggleLessonPanel={() => setLessonPanelOpen((open) => !open)}
+            />
+          </aside>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setLessonPanelOpen(true)}
+            aria-pressed={false}
+            title="Hiện danh sách bài học"
+            className={cn(
+              buttonVariants({ variant: "outline", size: "icon" }),
+              "fixed right-3 top-16 z-40 rounded-full",
+            )}
+          >
+            <PanelRightOpen aria-hidden="true" />
+          </button>
+        )}
+      </div>
     </div>
   );
 }
