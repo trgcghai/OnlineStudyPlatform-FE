@@ -2,15 +2,14 @@
 
 import { useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Pagination } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -84,9 +83,16 @@ export function PaymentConfigAuditTable({
   enabled,
 }: PaymentConfigAuditTableProps) {
   const [page, setPage] = useState(1);
-  const limit = 10;
-  const { data, isLoading, isError, refetch, isFetching } =
-    usePaymentConfigAudits({ page, limit }, enabled);
+  const [pageSize, setPageSize] = useState(10);
+  const { data, isLoading, isError } = usePaymentConfigAudits(
+    { page, limit: pageSize },
+    enabled,
+  );
+
+  function handlePageSizeChange(size: number) {
+    setPageSize(size);
+    setPage(1);
+  }
 
   return (
     <Card>
@@ -140,41 +146,18 @@ export function PaymentConfigAuditTable({
             </TableBody>
           </Table>
         )}
+
+        {!isError && !isLoading && data && data.items.length > 0 && (
+          <Pagination
+            page={page}
+            totalPages={data.totalPages}
+            totalItems={data.total}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={handlePageSizeChange}
+          />
+        )}
       </CardContent>
-      <CardFooter className="justify-between gap-3">
-        <div className="text-sm text-muted-foreground">
-          Trang {data?.page ?? page}/{data?.totalPages ?? 1} ·{" "}
-          {data?.total ?? 0} bản ghi
-        </div>
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            disabled={isFetching}
-            onClick={() => void refetch()}
-          >
-            Tải lại
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            disabled={page <= 1 || isFetching}
-            onClick={() =>
-              setPage((currentPage) => Math.max(1, currentPage - 1))
-            }
-          >
-            Trước
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            disabled={page >= (data?.totalPages ?? 1) || isFetching}
-            onClick={() => setPage((currentPage) => currentPage + 1)}
-          >
-            Sau
-          </Button>
-        </div>
-      </CardFooter>
     </Card>
   );
 }
