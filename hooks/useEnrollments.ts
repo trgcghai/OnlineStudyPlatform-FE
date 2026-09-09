@@ -5,10 +5,16 @@ import {
   GENERIC_ERROR_MESSAGE,
   NETWORK_ERROR_MESSAGE,
 } from "@/constants/constants";
-import { enrollmentKeys, publicCourseKeys } from "@/lib/query-keys";
+import {
+  courseEnrollmentKeys,
+  enrollmentKeys,
+  publicCourseKeys,
+} from "@/lib/query-keys";
 import {
   enrollInCourse,
+  listCourseEnrollments,
   listMyEnrollments,
+  type CourseEnrollmentListFilters,
   type Enrollment,
 } from "@/services/api/enrollments";
 import { isApiErrorResponse } from "@/services/axios";
@@ -49,6 +55,17 @@ export function useMyEnrollments() {
   return useQuery({
     queryKey: enrollmentKeys.mine(),
     queryFn: listMyEnrollments,
+  });
+}
+
+export function useCourseEnrollments(
+  courseId: string,
+  filters: CourseEnrollmentListFilters,
+) {
+  return useQuery({
+    queryKey: courseEnrollmentKeys.list(courseId, filters),
+    queryFn: () => listCourseEnrollments(courseId, filters),
+    enabled: courseId.trim().length > 0,
   });
 }
 

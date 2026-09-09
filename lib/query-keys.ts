@@ -1,4 +1,5 @@
 import type { CourseListFilters } from "@/services/api/courses";
+import type { CourseEnrollmentListFilters } from "@/services/api/enrollments";
 import type { EssayGradingStatusFilter } from "@/services/api/essay-grading";
 import type { PublicCourseListFilters } from "@/services/api/public-courses";
 import type { AdminUserFilters } from "@/services/api/users";
@@ -90,6 +91,12 @@ export const publicCourseKeys = {
 export const enrollmentKeys = {
   all: ["enrollments"] as const,
   mine: () => [...enrollmentKeys.all, "mine"] as const,
+};
+
+export const courseEnrollmentKeys = {
+  all: ["course-enrollments"] as const,
+  list: (courseId: string, filters: CourseEnrollmentListFilters) =>
+    [...courseEnrollmentKeys.all, "list", courseId, filters] as const,
 };
 
 export const learnerDashboardKeys = {

@@ -8,6 +8,7 @@ import {
   PencilLine,
   Send,
   Trash2,
+  Users,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -93,6 +94,24 @@ function CourseRowActions({
         />
         <TooltipContent>
           <p>Chỉnh sửa khóa học</p>
+        </TooltipContent>
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={`Xem học viên đăng ký ${course.title}`}
+            >
+              <Link href={`/instructor/courses/${course.id}/enrollments`}>
+                <Users />
+              </Link>
+            </Button>
+          }
+        />
+        <TooltipContent>
+          <p>Học viên đăng ký</p>
         </TooltipContent>
       </Tooltip>
       <Tooltip>
