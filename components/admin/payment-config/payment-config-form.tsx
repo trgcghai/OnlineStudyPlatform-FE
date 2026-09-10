@@ -40,8 +40,8 @@ import {
   type PaymentConfigFormValues,
 } from "@/lib/schemas/payment-config";
 import { cn } from "@/lib/utils";
-import { useUpdatePaymentConfig } from "@/hooks/useAdminPaymentConfig";
-import type { PaymentConfig } from "@/services/api/payment-config";
+import { useUpdatePaymentConfig } from "@/hooks/usePayment";
+import type { PaymentConfig } from "@/services/api/payment";
 import { Badge } from "@/components/ui/badge";
 
 interface PaymentConfigFormProps {

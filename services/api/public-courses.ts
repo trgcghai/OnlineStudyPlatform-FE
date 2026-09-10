@@ -5,6 +5,7 @@ export const PUBLIC_COURSE_SORT_FIELDS = {
   UPDATED_AT: "updatedAt",
   TITLE: "title",
   CATEGORY: "category",
+  PRICE: "price",
 } as const;
 
 export type PublicCourseSortField =
@@ -32,6 +33,7 @@ export interface PublicCourse {
   category: string;
   thumbnail: string | null;
   learningOrder: PublicCourseLearningOrder;
+  price: number;
   instructorId: string;
   instructor?: PublicCourseInstructorSummary;
   lessons?: PublicCourseLessonSummary[];

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { CourseStatus } from "@/services/api/courses";
+import { formatVndAmount } from "@/lib/schemas/payment-config";
 
 export const COURSE_CATEGORIES = [
   "Programming",
@@ -54,6 +55,12 @@ export const COURSE_THUMBNAIL_ACCEPT = {
 
 export const COURSE_THUMBNAIL_MAX_SIZE_BYTES = 5 * 1024 * 1024;
 
+export function formatCoursePrice(price: number): string {
+  if (price === 0) return "Miễn phí";
+
+  return formatVndAmount(price);
+}
+
 export const courseFormSchema = z.object({
   title: z
     .string()
@@ -67,6 +74,10 @@ export const courseFormSchema = z.object({
     .max(5000, "Mô tả tối đa 5000 ký tự"),
   category: z.enum(COURSE_CATEGORIES),
   learningOrder: z.enum(COURSE_LEARNING_ORDERS),
+  price: z
+    .number("Giá khóa học là bắt buộc")
+    .int("Giá khóa học phải là số nguyên")
+    .min(0, "Giá khóa học không được âm"),
 });
 
 export type CourseFormValues = z.infer<typeof courseFormSchema>;

@@ -43,10 +43,12 @@ import {
   COURSE_STATUS_BADGE_VARIANTS,
   COURSE_STATUS_LABELS,
   courseFormSchema,
+  formatCoursePrice,
   type CourseFormValues,
 } from "@/lib/schemas/course";
 import { COURSE_STATUSES, type Course } from "@/services/api/courses";
 import { Badge, badgeVariants } from "@/components/ui/badge";
+import { useCoursePricing } from "@/hooks/usePayment";
 
 interface CourseFormProps {
   mode: "create" | "edit";
@@ -61,6 +63,7 @@ export function CourseForm({ mode, course }: CourseFormProps) {
     useCreateInstructorCourse();
   const { updateInstructorCourse, isPending: isUpdating } =
     useUpdateInstructorCourse();
+  const coursePricingQuery = useCoursePricing();
   const isPending = isCreating || isUpdating;
 
   const {
@@ -79,6 +82,7 @@ export function CourseForm({ mode, course }: CourseFormProps) {
       learningOrder:
         (course?.learningOrder as
           CourseFormValues["learningOrder"] | undefined) ?? "free",
+      price: course?.price ?? 0,
     },
   });
 
@@ -228,6 +232,47 @@ export function CourseForm({ mode, course }: CourseFormProps) {
                 )}
               />
               <FieldError errors={[errors.learningOrder]} />
+            </Field>
+
+            <Field data-invalid={!!errors.price}>
+              <FieldLabel htmlFor="course-price" required>
+                Giá khóa học
+              </FieldLabel>
+              <Controller
+                control={control}
+                name="price"
+                render={({ field }) => (
+                  <Select
+                    value={String(field.value)}
+                    onValueChange={(value) => field.onChange(Number(value))}
+                  >
+                    <SelectTrigger
+                      className="w-full"
+                      aria-label="Giá khóa học"
+                      disabled={
+                        coursePricingQuery.isPending ||
+                        coursePricingQuery.isError
+                      }
+                    >
+                      <SelectValue placeholder="Đang tải danh sách giá..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(coursePricingQuery.data?.allowedPrices ?? [0]).map(
+                        (price) => (
+                          <SelectItem key={price} value={String(price)}>
+                            {formatCoursePrice(price)}
+                          </SelectItem>
+                        ),
+                      )}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              <FieldError errors={[errors.price]} />
+              <p className="text-sm text-muted-foreground">
+                Chọn 0 VND để tạo khóa học miễn phí. Bậc giá do quản trị viên
+                cấu hình.
+              </p>
             </Field>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">

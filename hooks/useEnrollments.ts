@@ -24,7 +24,10 @@ export interface EnrollmentMutationResult {
   data?: Enrollment;
   message?: string;
   alreadyEnrolled?: boolean;
+  requiresPayment?: boolean;
 }
+
+export const PAYMENT_REQUIRED_STATUS = 402;
 
 export function mapEnrollmentError(error: unknown): string {
   if (!isAxiosError(error) || !error.response) {
@@ -44,11 +47,24 @@ export function mapEnrollmentError(error: unknown): string {
   if (status === 404) return "Khóa học không tồn tại hoặc chưa được xuất bản.";
   if (status === 409) return "Bạn đã đăng ký khóa học này.";
 
+  if (status === PAYMENT_REQUIRED_STATUS) {
+    return (
+      data.error.message ||
+      "Khóa học trả phí. Vui lòng hoàn tất thanh toán trước khi truy cập nội dung."
+    );
+  }
+
   return data.error.message || GENERIC_ERROR_MESSAGE;
 }
 
 function isAlreadyEnrolledError(error: unknown): boolean {
   return isAxiosError(error) && error.response?.status === 409;
+}
+
+function isPaymentRequiredError(error: unknown): boolean {
+  return (
+    isAxiosError(error) && error.response?.status === PAYMENT_REQUIRED_STATUS
+  );
 }
 
 export function useMyEnrollments() {
@@ -93,6 +109,7 @@ export function useEnrollInCourse() {
         ok: false,
         message: mapEnrollmentError(error),
         alreadyEnrolled: isAlreadyEnrolledError(error),
+        requiresPayment: isPaymentRequiredError(error),
       };
     }
   }

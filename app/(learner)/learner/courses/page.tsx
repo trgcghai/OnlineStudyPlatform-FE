@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useMyEnrollments } from "@/hooks/useEnrollments";
 import type { Enrollment } from "@/services/api/enrollments";
 import { formatDate } from "@/utils/dateTimeUtil";
+import { formatCoursePrice } from "@/lib/schemas/course";
 
 function formatProgress(progress: string): string {
   const value = Number(progress);
@@ -51,9 +52,22 @@ function EnrollmentCard({ enrollment }: { enrollment: Enrollment }) {
       </div>
       <div className="flex min-w-0 flex-col gap-4">
         <div className="space-y-3">
-          <Badge variant="secondary" className="w-fit">
-            {course?.category ?? "Khóa học"}
-          </Badge>
+          <div className="flex items-center justify-between gap-3">
+            <Badge variant="secondary" className="w-fit">
+              {course?.category ?? "Khóa học"}
+            </Badge>
+            {course && (
+              <span
+                className={
+                  course.price === 0
+                    ? "text-sm font-medium text-primary"
+                    : "text-sm font-semibold text-foreground"
+                }
+              >
+                {formatCoursePrice(course.price)}
+              </span>
+            )}
+          </div>
           <div>
             <h2 className="line-clamp-2 text-2xl font-semibold tracking-tight">
               {course?.title ?? "Khóa học đang cập nhật"}

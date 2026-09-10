@@ -11,17 +11,21 @@ import {
 import Image from "next/image";
 import { useSelector } from "react-redux";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toast";
 import { useEnrollInCourse } from "@/hooks/useEnrollments";
+import { useCreatePaymentCheckout } from "@/hooks/usePayment";
 import { usePublishedCourse } from "@/hooks/usePublicCourses";
+import { formatCoursePrice } from "@/lib/schemas/course";
 import {
   selectIsAuthenticated,
   selectUserRole,
 } from "@/lib/features/authSlice";
 import { USER_ROLES } from "@/services/api/users";
 import { formatDate } from "@/utils/dateTimeUtil";
+import { useState } from "react";
 
 interface CourseDetailClientProps {
   courseId: string;
@@ -29,12 +33,15 @@ interface CourseDetailClientProps {
 
 export function CourseDetailClient({ courseId }: CourseDetailClientProps) {
   const router = useRouter();
+  const [paymentRequired, setPaymentRequired] = useState(false);
   const courseQuery = usePublishedCourse(courseId);
   const course = courseQuery.data;
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const userRole = useSelector(selectUserRole);
   const { enroll, isPending } = useEnrollInCourse();
+  const createCheckout = useCreatePaymentCheckout();
   const isLearner = userRole === USER_ROLES.LEARNER;
+  const isPaid = course && course.price > 0;
   const learnHref = course
     ? `/learner/courses/${course.id}/learn`
     : "/learner/courses";
@@ -46,6 +53,17 @@ export function CourseDetailClient({ courseId }: CourseDetailClientProps) {
     if (!course) return;
 
     const result = await enroll(course.id);
+
+    if (result.requiresPayment) {
+      setPaymentRequired(true);
+      toast.add({
+        title:
+          result.message ??
+          "Khóa học trả phí. Vui lòng hoàn tất thanh toán trước khi truy cập nội dung.",
+        type: "info",
+      });
+      return;
+    }
 
     if (result.ok || result.alreadyEnrolled) {
       if (result.alreadyEnrolled && result.message) {
@@ -59,6 +77,17 @@ export function CourseDetailClient({ courseId }: CourseDetailClientProps) {
       title: result.message ?? "Không thể đăng ký khóa học.",
       type: "error",
     });
+  }
+
+  async function handleBuy() {
+    if (!course) return;
+
+    try {
+      const checkout = await createCheckout.mutateAsync(course.id);
+      router.push(`/learner/payment/checkout/${checkout.id}`);
+    } catch {
+      // The mutation already surfaced the error toast.
+    }
   }
 
   if (courseQuery.isLoading) {
@@ -143,10 +172,22 @@ export function CourseDetailClient({ courseId }: CourseDetailClientProps) {
         </div>
 
         <aside className="h-fit rounded-3xl border bg-card p-6 shadow-sm lg:sticky lg:top-6">
-          <h2 className="text-xl font-semibold">Sẵn sàng bắt đầu?</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Ghi danh để lưu khóa học vào lộ trình học tập và theo dõi tiến độ
-            của bạn.
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 className="text-xl font-semibold">Sẵn sàng bắt đầu?</h2>
+            <span
+              className={
+                course.price === 0
+                  ? "text-sm font-medium text-primary"
+                  : "text-xl font-bold text-foreground"
+              }
+            >
+              {formatCoursePrice(course.price)}
+            </span>
+          </div>
+          <p className="mt-3 text-sm text-muted-foreground">
+            {course.price === 0
+              ? "Ghi danh để lưu khóa học vào lộ trình học tập và theo dõi tiến độ của bạn."
+              : "Khóa học trả phí. Bạn phải hoàn tất thanh toán trước khi truy cập nội dung."}
           </p>
           <div className="mt-5 grid gap-3">
             {!isAuthenticated ? (
@@ -168,15 +209,37 @@ export function CourseDetailClient({ courseId }: CourseDetailClientProps) {
               <Link href={learnHref} className={buttonVariants({ size: "lg" })}>
                 Tiếp tục học
               </Link>
+            ) : paymentRequired ? (
+              <Alert>
+                <AlertTitle>Khóa học trả phí</AlertTitle>
+                <AlertDescription>
+                  {formatCoursePrice(course.price)}. Vui lòng hoàn tất thanh
+                  toán để mở khóa nội dung. Liên hệ quản trị viên nếu bạn cần hỗ
+                  trợ.
+                </AlertDescription>
+              </Alert>
             ) : isLearner ? (
-              <Button
-                type="button"
-                size="lg"
-                onClick={handleEnroll}
-                disabled={isPending}
-              >
-                {isPending ? "Đang đăng ký..." : "Đăng ký khóa học"}
-              </Button>
+              isPaid ? (
+                <Button
+                  type="button"
+                  size="lg"
+                  onClick={handleBuy}
+                  disabled={createCheckout.isPending}
+                >
+                  {createCheckout.isPending
+                    ? "Đang tạo đơn thanh toán..."
+                    : "Mua khóa học"}
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  size="lg"
+                  onClick={handleEnroll}
+                  disabled={isPending}
+                >
+                  {isPending ? "Đang đăng ký..." : "Đăng ký khóa học"}
+                </Button>
+              )
             ) : (
               <div className="rounded-2xl bg-muted p-4 text-sm text-muted-foreground">
                 Chỉ tài khoản học viên mới có thể đăng ký khóa học này.

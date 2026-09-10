@@ -31,7 +31,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { COURSE_LEARNING_ORDER_LABELS } from "@/lib/schemas/course";
+import {
+  COURSE_LEARNING_ORDER_LABELS,
+  formatCoursePrice,
+} from "@/lib/schemas/course";
 import { COURSE_STATUSES, type Course } from "@/services/api/courses";
 import { formatDate } from "@/utils/dateTimeUtil";
 import { truncate } from "lodash";
@@ -185,6 +188,15 @@ function InstructorCourseRow({
         {COURSE_LEARNING_ORDER_LABELS[course.learningOrder]}
       </TableCell>
       <TableCell>
+        {course.price === 0 ? (
+          <span className="font-medium text-primary">
+            {formatCoursePrice(course.price)}
+          </span>
+        ) : (
+          <span>{formatCoursePrice(course.price)}</span>
+        )}
+      </TableCell>
+      <TableCell>
         <CourseStatusBadge status={course.status} />
       </TableCell>
       <TableCell className="max-w-64 text-sm">
@@ -280,6 +292,7 @@ export function InstructorCoursesTable({
               <TableHead>Khóa học</TableHead>
               <TableHead>Danh mục</TableHead>
               <TableHead>Thứ tự học</TableHead>
+              <TableHead>Giá</TableHead>
               <TableHead>Trạng thái</TableHead>
               <TableHead>Lý do từ chối</TableHead>
               <TableHead>Cập nhật</TableHead>
@@ -289,7 +302,7 @@ export function InstructorCoursesTable({
           <TableBody>
             {items.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7}>
+                <TableCell colSpan={8}>
                   <div className="flex flex-col items-center gap-2 py-12 text-center">
                     <BookOpen
                       className="size-10 text-muted-foreground"

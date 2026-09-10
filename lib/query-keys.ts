@@ -1,7 +1,7 @@
 import type { CourseListFilters } from "@/services/api/courses";
 import type { CourseEnrollmentListFilters } from "@/services/api/enrollments";
 import type { EssayGradingStatusFilter } from "@/services/api/essay-grading";
-import type { PaymentConfigAuditFilters } from "@/services/api/payment-config";
+import type { PaymentConfigAuditFilters } from "@/services/api/payment";
 import type { PublicCourseListFilters } from "@/services/api/public-courses";
 import type { AdminUserFilters } from "@/services/api/users";
 
@@ -33,11 +33,14 @@ export const adminCourseContentKeys = {
     [...adminCourseContentKeys.all, "lessons", courseId] as const,
 };
 
-export const adminPaymentConfigKeys = {
-  all: ["admin-payment-config"] as const,
-  detail: () => [...adminPaymentConfigKeys.all, "detail"] as const,
-  audits: (filters: PaymentConfigAuditFilters) =>
-    [...adminPaymentConfigKeys.all, "audits", filters] as const,
+export const paymentKeys = {
+  all: ["payments"] as const,
+  config: () => [...paymentKeys.all, "config"] as const,
+  configAudits: (filters: PaymentConfigAuditFilters) =>
+    [...paymentKeys.all, "config-audits", filters] as const,
+  pricing: () => [...paymentKeys.all, "pricing"] as const,
+  transaction: (transactionId: string) =>
+    [...paymentKeys.all, "transaction", transactionId] as const,
 };
 
 export const instructorCourseKeys = {
