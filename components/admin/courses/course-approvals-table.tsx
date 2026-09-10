@@ -23,7 +23,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { COURSE_LEARNING_ORDER_LABELS } from "@/lib/schemas/course";
+import {
+  formatCoursePrice,
+  COURSE_LEARNING_ORDER_LABELS,
+} from "@/lib/schemas/course";
 import type { CourseApproval } from "@/services/api/courses";
 import { formatDate } from "@/utils/dateTimeUtil";
 
@@ -52,6 +55,15 @@ function CourseApprovalRow({
       <TableCell>{getCourseCategoryLabel(course.category)}</TableCell>
       <TableCell>
         {COURSE_LEARNING_ORDER_LABELS[course.learningOrder]}
+      </TableCell>
+      <TableCell>
+        {course.price === 0 ? (
+          <span className="font-medium text-primary">
+            {formatCoursePrice(course.price)}
+          </span>
+        ) : (
+          <span>{formatCoursePrice(course.price)}</span>
+        )}
       </TableCell>
       <TableCell>
         <div className="flex flex-col">
@@ -188,6 +200,7 @@ export function CourseApprovalsTable({
               <TableHead>Khóa học</TableHead>
               <TableHead>Danh mục</TableHead>
               <TableHead>Thứ tự học</TableHead>
+              <TableHead>Giá</TableHead>
               <TableHead>Giảng viên</TableHead>
               <TableHead>Trạng thái</TableHead>
               <TableHead>Ngày gửi</TableHead>
@@ -197,7 +210,7 @@ export function CourseApprovalsTable({
           <TableBody>
             {items.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7}>
+                <TableCell colSpan={8}>
                   <div className="flex flex-col items-center gap-2 py-12 text-center">
                     <BookOpen
                       className="size-10 text-muted-foreground"

@@ -11,6 +11,7 @@ export interface EnrollmentCourse {
   description: string;
   category: string;
   thumbnail: string | null;
+  price: number;
   instructorId: string;
   instructor?: EnrollmentCourseInstructor;
 }

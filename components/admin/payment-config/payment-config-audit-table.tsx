@@ -19,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { usePaymentConfigAudits } from "@/hooks/useAdminPaymentConfig";
+import { usePaymentConfigAudits } from "@/hooks/usePayment";
 import {
   formatVndAmount,
   PAYMENT_CONFIG_FIELD_LABELS,
@@ -27,7 +27,7 @@ import {
 import type {
   PaymentConfigAudit,
   PaymentConfigSnapshot,
-} from "@/services/api/payment-config";
+} from "@/services/api/payment";
 import { formatDateTime } from "@/utils/dateTimeUtil";
 
 interface PaymentConfigAuditTableProps {

@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import type { PublicCourse } from "@/services/api/public-courses";
 import Image from "next/image";
+import { formatCoursePrice } from "@/lib/schemas/course";
 
 function excerpt(text: string, maxLength = 140): string {
   if (text.length <= maxLength) return text;
@@ -48,6 +49,13 @@ export function PublicCourseCard({ course }: PublicCourseCardProps) {
             <Badge variant="secondary" className="w-fit">
               {course.category}
             </Badge>
+            <span
+              className={
+                course.price === 0 ? "" : "font-semibold text-foreground"
+              }
+            >
+              {formatCoursePrice(course.price)}
+            </span>
           </div>
           <CardTitle className="line-clamp-2 group-hover:text-primary">
             {course.title}

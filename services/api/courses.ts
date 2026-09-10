@@ -29,6 +29,7 @@ export interface Course {
   status: CourseStatus;
   rejectReason: string | null;
   learningOrder: LearningOrder;
+  price: number;
   instructorId: string;
   createdAt: string;
   updatedAt: string;
@@ -50,7 +51,8 @@ export interface CourseListFilters {
   q?: string;
   category?: string;
   status?: CourseStatus;
-  sortBy?: "createdAt" | "updatedAt" | "title" | "category" | "status";
+  sortBy?:
+    "createdAt" | "updatedAt" | "title" | "category" | "status" | "price";
   sortOrder?: "ASC" | "DESC";
 }
 
@@ -87,6 +89,7 @@ export interface CreateCoursePayload {
   description: string;
   category: string;
   learningOrder?: LearningOrder;
+  price?: number;
 }
 
 export type UpdateCoursePayload = Partial<CreateCoursePayload>;
