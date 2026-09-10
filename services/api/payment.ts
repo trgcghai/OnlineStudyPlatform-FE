@@ -96,7 +96,9 @@ function buildPaymentConfigAuditQuery(
 
 export async function getPaymentConfig(): Promise<PaymentConfig> {
   const { data } =
-    await axiosClient.get<ApiSuccessResponse<PaymentConfig>>("/payment/config");
+    await axiosClient.get<ApiSuccessResponse<PaymentConfig>>(
+      "/payments/config",
+    );
 
   return data.data;
 }
@@ -105,7 +107,7 @@ export async function updatePaymentConfig(
   payload: UpdatePaymentConfigPayload,
 ): Promise<PaymentConfig> {
   const { data } = await axiosClient.put<ApiSuccessResponse<PaymentConfig>>(
-    "/payment/config",
+    "/payments/config",
     payload,
   );
 
@@ -117,7 +119,7 @@ export async function listPaymentConfigAudits(
 ): Promise<PaymentConfigAuditList> {
   const { data } = await axiosClient.get<
     ApiSuccessResponse<PaymentConfigAuditList>
-  >(`/payment/config/audits${buildPaymentConfigAuditQuery(filters)}`);
+  >(`/payments/config/audits${buildPaymentConfigAuditQuery(filters)}`);
 
   return data.data;
 }
