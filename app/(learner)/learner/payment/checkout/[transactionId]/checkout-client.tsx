@@ -283,7 +283,7 @@ export function CheckoutClient({ transactionId }: CheckoutClientProps) {
 
             <Button
               type="button"
-              variant="outline"
+              variant="destructive"
               size="sm"
               className="mt-4 w-full"
               onClick={handleCancel}
