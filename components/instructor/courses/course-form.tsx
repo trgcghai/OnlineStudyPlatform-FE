@@ -4,7 +4,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import {
+  Controller,
+  useForm,
+  type Control,
+  type FieldError as HookFieldError,
+} from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -49,6 +54,7 @@ import {
 import { COURSE_STATUSES, type Course } from "@/services/api/courses";
 import { Badge, badgeVariants } from "@/components/ui/badge";
 import { useCoursePricing } from "@/hooks/usePayment";
+import type { CoursePricingReference } from "@/services/api/payment";
 
 interface CourseFormProps {
   mode: "create" | "edit";
@@ -234,46 +240,14 @@ export function CourseForm({ mode, course }: CourseFormProps) {
               <FieldError errors={[errors.learningOrder]} />
             </Field>
 
-            <Field data-invalid={!!errors.price}>
-              <FieldLabel htmlFor="course-price" required>
-                Giá khóa học
-              </FieldLabel>
-              <Controller
-                control={control}
-                name="price"
-                render={({ field }) => (
-                  <Select
-                    value={String(field.value)}
-                    onValueChange={(value) => field.onChange(Number(value))}
-                  >
-                    <SelectTrigger
-                      className="w-full"
-                      aria-label="Giá khóa học"
-                      disabled={
-                        coursePricingQuery.isPending ||
-                        coursePricingQuery.isError
-                      }
-                    >
-                      <SelectValue placeholder="Đang tải danh sách giá..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {(coursePricingQuery.data?.allowedPrices ?? [0]).map(
-                        (price) => (
-                          <SelectItem key={price} value={String(price)}>
-                            {formatCoursePrice(price)}
-                          </SelectItem>
-                        ),
-                      )}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              <FieldError errors={[errors.price]} />
-              <p className="text-sm text-muted-foreground">
-                Chọn 0 VND để tạo khóa học miễn phí. Bậc giá do quản trị viên
-                cấu hình.
-              </p>
-            </Field>
+            <CoursePriceField
+              control={control}
+              error={errors.price}
+              pricing={coursePricingQuery.data}
+              disabled={
+                coursePricingQuery.isPending || coursePricingQuery.isError
+              }
+            />
 
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
               <Button type="button" variant="outline" disabled={isPending}>
@@ -302,5 +276,56 @@ export function CourseForm({ mode, course }: CourseFormProps) {
         </form>
       </CardContent>
     </Card>
+  );
+}
+
+interface CoursePriceFieldProps {
+  control: Control<CourseFormValues>;
+  error?: HookFieldError;
+  pricing?: CoursePricingReference;
+  disabled: boolean;
+}
+
+function CoursePriceField({
+  control,
+  error,
+  pricing,
+  disabled,
+}: CoursePriceFieldProps) {
+  return (
+    <Field data-invalid={!!error}>
+      <FieldLabel htmlFor="course-price" required>
+        Giá khóa học
+      </FieldLabel>
+      <Controller
+        control={control}
+        name="price"
+        render={({ field }) => (
+          <Select
+            value={String(field.value)}
+            onValueChange={(value) => field.onChange(Number(value))}
+          >
+            <SelectTrigger
+              className="w-full"
+              aria-label="Giá khóa học"
+              disabled={disabled}
+            >
+              <SelectValue placeholder="Đang tải danh sách giá..." />
+            </SelectTrigger>
+            <SelectContent>
+              {(pricing?.allowedPrices ?? [0]).map((price) => (
+                <SelectItem key={price} value={String(price)}>
+                  {formatCoursePrice(price)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+      />
+      <FieldError errors={[error]} />
+      <p className="text-sm text-muted-foreground">
+        Chọn 0 VND để tạo khóa học miễn phí. Bậc giá do quản trị viên cấu hình.
+      </p>
+    </Field>
   );
 }

@@ -54,7 +54,7 @@ export function isApiErrorResponse(data: unknown): data is ApiErrorResponse {
 
 // Cấu hình mặc định cho các request
 const axiosClient = axios.create({
-  baseURL: (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/api$/, ""),
+  baseURL: process.env.NEXT_PUBLIC_API_URL ?? "",
   withCredentials: true,
   timeout: 1000 * 60 * 10,
 });

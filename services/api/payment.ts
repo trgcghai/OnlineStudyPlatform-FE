@@ -1,9 +1,5 @@
 import axiosClient, { type ApiSuccessResponse } from "@/services/axios";
 
-// ---------------------------------------------------------------------------
-// Payment Config (admin)
-// ---------------------------------------------------------------------------
-
 export type PaymentConfigCurrency = "VND";
 
 export interface PaymentConfig {
@@ -53,18 +49,10 @@ export interface PaymentConfigAuditList {
   totalPages: number;
 }
 
-// ---------------------------------------------------------------------------
-// Course Pricing (instructor)
-// ---------------------------------------------------------------------------
-
 export interface CoursePricingReference {
   currency: PaymentConfigCurrency;
   allowedPrices: number[];
 }
-
-// ---------------------------------------------------------------------------
-// Payment Transactions (learner checkout)
-// ---------------------------------------------------------------------------
 
 export type PaymentStatus =
   "pending" | "paid" | "failed" | "cancelled" | "expired" | "refunded";
@@ -93,10 +81,6 @@ export interface CheckoutResult extends PaymentTransaction {
   qrImageUrl: string;
 }
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 function buildPaymentConfigAuditQuery(
   filters: PaymentConfigAuditFilters = {},
 ): string {
@@ -110,13 +94,11 @@ function buildPaymentConfigAuditQuery(
   return query.length > 0 ? `?${query}` : "";
 }
 
-// ---------------------------------------------------------------------------
-// API functions — Payment Config (admin)
-// ---------------------------------------------------------------------------
-
 export async function getPaymentConfig(): Promise<PaymentConfig> {
   const { data } =
-    await axiosClient.get<ApiSuccessResponse<PaymentConfig>>("/payment/config");
+    await axiosClient.get<ApiSuccessResponse<PaymentConfig>>(
+      "/payments/config",
+    );
 
   return data.data;
 }
@@ -125,7 +107,7 @@ export async function updatePaymentConfig(
   payload: UpdatePaymentConfigPayload,
 ): Promise<PaymentConfig> {
   const { data } = await axiosClient.put<ApiSuccessResponse<PaymentConfig>>(
-    "/payment/config",
+    "/payments/config",
     payload,
   );
 
@@ -137,27 +119,19 @@ export async function listPaymentConfigAudits(
 ): Promise<PaymentConfigAuditList> {
   const { data } = await axiosClient.get<
     ApiSuccessResponse<PaymentConfigAuditList>
-  >(`/payment/config/audits${buildPaymentConfigAuditQuery(filters)}`);
+  >(`/payments/config/audits${buildPaymentConfigAuditQuery(filters)}`);
 
   return data.data;
 }
-
-// ---------------------------------------------------------------------------
-// API functions — Course Pricing (instructor)
-// ---------------------------------------------------------------------------
 
 export async function getCoursePricing(): Promise<CoursePricingReference> {
   const { data } =
     await axiosClient.get<ApiSuccessResponse<CoursePricingReference>>(
-      "/payment/pricing",
+      "/payments/pricing",
     );
 
   return data.data;
 }
-
-// ---------------------------------------------------------------------------
-// API functions — Payment Transactions (learner checkout)
-// ---------------------------------------------------------------------------
 
 export async function createPaymentCheckout(
   courseId: string,

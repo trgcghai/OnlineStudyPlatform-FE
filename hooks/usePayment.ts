@@ -21,10 +21,6 @@ import {
 } from "@/services/api/payment";
 import { isApiErrorResponse } from "@/services/axios";
 
-// ---------------------------------------------------------------------------
-// Error mappers
-// ---------------------------------------------------------------------------
-
 function mapCoursePricingError(error: unknown): string {
   if (!isAxiosError(error) || !error.response) {
     return NETWORK_ERROR_MESSAGE;
@@ -89,10 +85,6 @@ export function mapPaymentError(error: unknown): string {
   return data.error.message || GENERIC_ERROR_MESSAGE;
 }
 
-// ---------------------------------------------------------------------------
-// Course Pricing (instructor)
-// ---------------------------------------------------------------------------
-
 export function useCoursePricing() {
   return useQuery({
     queryKey: paymentKeys.pricing(),
@@ -104,10 +96,6 @@ export function useCoursePricing() {
 export function formatCoursePricingError(error: unknown): string {
   return mapCoursePricingError(error);
 }
-
-// ---------------------------------------------------------------------------
-// Payment Config (admin)
-// ---------------------------------------------------------------------------
 
 export interface PaymentConfigFailure {
   formError: string;
@@ -165,10 +153,6 @@ export function useUpdatePaymentConfig() {
 
   return { updateConfig, isPending: mutation.isPending };
 }
-
-// ---------------------------------------------------------------------------
-// Payment Transactions (learner checkout)
-// ---------------------------------------------------------------------------
 
 export function usePaymentTransaction(transactionId: string) {
   return useQuery({
