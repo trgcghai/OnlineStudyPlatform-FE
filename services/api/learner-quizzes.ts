@@ -147,7 +147,7 @@ export function submitQuizAttemptKeepalive(
 ): void {
   if (typeof window === "undefined") return;
 
-  const baseURL = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/api$/, "");
+  const baseURL = process.env.NEXT_PUBLIC_API_URL ?? "";
   const accessToken = getCurrentAccessTokenSnapshot();
   const headers: HeadersInit = {
     "Content-Type": "application/json",
