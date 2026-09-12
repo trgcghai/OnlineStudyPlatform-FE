@@ -4,7 +4,7 @@ import { PublicHeader } from "@/components/layout/public-header";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { USER_ROLES } from "@/services/api/users";
-import { BookOpen, CircleUserRound } from "lucide-react";
+import { BookOpen, CircleUserRound, CreditCard } from "lucide-react";
 
 const LEARNER_ROLES = [USER_ROLES.LEARNER] as const;
 
@@ -32,6 +32,13 @@ export default function LearnerLayout({
             >
               <BookOpen data-icon="inline-start" aria-hidden="true" />
               Khóa học của tôi
+            </Link>
+            <Link
+              href="/learner/payments"
+              className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+            >
+              <CreditCard data-icon="inline-start" aria-hidden="true" />
+              Thanh toán
             </Link>
             <Link
               href="/profile"

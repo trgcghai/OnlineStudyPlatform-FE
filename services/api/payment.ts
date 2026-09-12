@@ -112,6 +112,21 @@ export interface AdminPaymentTransactionItem extends PaymentTransaction {
   course: AdminPaymentCourseSummary | null;
 }
 
+export interface LearnerPaymentTransactionFilters {
+  status?: PaymentStatus;
+  page?: number;
+  limit?: number;
+}
+
+export interface LearnerPaymentTransactionItem {
+  id: string;
+  courseTitle: string;
+  amount: number;
+  status: PaymentStatus;
+  createdAt: string;
+  paidAt: string | null;
+}
+
 export type AdminProviderEventResult =
   | "processed_paid"
   | "duplicate_provider_event"
@@ -298,6 +313,16 @@ export async function cancelPaymentTransaction(
   const { data } = await axiosClient.post<ApiSuccessResponse<CheckoutResult>>(
     `/payments/transactions/${transactionId}/cancel`,
   );
+
+  return data.data;
+}
+
+export async function listLearnerPaymentTransactions(
+  filters: LearnerPaymentTransactionFilters = {},
+): Promise<AdminPaymentList<LearnerPaymentTransactionItem>> {
+  const { data } = await axiosClient.get<
+    ApiSuccessResponse<AdminPaymentList<LearnerPaymentTransactionItem>>
+  >(`/payments/transactions${buildPaymentAdminQuery(filters)}`);
 
   return data.data;
 }

@@ -4,6 +4,7 @@ import type { EssayGradingStatusFilter } from "@/services/api/essay-grading";
 import type {
   AdminPaymentTransactionFilters,
   AdminProviderEventFilters,
+  LearnerPaymentTransactionFilters,
   PaymentConfigAuditFilters,
 } from "@/services/api/payment";
 import type { PublicCourseListFilters } from "@/services/api/public-courses";
@@ -45,6 +46,8 @@ export const paymentKeys = {
   pricing: () => [...paymentKeys.all, "pricing"] as const,
   transaction: (transactionId: string) =>
     [...paymentKeys.all, "transaction", transactionId] as const,
+  learnerTransactions: (filters: LearnerPaymentTransactionFilters) =>
+    [...paymentKeys.all, "learner-transactions", filters] as const,
   adminTransactions: (filters: AdminPaymentTransactionFilters) =>
     [...paymentKeys.all, "admin-transactions", filters] as const,
   adminTransactionDetail: (transactionId: string) =>

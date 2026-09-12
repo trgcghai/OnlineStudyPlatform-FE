@@ -14,6 +14,7 @@ import {
   getCoursePricing,
   getPaymentConfig,
   getPaymentTransaction,
+  listLearnerPaymentTransactions,
   listAdminPaymentProviderEvents,
   listAdminPaymentTransactions,
   listPaymentConfigAudits,
@@ -21,6 +22,7 @@ import {
   type AdminPaymentTransactionFilters,
   type AdminProviderEventFilters,
   type CheckoutResult,
+  type LearnerPaymentTransactionFilters,
   type PaymentConfig,
   type PaymentConfigAuditFilters,
   type UpdatePaymentConfigPayload,
@@ -169,6 +171,15 @@ export function usePaymentTransaction(transactionId: string) {
       const state = query.state.data;
       return state && state.status === "pending" ? 5000 : false;
     },
+  });
+}
+
+export function useLearnerPaymentTransactions(
+  filters: LearnerPaymentTransactionFilters,
+) {
+  return useQuery({
+    queryKey: paymentKeys.learnerTransactions(filters),
+    queryFn: () => listLearnerPaymentTransactions(filters),
   });
 }
 
