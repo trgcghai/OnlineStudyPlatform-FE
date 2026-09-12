@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
+import { type ComponentType, useMemo } from "react";
+import { CreditCard, RadioTower, ReceiptText, ShieldCheck } from "lucide-react";
 import { useQueryStates } from "nuqs";
 import {
   PaymentProviderEventFilters,
@@ -39,6 +40,7 @@ import {
 import type {
   AdminPaymentTransactionFilters,
   AdminProviderEventFilters,
+  PaymentStatus,
 } from "@/services/api/payment";
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -50,6 +52,35 @@ function parseAmount(value: string): number | undefined {
   const amount = Number(value);
 
   return Number.isFinite(amount) && amount >= 0 ? amount : undefined;
+}
+
+function PaymentOverviewCard({
+  description,
+  icon: Icon,
+  title,
+  value,
+}: {
+  description: string;
+  icon: ComponentType<{ className?: string }>;
+  title: string;
+  value: string | number;
+}) {
+  return (
+    <Card>
+      <CardContent className="flex items-center gap-4 p-5">
+        <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+          <Icon className="size-5" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-sm text-muted-foreground">{title}</p>
+          <p className="text-2xl font-semibold tracking-tight">{value}</p>
+          <p className="truncate text-xs text-muted-foreground">
+            {description}
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function AdminPaymentsPage() {
@@ -120,6 +151,15 @@ export default function AdminPaymentsPage() {
     useAdminPaymentProviderEvents(providerEventFilters);
   const transactions = transactionsQuery.data?.items ?? [];
   const providerEvents = providerEventsQuery.data?.items ?? [];
+  const transactionStatusCounts = transactions.reduce<
+    Partial<Record<PaymentStatus, number>>
+  >((counts, transaction) => {
+    counts[transaction.status] = (counts[transaction.status] ?? 0) + 1;
+    return counts;
+  }, {});
+  const unmatchedProviderEventCount = providerEvents.filter(
+    (event) => !event.paymentTransaction,
+  ).length;
 
   useClampUrlPage({
     page: filtersState.txPage,
@@ -147,30 +187,66 @@ export default function AdminPaymentsPage() {
 
   return (
     <div className="mx-auto flex w-full flex-col gap-6">
-      <div className="flex flex-col gap-2">
-        <p className="text-sm font-medium text-primary">Payment Operations</p>
-        <h1 className="font-heading text-2xl font-semibold tracking-tight">
-          Thanh toán
-        </h1>
-        <p className="max-w-3xl text-sm text-muted-foreground">
-          Theo dõi giao dịch thanh toán và sự kiện SePay ở chế độ chỉ xem.
-        </p>
+      <div className="flex flex-col gap-3">
+        <div className="inline-flex w-fit items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
+          <ShieldCheck className="size-3.5" aria-hidden="true" />
+          Chế độ chỉ xem
+        </div>
+        <div className="space-y-2">
+          <h1 className="font-heading text-2xl font-semibold tracking-tight">
+            Thanh toán
+          </h1>
+          <p className="max-w-3xl text-sm text-muted-foreground">
+            Theo dõi giao dịch thanh toán và ledger sự kiện SePay theo cùng
+            luồng quản trị hiện có.
+          </p>
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <PaymentOverviewCard
+          icon={CreditCard}
+          title="Giao dịch"
+          value={transactionsQuery.data?.total ?? 0}
+          description="Tổng giao dịch theo bộ lọc"
+        />
+        <PaymentOverviewCard
+          icon={ReceiptText}
+          title="Đã thanh toán"
+          value={transactionStatusCounts.paid ?? 0}
+          description="Trong trang giao dịch hiện tại"
+        />
+        <PaymentOverviewCard
+          icon={RadioTower}
+          title="Sự kiện provider"
+          value={providerEventsQuery.data?.total ?? 0}
+          description="Tổng sự kiện theo bộ lọc"
+        />
+        <PaymentOverviewCard
+          icon={ShieldCheck}
+          title="Chưa khớp"
+          value={unmatchedProviderEventCount}
+          description="Trong trang sự kiện hiện tại"
+        />
       </div>
 
       <Tabs
         value={activeTab}
         onValueChange={(tab) => void setFiltersState({ tab })}
+        className="flex flex-col gap-4"
       >
-        <TabsList>
+        <TabsList className="w-fit">
           <TabsTrigger value={TRANSACTIONS_TAB}>
+            <CreditCard className="size-4" aria-hidden="true" />
             Giao dịch thanh toán
           </TabsTrigger>
           <TabsTrigger value={PROVIDER_EVENTS_TAB}>
+            <RadioTower className="size-4" aria-hidden="true" />
             Sự kiện nhà cung cấp
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value={TRANSACTIONS_TAB}>
+        <TabsContent value={TRANSACTIONS_TAB} className="mt-0">
           <Card>
             <CardHeader>
               <CardTitle>Giao dịch thanh toán</CardTitle>
@@ -237,7 +313,7 @@ export default function AdminPaymentsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value={PROVIDER_EVENTS_TAB}>
+        <TabsContent value={PROVIDER_EVENTS_TAB} className="mt-0">
           <Card>
             <CardHeader>
               <CardTitle>Sự kiện nhà cung cấp</CardTitle>

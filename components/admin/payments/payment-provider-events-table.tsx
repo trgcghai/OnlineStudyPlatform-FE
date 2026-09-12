@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { RadioTower } from "lucide-react";
+import { Eye, RadioTower } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,11 +13,76 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { formatVndAmount } from "@/lib/schemas/payment-config";
 import type { AdminProviderEventItem } from "@/services/api/payment";
 import { formatDateTime } from "@/utils/dateTimeUtil";
 import { PaymentStatusBadge } from "./payment-status-badge";
 import { ProviderEventResultBadge } from "./provider-event-result-badge";
+
+function PaymentProviderEventRow({ event }: { event: AdminProviderEventItem }) {
+  return (
+    <TableRow>
+      <TableCell>
+        <ProviderEventResultBadge result={event.result} />
+      </TableCell>
+      <TableCell>
+        <span className="font-mono text-xs text-muted-foreground">
+          {event.providerTransactionId}
+        </span>
+      </TableCell>
+      <TableCell>
+        <span className="font-medium">{event.reportedPaymentCode ?? "-"}</span>
+      </TableCell>
+      <TableCell className="font-medium">
+        {formatVndAmount(event.transferAmount)}
+      </TableCell>
+      <TableCell>{event.transferType}</TableCell>
+      <TableCell>{event.gateway ?? "-"}</TableCell>
+      <TableCell>
+        {event.paymentTransaction ? (
+          <div className="flex min-w-44 flex-col gap-1">
+            <span className="font-medium">
+              {event.paymentTransaction.paymentCode}
+            </span>
+            <PaymentStatusBadge status={event.paymentTransaction.status} />
+          </div>
+        ) : (
+          <span className="text-muted-foreground">Không khớp</span>
+        )}
+      </TableCell>
+      <TableCell className="text-sm text-muted-foreground">
+        {formatDateTime(event.receivedAt)}
+      </TableCell>
+      <TableCell className="text-right">
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={`Xem chi tiết sự kiện ${event.providerTransactionId}`}
+                nativeButton={false}
+                render={
+                  <Link href={`/admin/payments/provider-events/${event.id}`} />
+                }
+              >
+                <Eye />
+              </Button>
+            }
+          />
+          <TooltipContent>
+            <p>Xem chi tiết sự kiện</p>
+          </TooltipContent>
+        </Tooltip>
+      </TableCell>
+    </TableRow>
+  );
+}
 
 export function PaymentProviderEventsTable({
   isError,
@@ -50,7 +115,7 @@ export function PaymentProviderEventsTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border">
+    <div className="overflow-hidden rounded-2xl border bg-card">
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
@@ -79,7 +144,12 @@ export function PaymentProviderEventsTable({
               <TableRow>
                 <TableCell colSpan={9}>
                   <div className="flex flex-col items-center gap-2 py-12 text-center">
-                    <RadioTower className="size-10 text-muted-foreground" />
+                    <span className="flex size-12 items-center justify-center rounded-full bg-muted">
+                      <RadioTower
+                        className="size-6 text-muted-foreground"
+                        aria-hidden="true"
+                      />
+                    </span>
                     <p className="font-medium">Không có sự kiện nào</p>
                     <p className="text-sm text-muted-foreground">
                       Không tìm thấy sự kiện phù hợp với bộ lọc.
@@ -89,45 +159,7 @@ export function PaymentProviderEventsTable({
               </TableRow>
             ) : (
               items.map((event) => (
-                <TableRow key={event.id}>
-                  <TableCell>
-                    <ProviderEventResultBadge result={event.result} />
-                  </TableCell>
-                  <TableCell>{event.providerTransactionId}</TableCell>
-                  <TableCell>{event.reportedPaymentCode ?? "-"}</TableCell>
-                  <TableCell>{formatVndAmount(event.transferAmount)}</TableCell>
-                  <TableCell>{event.transferType}</TableCell>
-                  <TableCell>{event.gateway ?? "-"}</TableCell>
-                  <TableCell>
-                    {event.paymentTransaction ? (
-                      <div className="flex min-w-44 flex-col gap-1">
-                        <span className="font-medium">
-                          {event.paymentTransaction.paymentCode}
-                        </span>
-                        <PaymentStatusBadge
-                          status={event.paymentTransaction.status}
-                        />
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground">Không khớp</span>
-                    )}
-                  </TableCell>
-                  <TableCell>{formatDateTime(event.receivedAt)}</TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      nativeButton={false}
-                      render={
-                        <Link
-                          href={`/admin/payments/provider-events/${event.id}`}
-                        />
-                      }
-                    >
-                      Chi tiết
-                    </Button>
-                  </TableCell>
-                </TableRow>
+                <PaymentProviderEventRow key={event.id} event={event} />
               ))
             )}
           </TableBody>

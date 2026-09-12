@@ -1,9 +1,21 @@
 "use client";
 
-import { Search } from "lucide-react";
+import {
+  CalendarDays,
+  Landmark,
+  RadioTower,
+  Search,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 import {
   Select,
   SelectContent,
@@ -40,6 +52,21 @@ const STATUS_LABELS: Record<ProviderEventPaymentStatusFilter, string> = {
   refunded: "Đã hoàn tiền",
 };
 
+function FilterField({
+  children,
+  label,
+}: {
+  children: React.ReactNode;
+  label: string;
+}) {
+  return (
+    <label className="flex flex-col gap-1.5 text-xs font-medium text-muted-foreground">
+      {label}
+      {children}
+    </label>
+  );
+}
+
 export function PaymentProviderEventFilters({
   dateFrom,
   dateTo,
@@ -71,86 +98,180 @@ export function PaymentProviderEventFilters({
   onSearchChange: (value: string) => void;
   onTransferTypeChange: (value: string) => void;
 }) {
+  const hasActiveFilters = Boolean(
+    dateFrom ||
+    dateTo ||
+    gateway ||
+    paymentStatus ||
+    result ||
+    search ||
+    transferType,
+  );
+
+  function clearFilters() {
+    onSearchChange("");
+    onResultChange("");
+    onPaymentStatusChange("");
+    onDateFromChange("");
+    onDateToChange("");
+    onTransferTypeChange("");
+    onGatewayChange("");
+  }
+
   return (
-    <div className="grid gap-3 xl:grid-cols-[minmax(18rem,1fr)_repeat(4,minmax(9rem,12rem))]">
-      <form onSubmit={(event) => event.preventDefault()}>
-        <InputGroup>
-          <InputGroupInput
-            placeholder="Tìm provider TX, mã báo cáo..."
-            aria-label="Tìm kiếm sự kiện nhà cung cấp"
-            value={search}
-            onChange={(event) => onSearchChange(event.target.value)}
-          />
-          <Button type="submit" variant="ghost" size="icon-xs">
-            <Search />
-          </Button>
-        </InputGroup>
-      </form>
+    <div className="rounded-2xl border bg-muted/20 p-4">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2">
+          <span className="flex size-8 items-center justify-center rounded-full bg-background text-muted-foreground">
+            <SlidersHorizontal className="size-4" aria-hidden="true" />
+          </span>
+          <div>
+            <p className="text-sm font-medium">Bộ lọc sự kiện</p>
+            <p className="text-xs text-muted-foreground">
+              Lọc theo kết quả xử lý, giao dịch liên kết, thời gian và gateway.
+            </p>
+          </div>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={!hasActiveFilters}
+          onClick={clearFilters}
+        >
+          <X />
+          Xóa lọc
+        </Button>
+      </div>
 
-      <Select
-        value={result}
-        onValueChange={(value) =>
-          onResultChange(value as ProviderEventResultFilter)
-        }
-        items={RESULT_LABELS}
-      >
-        <SelectTrigger aria-label="Lọc kết quả sự kiện">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {(Object.keys(RESULT_LABELS) as ProviderEventResultFilter[]).map(
-            (value) => (
-              <SelectItem key={value || "all"} value={value}>
-                {RESULT_LABELS[value]}
-              </SelectItem>
-            ),
-          )}
-        </SelectContent>
-      </Select>
+      <div className="grid gap-3 xl:grid-cols-[minmax(18rem,1fr)_repeat(4,minmax(9rem,12rem))]">
+        <form onSubmit={(event) => event.preventDefault()}>
+          <FilterField label="Tìm kiếm">
+            <InputGroup className="bg-background">
+              <InputGroupAddon>
+                <Search />
+              </InputGroupAddon>
+              <InputGroupInput
+                placeholder="Provider TX, mã báo cáo..."
+                aria-label="Tìm kiếm sự kiện nhà cung cấp"
+                value={search}
+                onChange={(event) => onSearchChange(event.target.value)}
+              />
+              <InputGroupButton
+                type="submit"
+                variant="ghost"
+                size="icon-xs"
+                aria-label="Tìm kiếm"
+              >
+                <Search />
+              </InputGroupButton>
+            </InputGroup>
+          </FilterField>
+        </form>
 
-      <Select
-        value={paymentStatus}
-        onValueChange={(value) =>
-          onPaymentStatusChange(value as ProviderEventPaymentStatusFilter)
-        }
-        items={STATUS_LABELS}
-      >
-        <SelectTrigger aria-label="Lọc trạng thái giao dịch liên kết">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {(
-            Object.keys(STATUS_LABELS) as ProviderEventPaymentStatusFilter[]
-          ).map((value) => (
-            <SelectItem key={value || "all"} value={value}>
-              {STATUS_LABELS[value]}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        <FilterField label="Kết quả">
+          <Select
+            value={result}
+            onValueChange={(value) =>
+              onResultChange(value as ProviderEventResultFilter)
+            }
+            items={RESULT_LABELS}
+          >
+            <SelectTrigger
+              className="w-full bg-background"
+              aria-label="Lọc kết quả sự kiện"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {(Object.keys(RESULT_LABELS) as ProviderEventResultFilter[]).map(
+                (value) => (
+                  <SelectItem key={value || "all"} value={value}>
+                    {RESULT_LABELS[value]}
+                  </SelectItem>
+                ),
+              )}
+            </SelectContent>
+          </Select>
+        </FilterField>
 
-      <Input
-        type="date"
-        aria-label="Từ ngày nhận"
-        value={dateFrom}
-        onChange={(event) => onDateFromChange(event.target.value)}
-      />
-      <Input
-        type="date"
-        aria-label="Đến ngày nhận"
-        value={dateTo}
-        onChange={(event) => onDateToChange(event.target.value)}
-      />
-      <Input
-        placeholder="Loại chuyển khoản"
-        value={transferType}
-        onChange={(event) => onTransferTypeChange(event.target.value)}
-      />
-      <Input
-        placeholder="Gateway"
-        value={gateway}
-        onChange={(event) => onGatewayChange(event.target.value)}
-      />
+        <FilterField label="Trạng thái giao dịch">
+          <Select
+            value={paymentStatus}
+            onValueChange={(value) =>
+              onPaymentStatusChange(value as ProviderEventPaymentStatusFilter)
+            }
+            items={STATUS_LABELS}
+          >
+            <SelectTrigger
+              className="w-full bg-background"
+              aria-label="Lọc trạng thái giao dịch liên kết"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {(
+                Object.keys(STATUS_LABELS) as ProviderEventPaymentStatusFilter[]
+              ).map((value) => (
+                <SelectItem key={value || "all"} value={value}>
+                  {STATUS_LABELS[value]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FilterField>
+
+        <FilterField label="Từ ngày nhận">
+          <InputGroup className="bg-background">
+            <InputGroupAddon>
+              <CalendarDays />
+            </InputGroupAddon>
+            <InputGroupInput
+              type="date"
+              aria-label="Từ ngày nhận"
+              value={dateFrom}
+              onChange={(event) => onDateFromChange(event.target.value)}
+            />
+          </InputGroup>
+        </FilterField>
+        <FilterField label="Đến ngày nhận">
+          <InputGroup className="bg-background">
+            <InputGroupAddon>
+              <CalendarDays />
+            </InputGroupAddon>
+            <InputGroupInput
+              type="date"
+              aria-label="Đến ngày nhận"
+              value={dateTo}
+              onChange={(event) => onDateToChange(event.target.value)}
+            />
+          </InputGroup>
+        </FilterField>
+        <FilterField label="Loại chuyển khoản">
+          <InputGroup className="bg-background">
+            <InputGroupAddon>
+              <RadioTower />
+            </InputGroupAddon>
+            <InputGroupInput
+              placeholder="Loại chuyển khoản"
+              value={transferType}
+              onChange={(event) => onTransferTypeChange(event.target.value)}
+            />
+          </InputGroup>
+        </FilterField>
+        <FilterField label="Gateway">
+          <InputGroup className="bg-background">
+            <InputGroupAddon>
+              <Landmark />
+            </InputGroupAddon>
+            <InputGroupInput
+              placeholder="Gateway"
+              value={gateway}
+              onChange={(event) => onGatewayChange(event.target.value)}
+            />
+          </InputGroup>
+        </FilterField>
+      </div>
     </div>
   );
 }
