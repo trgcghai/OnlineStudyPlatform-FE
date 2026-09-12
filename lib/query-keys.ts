@@ -1,7 +1,12 @@
 import type { CourseListFilters } from "@/services/api/courses";
 import type { CourseEnrollmentListFilters } from "@/services/api/enrollments";
 import type { EssayGradingStatusFilter } from "@/services/api/essay-grading";
-import type { PaymentConfigAuditFilters } from "@/services/api/payment";
+import type {
+  AdminPaymentTransactionFilters,
+  AdminProviderEventFilters,
+  LearnerPaymentTransactionFilters,
+  PaymentConfigAuditFilters,
+} from "@/services/api/payment";
 import type { PublicCourseListFilters } from "@/services/api/public-courses";
 import type { AdminUserFilters } from "@/services/api/users";
 
@@ -41,6 +46,16 @@ export const paymentKeys = {
   pricing: () => [...paymentKeys.all, "pricing"] as const,
   transaction: (transactionId: string) =>
     [...paymentKeys.all, "transaction", transactionId] as const,
+  learnerTransactions: (filters: LearnerPaymentTransactionFilters) =>
+    [...paymentKeys.all, "learner-transactions", filters] as const,
+  adminTransactions: (filters: AdminPaymentTransactionFilters) =>
+    [...paymentKeys.all, "admin-transactions", filters] as const,
+  adminTransactionDetail: (transactionId: string) =>
+    [...paymentKeys.all, "admin-transaction-detail", transactionId] as const,
+  adminProviderEvents: (filters: AdminProviderEventFilters) =>
+    [...paymentKeys.all, "admin-provider-events", filters] as const,
+  adminProviderEventDetail: (eventId: string) =>
+    [...paymentKeys.all, "admin-provider-event-detail", eventId] as const,
 };
 
 export const instructorCourseKeys = {

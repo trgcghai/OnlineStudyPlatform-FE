@@ -41,6 +41,11 @@ const adminNavItems = [
     icon: GraduationCapIcon,
   },
   {
+    title: "Thanh toán",
+    href: "/admin/payments",
+    icon: CreditCardIcon,
+  },
+  {
     title: "Cấu hình thanh toán",
     href: "/admin/payment-config",
     icon: CreditCardIcon,

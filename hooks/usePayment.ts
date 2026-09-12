@@ -9,12 +9,20 @@ import { paymentKeys } from "@/lib/query-keys";
 import {
   cancelPaymentTransaction,
   createPaymentCheckout,
+  getAdminPaymentProviderEventDetail,
+  getAdminPaymentTransactionDetail,
   getCoursePricing,
   getPaymentConfig,
   getPaymentTransaction,
+  listLearnerPaymentTransactions,
+  listAdminPaymentProviderEvents,
+  listAdminPaymentTransactions,
   listPaymentConfigAudits,
   updatePaymentConfig,
+  type AdminPaymentTransactionFilters,
+  type AdminProviderEventFilters,
   type CheckoutResult,
+  type LearnerPaymentTransactionFilters,
   type PaymentConfig,
   type PaymentConfigAuditFilters,
   type UpdatePaymentConfigPayload,
@@ -166,6 +174,15 @@ export function usePaymentTransaction(transactionId: string) {
   });
 }
 
+export function useLearnerPaymentTransactions(
+  filters: LearnerPaymentTransactionFilters,
+) {
+  return useQuery({
+    queryKey: paymentKeys.learnerTransactions(filters),
+    queryFn: () => listLearnerPaymentTransactions(filters),
+  });
+}
+
 export function useCreatePaymentCheckout() {
   const mutation = useMutation<CheckoutResult, unknown, string>({
     mutationFn: createPaymentCheckout,
@@ -191,4 +208,38 @@ export function useCancelPaymentTransaction(transactionId: string) {
   });
 
   return mutation;
+}
+
+export function useAdminPaymentTransactions(
+  filters: AdminPaymentTransactionFilters,
+) {
+  return useQuery({
+    queryKey: paymentKeys.adminTransactions(filters),
+    queryFn: () => listAdminPaymentTransactions(filters),
+  });
+}
+
+export function useAdminPaymentTransactionDetail(transactionId: string) {
+  return useQuery({
+    queryKey: paymentKeys.adminTransactionDetail(transactionId),
+    queryFn: () => getAdminPaymentTransactionDetail(transactionId),
+    enabled: transactionId.trim().length > 0,
+  });
+}
+
+export function useAdminPaymentProviderEvents(
+  filters: AdminProviderEventFilters,
+) {
+  return useQuery({
+    queryKey: paymentKeys.adminProviderEvents(filters),
+    queryFn: () => listAdminPaymentProviderEvents(filters),
+  });
+}
+
+export function useAdminPaymentProviderEventDetail(eventId: string) {
+  return useQuery({
+    queryKey: paymentKeys.adminProviderEventDetail(eventId),
+    queryFn: () => getAdminPaymentProviderEventDetail(eventId),
+    enabled: eventId.trim().length > 0,
+  });
 }
