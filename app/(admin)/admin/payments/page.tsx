@@ -30,13 +30,11 @@ import {
 import { useClampUrlPage } from "@/hooks/useClampUrlPage";
 import { useDebounce } from "@/hooks/useDebounce";
 import {
-  debouncedStringParser,
   limitParser,
   optionalStringParser,
   pageParser,
   paymentStatusFilterParser,
   providerEventResultFilterParser,
-  searchParser,
   URL_FILTER_HISTORY,
   URL_SEARCH_DEBOUNCE_MS,
 } from "@/lib/search-params/filter-parsers";
@@ -93,9 +91,9 @@ export default function AdminPaymentsPage() {
       txStatus: paymentStatusFilterParser,
       txFrom: optionalStringParser,
       txTo: optionalStringParser,
-      txSearch: searchParser,
-      txLearnerId: debouncedStringParser,
-      txCourseId: debouncedStringParser,
+      txSearch: optionalStringParser,
+      txLearnerId: optionalStringParser,
+      txCourseId: optionalStringParser,
       txAmountMin: optionalStringParser,
       txAmountMax: optionalStringParser,
       txPage: pageParser,
@@ -103,8 +101,8 @@ export default function AdminPaymentsPage() {
       eventResult: providerEventResultFilterParser,
       eventFrom: optionalStringParser,
       eventTo: optionalStringParser,
-      eventSearch: searchParser,
-      eventTransferType: debouncedStringParser,
+      eventSearch: optionalStringParser,
+      eventTransferType: optionalStringParser,
       eventPaymentStatus: paymentStatusFilterParser,
       eventGateway: optionalStringParser,
       eventPage: pageParser,
