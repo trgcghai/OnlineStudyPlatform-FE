@@ -23,11 +23,13 @@ import {
 import { Pagination } from "@/components/ui/pagination";
 import { useAdminUsersList } from "@/hooks/useAdminUsers";
 import { useClampUrlPage } from "@/hooks/useClampUrlPage";
+import { useDebounce } from "@/hooks/useDebounce";
 import {
   limitParser,
   pageParser,
   searchParser,
   URL_FILTER_HISTORY,
+  URL_SEARCH_DEBOUNCE_MS,
   userRoleFilterParser,
   userStatusFilterParser,
 } from "@/lib/search-params/filter-parsers";
@@ -49,16 +51,17 @@ export default function AdminUsersPage() {
     },
     { history: URL_FILTER_HISTORY },
   );
+  const debouncedSearch = useDebounce(filtersState.q, URL_SEARCH_DEBOUNCE_MS);
 
   const filters = useMemo<AdminUserFilters>(
     () => ({
       role: filtersState.role || undefined,
       status: filtersState.status || undefined,
-      q: filtersState.q || undefined,
+      q: debouncedSearch || undefined,
       page: filtersState.page,
       limit: filtersState.limit,
     }),
-    [filtersState],
+    [debouncedSearch, filtersState],
   );
 
   const { data, isPending, isError, refetch } = useAdminUsersList(filters);

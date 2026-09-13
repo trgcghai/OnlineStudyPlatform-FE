@@ -1,6 +1,6 @@
 "use client";
 
-import { type ComponentType, useMemo } from "react";
+import { useMemo } from "react";
 import { CreditCard, RadioTower, ReceiptText, ShieldCheck } from "lucide-react";
 import { useQueryStates } from "nuqs";
 import {
@@ -28,20 +28,22 @@ import {
   useAdminPaymentTransactions,
 } from "@/hooks/usePayment";
 import { useClampUrlPage } from "@/hooks/useClampUrlPage";
+import { useDebounce } from "@/hooks/useDebounce";
 import {
   limitParser,
   optionalStringParser,
   pageParser,
   paymentStatusFilterParser,
   providerEventResultFilterParser,
-  searchParser,
   URL_FILTER_HISTORY,
+  URL_SEARCH_DEBOUNCE_MS,
 } from "@/lib/search-params/filter-parsers";
 import type {
   AdminPaymentTransactionFilters,
   AdminProviderEventFilters,
   PaymentStatus,
 } from "@/services/api/payment";
+import PaymentOverviewCard from "@/components/admin/payments/PaymentOverviewCard";
 
 const DEFAULT_PAGE_SIZE = 10;
 const TRANSACTIONS_TAB = "transactions";
@@ -54,35 +56,6 @@ function parseAmount(value: string): number | undefined {
   return Number.isFinite(amount) && amount >= 0 ? amount : undefined;
 }
 
-function PaymentOverviewCard({
-  description,
-  icon: Icon,
-  title,
-  value,
-}: {
-  description: string;
-  icon: ComponentType<{ className?: string }>;
-  title: string;
-  value: string | number;
-}) {
-  return (
-    <Card>
-      <CardContent className="flex items-center gap-4 p-5">
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-          <Icon className="size-5" />
-        </span>
-        <div className="min-w-0">
-          <p className="text-sm text-muted-foreground">{title}</p>
-          <p className="text-2xl font-semibold tracking-tight">{value}</p>
-          <p className="truncate text-xs text-muted-foreground">
-            {description}
-          </p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 export default function AdminPaymentsPage() {
   const [filtersState, setFiltersState] = useQueryStates(
     {
@@ -90,7 +63,7 @@ export default function AdminPaymentsPage() {
       txStatus: paymentStatusFilterParser,
       txFrom: optionalStringParser,
       txTo: optionalStringParser,
-      txSearch: searchParser,
+      txSearch: optionalStringParser,
       txLearnerId: optionalStringParser,
       txCourseId: optionalStringParser,
       txAmountMin: optionalStringParser,
@@ -100,7 +73,7 @@ export default function AdminPaymentsPage() {
       eventResult: providerEventResultFilterParser,
       eventFrom: optionalStringParser,
       eventTo: optionalStringParser,
-      eventSearch: searchParser,
+      eventSearch: optionalStringParser,
       eventTransferType: optionalStringParser,
       eventPaymentStatus: paymentStatusFilterParser,
       eventGateway: optionalStringParser,
@@ -114,21 +87,60 @@ export default function AdminPaymentsPage() {
     filtersState.tab === PROVIDER_EVENTS_TAB
       ? PROVIDER_EVENTS_TAB
       : TRANSACTIONS_TAB;
+  const debouncedTxSearch = useDebounce(
+    filtersState.txSearch,
+    URL_SEARCH_DEBOUNCE_MS,
+  );
+  const debouncedTxLearnerId = useDebounce(
+    filtersState.txLearnerId,
+    URL_SEARCH_DEBOUNCE_MS,
+  );
+  const debouncedTxCourseId = useDebounce(
+    filtersState.txCourseId,
+    URL_SEARCH_DEBOUNCE_MS,
+  );
+  const debouncedTxAmountMin = useDebounce(
+    filtersState.txAmountMin,
+    URL_SEARCH_DEBOUNCE_MS,
+  );
+  const debouncedTxAmountMax = useDebounce(
+    filtersState.txAmountMax,
+    URL_SEARCH_DEBOUNCE_MS,
+  );
+  const debouncedEventSearch = useDebounce(
+    filtersState.eventSearch,
+    URL_SEARCH_DEBOUNCE_MS,
+  );
+  const debouncedEventTransferType = useDebounce(
+    filtersState.eventTransferType,
+    URL_SEARCH_DEBOUNCE_MS,
+  );
+  const debouncedEventGateway = useDebounce(
+    filtersState.eventGateway,
+    URL_SEARCH_DEBOUNCE_MS,
+  );
 
   const transactionFilters = useMemo<AdminPaymentTransactionFilters>(
     () => ({
       status: filtersState.txStatus || undefined,
       dateFrom: filtersState.txFrom || undefined,
       dateTo: filtersState.txTo || undefined,
-      search: filtersState.txSearch || undefined,
-      learnerId: filtersState.txLearnerId || undefined,
-      courseId: filtersState.txCourseId || undefined,
-      amountMin: parseAmount(filtersState.txAmountMin),
-      amountMax: parseAmount(filtersState.txAmountMax),
+      search: debouncedTxSearch || undefined,
+      learnerId: debouncedTxLearnerId || undefined,
+      courseId: debouncedTxCourseId || undefined,
+      amountMin: parseAmount(debouncedTxAmountMin),
+      amountMax: parseAmount(debouncedTxAmountMax),
       page: filtersState.txPage,
       limit: filtersState.txLimit,
     }),
-    [filtersState],
+    [
+      debouncedTxAmountMax,
+      debouncedTxAmountMin,
+      debouncedTxCourseId,
+      debouncedTxLearnerId,
+      debouncedTxSearch,
+      filtersState,
+    ],
   );
 
   const providerEventFilters = useMemo<AdminProviderEventFilters>(
@@ -136,14 +148,19 @@ export default function AdminPaymentsPage() {
       result: filtersState.eventResult || undefined,
       dateFrom: filtersState.eventFrom || undefined,
       dateTo: filtersState.eventTo || undefined,
-      search: filtersState.eventSearch || undefined,
-      transferType: filtersState.eventTransferType || undefined,
+      search: debouncedEventSearch || undefined,
+      transferType: debouncedEventTransferType || undefined,
       paymentStatus: filtersState.eventPaymentStatus || undefined,
-      gateway: filtersState.eventGateway || undefined,
+      gateway: debouncedEventGateway || undefined,
       page: filtersState.eventPage,
       limit: filtersState.eventLimit,
     }),
-    [filtersState],
+    [
+      debouncedEventGateway,
+      debouncedEventSearch,
+      debouncedEventTransferType,
+      filtersState,
+    ],
   );
 
   const transactionsQuery = useAdminPaymentTransactions(transactionFilters);

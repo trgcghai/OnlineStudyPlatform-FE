@@ -19,6 +19,7 @@ import {
 import { Pagination } from "@/components/ui/pagination";
 import { useCourseApprovalsList } from "@/hooks/useAdminCourseApprovals";
 import { useClampUrlPage } from "@/hooks/useClampUrlPage";
+import { useDebounce } from "@/hooks/useDebounce";
 import { COURSE_LIST_PAGE_SIZE } from "@/lib/schemas/course";
 import {
   courseCategoryFilterParser,
@@ -26,6 +27,7 @@ import {
   pageParser,
   searchParser,
   URL_FILTER_HISTORY,
+  URL_SEARCH_DEBOUNCE_MS,
 } from "@/lib/search-params/filter-parsers";
 import type { CourseApproval, CourseListFilters } from "@/services/api/courses";
 
@@ -47,17 +49,18 @@ export default function AdminCourseApprovalsPage() {
     },
     { history: URL_FILTER_HISTORY },
   );
+  const debouncedSearch = useDebounce(filtersState.q, URL_SEARCH_DEBOUNCE_MS);
 
   const filters = useMemo<CourseListFilters>(
     () => ({
       page: filtersState.page,
       limit: filtersState.limit,
-      q: filtersState.q || undefined,
+      q: debouncedSearch || undefined,
       category: filtersState.category || undefined,
       sortBy: "updatedAt",
       sortOrder: "DESC",
     }),
-    [filtersState],
+    [debouncedSearch, filtersState],
   );
 
   const { data, isError, isPending, refetch } = useCourseApprovalsList(filters);

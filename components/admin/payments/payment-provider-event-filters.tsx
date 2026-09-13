@@ -9,7 +9,6 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   InputGroup,
   InputGroupAddon,
@@ -27,6 +26,7 @@ import type {
   AdminProviderEventResult,
   PaymentStatus,
 } from "@/services/api/payment";
+import FilterField from "@/components/admin/payments/FilterField";
 
 export type ProviderEventResultFilter = "" | AdminProviderEventResult;
 export type ProviderEventPaymentStatusFilter = "" | PaymentStatus;
@@ -51,21 +51,6 @@ const STATUS_LABELS: Record<ProviderEventPaymentStatusFilter, string> = {
   expired: "Hết hạn",
   refunded: "Đã hoàn tiền",
 };
-
-function FilterField({
-  children,
-  label,
-}: {
-  children: React.ReactNode;
-  label: string;
-}) {
-  return (
-    <label className="flex flex-col gap-1.5 text-xs font-medium text-muted-foreground">
-      {label}
-      {children}
-    </label>
-  );
-}
 
 export function PaymentProviderEventFilters({
   dateFrom,
@@ -144,8 +129,11 @@ export function PaymentProviderEventFilters({
         </Button>
       </div>
 
-      <div className="grid gap-3 xl:grid-cols-[minmax(18rem,1fr)_repeat(4,minmax(9rem,12rem))]">
-        <form onSubmit={(event) => event.preventDefault()}>
+      <div className="grid gap-3 grid-cols-8">
+        <form
+          onSubmit={(event) => event.preventDefault()}
+          className="col-span-4"
+        >
           <FilterField label="Tìm kiếm">
             <InputGroup className="bg-background">
               <InputGroupAddon>
@@ -247,30 +235,32 @@ export function PaymentProviderEventFilters({
             />
           </InputGroup>
         </FilterField>
-        <FilterField label="Loại chuyển khoản">
-          <InputGroup className="bg-background">
-            <InputGroupAddon>
-              <RadioTower />
-            </InputGroupAddon>
-            <InputGroupInput
-              placeholder="Loại chuyển khoản"
-              value={transferType}
-              onChange={(event) => onTransferTypeChange(event.target.value)}
-            />
-          </InputGroup>
-        </FilterField>
-        <FilterField label="Gateway">
-          <InputGroup className="bg-background">
-            <InputGroupAddon>
-              <Landmark />
-            </InputGroupAddon>
-            <InputGroupInput
-              placeholder="Gateway"
-              value={gateway}
-              onChange={(event) => onGatewayChange(event.target.value)}
-            />
-          </InputGroup>
-        </FilterField>
+        <div className="grid gap-3 col-span-4 grid-cols-2">
+          <FilterField label="Loại chuyển khoản">
+            <InputGroup className="bg-background">
+              <InputGroupAddon>
+                <RadioTower />
+              </InputGroupAddon>
+              <InputGroupInput
+                placeholder="Loại chuyển khoản"
+                value={transferType}
+                onChange={(event) => onTransferTypeChange(event.target.value)}
+              />
+            </InputGroup>
+          </FilterField>
+          <FilterField label="Gateway">
+            <InputGroup className="bg-background">
+              <InputGroupAddon>
+                <Landmark />
+              </InputGroupAddon>
+              <InputGroupInput
+                placeholder="Gateway"
+                value={gateway}
+                onChange={(event) => onGatewayChange(event.target.value)}
+              />
+            </InputGroup>
+          </FilterField>
+        </div>
       </div>
     </div>
   );
