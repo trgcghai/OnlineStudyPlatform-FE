@@ -7,19 +7,30 @@ import type {
   ChangePasswordFormValues,
   ProfileFormValues,
 } from "@/lib/schemas/profile";
+import type { InstructorAccountFormValues } from "@/lib/schemas/instructor-account";
 import { isApiErrorResponse } from "@/services/axios";
 import {
   changeMyPassword,
+  getInstructorAccountForAdmin,
+  getMyInstructorAccount,
   getMyProfile,
   registerUser as registerUserApi,
   updateMyProfile,
+  upsertMyInstructorAccount,
   uploadMyAvatar,
 } from "@/services/api/users";
-import type { RegisterUserResponse, UserProfile } from "@/services/api/users";
+import type {
+  InstructorAccount,
+  RegisterUserResponse,
+  UserProfile,
+} from "@/services/api/users";
 import type { RegisterFormValues } from "@/lib/schemas/register";
 import { toast } from "@/components/ui/toast";
-import { GENERIC_ERROR_MESSAGE, NETWORK_ERROR_MESSAGE } from "@/constants/constants";
-import { userKeys } from "@/lib/query-keys";
+import {
+  GENERIC_ERROR_MESSAGE,
+  NETWORK_ERROR_MESSAGE,
+} from "@/constants/constants";
+import { instructorAccountKeys, userKeys } from "@/lib/query-keys";
 
 interface RegisterFailure {
   ok: false;
@@ -74,7 +85,13 @@ function mapRegisterError(error: unknown): RegisterFailure {
     if (hasDetail(details, "password")) {
       return {
         ok: false,
-        fieldErrors: [{ field: "password", message: "Mật khẩu không đáp ứng yêu cầu (tối thiểu 8 ký tự, gồm chữ, số và ký tự đặc biệt)" }],
+        fieldErrors: [
+          {
+            field: "password",
+            message:
+              "Mật khẩu không đáp ứng yêu cầu (tối thiểu 8 ký tự, gồm chữ, số và ký tự đặc biệt)",
+          },
+        ],
       };
     }
 
@@ -141,6 +158,14 @@ export interface ProfileFailure {
   fieldErrors?: Array<{ field: keyof ProfileFormValues; message: string }>;
 }
 
+export interface InstructorAccountFailure {
+  formError?: string;
+  fieldErrors?: Array<{
+    field: keyof InstructorAccountFormValues;
+    message: string;
+  }>;
+}
+
 function mapProfileError(error: unknown): ProfileFailure {
   if (!isAxiosError(error) || !error.response) {
     return { formError: NETWORK_ERROR_MESSAGE };
@@ -160,6 +185,47 @@ function mapProfileError(error: unknown): ProfileFailure {
         fieldErrors: [{ field: "name", message: "Họ và tên không hợp lệ" }],
       };
     }
+  }
+
+  return { formError: data.error.message || GENERIC_ERROR_MESSAGE };
+}
+
+function mapInstructorAccountError(error: unknown): InstructorAccountFailure {
+  if (!isAxiosError(error) || !error.response) {
+    return { formError: NETWORK_ERROR_MESSAGE };
+  }
+
+  const { status, data } = error.response;
+
+  if (!isApiErrorResponse(data)) {
+    return { formError: GENERIC_ERROR_MESSAGE };
+  }
+
+  if (status === 400) {
+    const { details } = data.error;
+    const fieldErrors: InstructorAccountFailure["fieldErrors"] = [];
+
+    for (const field of [
+      "bankName",
+      "bankAccountNumber",
+      "accountHolderName",
+      "bankCode",
+      "branchName",
+      "phoneNumber",
+      "note",
+    ] as const) {
+      if (hasDetail(details, field)) {
+        fieldErrors.push({ field, message: "Thông tin không hợp lệ." });
+      }
+    }
+
+    return fieldErrors.length > 0
+      ? { fieldErrors }
+      : { formError: "Thông tin tài khoản không hợp lệ." };
+  }
+
+  if (status === 403) {
+    return { formError: "Chỉ giảng viên mới có thể cập nhật tài khoản." };
   }
 
   return { formError: data.error.message || GENERIC_ERROR_MESSAGE };
@@ -190,7 +256,10 @@ function mapChangePasswordError(error: unknown): PasswordFailure {
   ) {
     return {
       fieldErrors: [
-        { field: "currentPassword", message: "Mật khẩu hiện tại không chính xác." },
+        {
+          field: "currentPassword",
+          message: "Mật khẩu hiện tại không chính xác.",
+        },
       ],
     };
   }
@@ -263,6 +332,11 @@ export interface AvatarResult {
   message?: string;
 }
 
+export interface InstructorAccountResult {
+  ok: boolean;
+  failure?: InstructorAccountFailure;
+}
+
 export function useUpdateProfileForm() {
   const mutation = useUpdateProfile();
 
@@ -278,6 +352,51 @@ export function useUpdateProfileForm() {
   }
 
   return { updateProfile, isPending: mutation.isPending };
+}
+
+export function useMyInstructorAccount() {
+  return useQuery({
+    queryKey: instructorAccountKeys.me(),
+    queryFn: getMyInstructorAccount,
+  });
+}
+
+export function useAdminInstructorAccount(instructorId: string) {
+  return useQuery({
+    queryKey: instructorAccountKeys.adminDetail(instructorId),
+    queryFn: () => getInstructorAccountForAdmin(instructorId),
+    enabled: instructorId.trim().length > 0,
+  });
+}
+
+export function useUpsertMyInstructorAccount() {
+  const queryClient = useQueryClient();
+  const mutation = useMutation<
+    InstructorAccount,
+    unknown,
+    InstructorAccountFormValues
+  >({
+    mutationFn: upsertMyInstructorAccount,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: instructorAccountKeys.me(),
+      });
+      toast.add({ title: "Đã lưu tài khoản nhận tiền." });
+    },
+  });
+
+  async function upsertAccount(
+    values: InstructorAccountFormValues,
+  ): Promise<InstructorAccountResult> {
+    try {
+      await mutation.mutateAsync(values);
+      return { ok: true };
+    } catch (error) {
+      return { ok: false, failure: mapInstructorAccountError(error) };
+    }
+  }
+
+  return { upsertAccount, isPending: mutation.isPending };
 }
 
 export function useChangePassword() {

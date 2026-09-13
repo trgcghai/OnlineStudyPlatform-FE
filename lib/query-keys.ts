@@ -20,6 +20,13 @@ export const userKeys = {
   me: () => [...userKeys.all, "me"] as const,
 };
 
+export const instructorAccountKeys = {
+  all: ["instructor-account"] as const,
+  me: () => [...instructorAccountKeys.all, "me"] as const,
+  adminDetail: (instructorId: string) =>
+    [...instructorAccountKeys.all, "admin-detail", instructorId] as const,
+};
+
 export const adminUserKeys = {
   all: ["admin-users"] as const,
   list: (filters: AdminUserFilters) =>

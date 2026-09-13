@@ -4,6 +4,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   BookEditIcon,
   CircleUserRound,
+  CreditCardIcon,
   DashboardSquare01Icon,
   Presentation,
 } from "@hugeicons/core-free-icons";
@@ -44,6 +45,11 @@ const adminNavItems = [
     title: "Hồ sơ",
     href: "/instructor/profile",
     icon: CircleUserRound,
+  },
+  {
+    title: "Tài khoản",
+    href: "/instructor/account",
+    icon: CreditCardIcon,
   },
 ];
 
