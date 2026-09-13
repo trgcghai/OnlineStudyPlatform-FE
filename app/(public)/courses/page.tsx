@@ -8,12 +8,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { usePublishedCoursesList } from "@/hooks/usePublicCourses";
 import { Pagination } from "@/components/ui/pagination";
 import { useClampUrlPage } from "@/hooks/useClampUrlPage";
+import { useDebounce } from "@/hooks/useDebounce";
 import { COURSE_CATEGORY_LABELS, CourseCategory } from "@/lib/schemas/course";
 import {
   courseCategoryFilterParser,
   pageParser,
   searchParser,
   URL_FILTER_HISTORY,
+  URL_SEARCH_DEBOUNCE_MS,
 } from "@/lib/search-params/filter-parsers";
 import {
   Select,
@@ -41,11 +43,12 @@ export default function CoursePage() {
     },
     { history: URL_FILTER_HISTORY },
   );
+  const debouncedSearch = useDebounce(filters.q, URL_SEARCH_DEBOUNCE_MS);
 
   const coursesQuery = usePublishedCoursesList({
     page: filters.page,
     limit: CATALOG_LIMIT,
-    q: filters.q || undefined,
+    q: debouncedSearch || undefined,
     category: filters.category || undefined,
   });
   const courses = coursesQuery.data?.items ?? [];

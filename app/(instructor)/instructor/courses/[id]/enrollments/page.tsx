@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useClampUrlPage } from "@/hooks/useClampUrlPage";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useCourseEnrollments } from "@/hooks/useEnrollments";
 import {
   mapCourseError,
@@ -29,6 +30,7 @@ import {
   pageParser,
   searchParser,
   URL_FILTER_HISTORY,
+  URL_SEARCH_DEBOUNCE_MS,
 } from "@/lib/search-params/filter-parsers";
 import type { CourseEnrollmentListFilters } from "@/services/api/enrollments";
 
@@ -45,14 +47,15 @@ export default function CourseEnrollmentsPage() {
     },
     { history: URL_FILTER_HISTORY },
   );
+  const debouncedSearch = useDebounce(filtersState.q, URL_SEARCH_DEBOUNCE_MS);
 
   const filters = useMemo<CourseEnrollmentListFilters>(
     () => ({
       page: filtersState.page,
       limit: filtersState.limit,
-      q: filtersState.q || undefined,
+      q: debouncedSearch || undefined,
     }),
-    [filtersState],
+    [debouncedSearch, filtersState],
   );
 
   const {
