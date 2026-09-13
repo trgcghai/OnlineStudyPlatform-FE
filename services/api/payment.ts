@@ -59,6 +59,8 @@ export interface CoursePricingReference {
 export type PaymentStatus =
   "pending" | "paid" | "failed" | "cancelled" | "expired" | "refunded";
 
+export type WithdrawRequestStatus = "pending" | "processed" | "cancelled";
+
 export interface PaymentTransaction {
   id: string;
   learnerId: string;
@@ -127,6 +129,69 @@ export interface LearnerPaymentTransactionItem {
   status: PaymentStatus;
   createdAt: string;
   paidAt: string | null;
+}
+
+export interface WithdrawRequest {
+  id: string;
+  instructorId: string;
+  amount: number;
+  currency: PaymentConfigCurrency;
+  status: WithdrawRequestStatus;
+  requestedAt: string;
+  note: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateWithdrawRequestPayload {
+  amount: number;
+  note?: string;
+}
+
+export interface WithdrawRequestFilters {
+  page?: number;
+  limit?: number;
+}
+
+export interface WithdrawRequestList {
+  items: WithdrawRequest[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface AdminWithdrawRequestFilters {
+  instructorEmail?: string;
+  status?: WithdrawRequestStatus;
+  requestedAtFrom?: string;
+  requestedAtTo?: string;
+  amountSort?: "asc" | "desc";
+  page?: number;
+  limit?: number;
+}
+
+export interface AdminWithdrawRequestItem {
+  id: string;
+  amount: number;
+  currency: PaymentConfigCurrency;
+  status: WithdrawRequestStatus;
+  requestedAt: string;
+  note: string | null;
+  createdAt: string;
+  updatedAt: string;
+  instructor: {
+    name: string;
+    email: string;
+  };
+}
+
+export interface AdminWithdrawRequestList {
+  items: AdminWithdrawRequestItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 export type AdminProviderEventResult =
@@ -325,6 +390,37 @@ export async function listLearnerPaymentTransactions(
   const { data } = await axiosClient.get<
     ApiSuccessResponse<AdminPaymentList<LearnerPaymentTransactionItem>>
   >(`/payments/transactions${buildPaymentAdminQuery(filters)}`);
+
+  return data.data;
+}
+
+export async function createWithdrawRequest(
+  payload: CreateWithdrawRequestPayload,
+): Promise<WithdrawRequest> {
+  const { data } = await axiosClient.post<ApiSuccessResponse<WithdrawRequest>>(
+    "/withdraw",
+    payload,
+  );
+
+  return data.data;
+}
+
+export async function listMyWithdrawRequests(
+  filters: WithdrawRequestFilters = {},
+): Promise<WithdrawRequestList> {
+  const { data } = await axiosClient.get<
+    ApiSuccessResponse<WithdrawRequestList>
+  >(`/withdraw/me${buildPaymentAdminQuery(filters)}`);
+
+  return data.data;
+}
+
+export async function listAdminWithdrawRequests(
+  filters: AdminWithdrawRequestFilters = {},
+): Promise<AdminWithdrawRequestList> {
+  const { data } = await axiosClient.get<
+    ApiSuccessResponse<AdminWithdrawRequestList>
+  >(`/withdraw/admin${buildPaymentAdminQuery(filters)}`);
 
   return data.data;
 }

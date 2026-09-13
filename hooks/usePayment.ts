@@ -8,17 +8,22 @@ import {
 import { paymentKeys } from "@/lib/query-keys";
 import {
   cancelPaymentTransaction,
+  createWithdrawRequest,
   createPaymentCheckout,
   getAdminPaymentProviderEventDetail,
   getAdminPaymentTransactionDetail,
   getCoursePricing,
   getPaymentConfig,
   getPaymentTransaction,
+  listAdminWithdrawRequests,
   listLearnerPaymentTransactions,
+  listMyWithdrawRequests,
   listAdminPaymentProviderEvents,
   listAdminPaymentTransactions,
   listPaymentConfigAudits,
   updatePaymentConfig,
+  type AdminWithdrawRequestFilters,
+  type CreateWithdrawRequestPayload,
   type AdminPaymentTransactionFilters,
   type AdminProviderEventFilters,
   type CheckoutResult,
@@ -26,7 +31,10 @@ import {
   type PaymentConfig,
   type PaymentConfigAuditFilters,
   type UpdatePaymentConfigPayload,
+  type WithdrawRequest,
+  type WithdrawRequestFilters,
 } from "@/services/api/payment";
+import { withdrawKeys } from "@/lib/query-keys";
 import { isApiErrorResponse } from "@/services/axios";
 
 function mapCoursePricingError(error: unknown): string {
@@ -89,6 +97,33 @@ export function mapPaymentError(error: unknown): string {
     return "Chỉ tài khoản học viên mới có thể thực hiện thanh toán.";
   if (status === 404) return "Không tìm thấy giao dịch thanh toán.";
   if (status === 409) return "Bạn đã đăng ký khóa học này.";
+
+  return data.error.message || GENERIC_ERROR_MESSAGE;
+}
+
+export function mapWithdrawError(error: unknown): string {
+  if (!isAxiosError(error) || !error.response) {
+    return NETWORK_ERROR_MESSAGE;
+  }
+
+  const { status, data } = error.response;
+
+  if (!isApiErrorResponse(data)) {
+    return GENERIC_ERROR_MESSAGE;
+  }
+
+  if (status === 400) {
+    if (data.error.message === "Instructor payout account is required") {
+      return "Vui lòng cấu hình tài khoản nhận tiền trước khi tạo yêu cầu rút tiền.";
+    }
+    if (data.error.message === "Amount is below minimum withdrawal amount") {
+      return "Số tiền rút thấp hơn mức tối thiểu đang được cấu hình.";
+    }
+
+    return data.error.message || "Yêu cầu rút tiền không hợp lệ.";
+  }
+
+  if (status === 403) return "Bạn không có quyền thực hiện thao tác này.";
 
   return data.error.message || GENERIC_ERROR_MESSAGE;
 }
@@ -180,6 +215,35 @@ export function useLearnerPaymentTransactions(
   return useQuery({
     queryKey: paymentKeys.learnerTransactions(filters),
     queryFn: () => listLearnerPaymentTransactions(filters),
+  });
+}
+
+export function useMyWithdrawRequests(filters: WithdrawRequestFilters) {
+  return useQuery({
+    queryKey: withdrawKeys.me(filters),
+    queryFn: () => listMyWithdrawRequests(filters),
+  });
+}
+
+export function useAdminWithdrawRequests(filters: AdminWithdrawRequestFilters) {
+  return useQuery({
+    queryKey: withdrawKeys.admin(filters),
+    queryFn: () => listAdminWithdrawRequests(filters),
+  });
+}
+
+export function useCreateWithdrawRequest() {
+  const queryClient = useQueryClient();
+
+  return useMutation<WithdrawRequest, unknown, CreateWithdrawRequestPayload>({
+    mutationFn: createWithdrawRequest,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: withdrawKeys.meAll() });
+      toast.add({ title: "Đã tạo yêu cầu rút tiền.", type: "success" });
+    },
+    onError: (error) => {
+      toast.add({ title: mapWithdrawError(error), type: "error" });
+    },
   });
 }
 

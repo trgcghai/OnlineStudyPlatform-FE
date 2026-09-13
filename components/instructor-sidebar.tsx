@@ -2,6 +2,7 @@
 
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
+  BanknoteArrowDownIcon,
   BookEditIcon,
   CircleUserRound,
   CreditCardIcon,
@@ -50,6 +51,11 @@ const adminNavItems = [
     title: "Tài khoản",
     href: "/instructor/account",
     icon: CreditCardIcon,
+  },
+  {
+    title: "Rút tiền",
+    href: "/instructor/withdrawals",
+    icon: BanknoteArrowDownIcon,
   },
 ];
 

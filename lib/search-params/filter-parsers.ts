@@ -11,6 +11,7 @@ import { ESSAY_GRADING_STATUS_FILTERS } from "@/services/api/essay-grading";
 import type {
   AdminProviderEventResult,
   PaymentStatus,
+  WithdrawRequestStatus,
 } from "@/services/api/payment";
 
 export const URL_FILTER_HISTORY = "replace" as const;
@@ -46,6 +47,12 @@ export const PROVIDER_EVENT_RESULT_FILTER_VALUES = [
   "unknown_payment_code",
   "ignored_transfer_type",
 ] as const satisfies readonly AdminProviderEventResult[];
+export const WITHDRAW_STATUS_FILTER_VALUES = [
+  "pending",
+  "processed",
+  "cancelled",
+] as const satisfies readonly WithdrawRequestStatus[];
+export const AMOUNT_SORT_VALUES = ["asc", "desc"] as const;
 
 export const pageParser = createParser({
   parse(value) {
@@ -118,6 +125,13 @@ export const providerEventResultFilterParser = parseAsStringLiteral([
   "",
   ...PROVIDER_EVENT_RESULT_FILTER_VALUES,
 ] as const).withDefault("");
+
+export const withdrawStatusFilterParser = parseAsStringLiteral(
+  WITHDRAW_STATUS_FILTER_VALUES,
+).withDefault("pending");
+
+export const amountSortParser =
+  parseAsStringLiteral(AMOUNT_SORT_VALUES).withDefault("desc");
 
 export const optionalStringParser = parseAsString.withDefault("");
 export const optionalNumberParser = parseAsInteger;
