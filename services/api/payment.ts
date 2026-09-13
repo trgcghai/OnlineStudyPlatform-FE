@@ -9,6 +9,7 @@ export interface PaymentConfig {
   allowedPrices: number[];
   freeCourseLimit: number | null;
   minimumWithdrawalAmount: number;
+  earningHoldDays: number;
   updatedById: string | null;
   createdAt: string;
   updatedAt: string;
@@ -20,6 +21,7 @@ export interface UpdatePaymentConfigPayload {
   allowedPrices: number[];
   freeCourseLimit: number | null;
   minimumWithdrawalAmount: number;
+  earningHoldDays: number;
 }
 
 export interface PaymentConfigSnapshot extends UpdatePaymentConfigPayload {

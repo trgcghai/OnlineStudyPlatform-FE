@@ -55,6 +55,7 @@ function toFormValues(config: PaymentConfig): PaymentConfigFormValues {
     allowedPrices: sortPrices(config.allowedPrices),
     freeCourseLimit: config.freeCourseLimit,
     minimumWithdrawalAmount: config.minimumWithdrawalAmount,
+    earningHoldDays: config.earningHoldDays,
   };
 }
 
@@ -330,6 +331,40 @@ export function PaymentConfigForm({ config }: PaymentConfigFormProps) {
                     />
                     <FieldDescription>
                       Hệ thống hiện chỉ hỗ trợ cấu hình thanh toán bằng VND.
+                    </FieldDescription>
+                    <FieldError errors={[fieldState.error]} />
+                  </Field>
+                )}
+              />
+
+              <Controller
+                control={form.control}
+                name="earningHoldDays"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="earningHoldDays" required>
+                      Số ngày giữ thu nhập
+                    </FieldLabel>
+                    <InputGroup>
+                      <InputGroupInput
+                        id="earningHoldDays"
+                        type="number"
+                        min={0}
+                        step={1}
+                        value={Number.isNaN(field.value) ? "" : field.value}
+                        aria-invalid={fieldState.invalid}
+                        onBlur={field.onBlur}
+                        onChange={(event) =>
+                          field.onChange(
+                            parseRequiredNumberInput(event.target.value),
+                          )
+                        }
+                      />
+                      <InputGroupAddon align="inline-end">ngày</InputGroupAddon>
+                    </InputGroup>
+                    <FieldDescription>
+                      Số ngày thu nhập của giảng viên ở trạng thái chờ trước khi
+                      có thể rút.
                     </FieldDescription>
                     <FieldError errors={[fieldState.error]} />
                   </Field>

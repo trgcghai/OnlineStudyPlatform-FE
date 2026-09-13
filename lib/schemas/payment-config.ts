@@ -10,6 +10,7 @@ export const PAYMENT_CONFIG_FIELD_LABELS = {
   allowedPrices: "Danh sách giá",
   freeCourseLimit: "Giới hạn khóa học miễn phí",
   minimumWithdrawalAmount: "Rút tiền tối thiểu",
+  earningHoldDays: "Số ngày giữ thu nhập",
   updatedById: "Người cập nhật",
 } as const;
 
@@ -56,6 +57,10 @@ export const paymentConfigSchema = z
         (amount) => amount % MINIMUM_WITHDRAWAL_AMOUNT_STEP === 0,
         "Số tiền rút tối thiểu phải tăng theo bội số 100.000 VND",
       ),
+    earningHoldDays: z
+      .number("Số ngày giữ thu nhập là bắt buộc")
+      .int("Số ngày giữ thu nhập phải là số nguyên")
+      .min(7, "Số ngày giữ thu nhập phải từ 7 ngày trở lên"),
   })
   .superRefine((value, ctx) => {
     if (!value.allowedPrices.includes(0)) {
