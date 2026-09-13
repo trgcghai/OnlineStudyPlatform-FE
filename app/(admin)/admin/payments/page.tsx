@@ -1,6 +1,6 @@
 "use client";
 
-import { type ComponentType, useMemo } from "react";
+import { useMemo } from "react";
 import { CreditCard, RadioTower, ReceiptText, ShieldCheck } from "lucide-react";
 import { useQueryStates } from "nuqs";
 import {
@@ -43,6 +43,7 @@ import type {
   AdminProviderEventFilters,
   PaymentStatus,
 } from "@/services/api/payment";
+import PaymentOverviewCard from "@/components/admin/payments/PaymentOverviewCard";
 
 const DEFAULT_PAGE_SIZE = 10;
 const TRANSACTIONS_TAB = "transactions";
@@ -53,35 +54,6 @@ function parseAmount(value: string): number | undefined {
   const amount = Number(value);
 
   return Number.isFinite(amount) && amount >= 0 ? amount : undefined;
-}
-
-function PaymentOverviewCard({
-  description,
-  icon: Icon,
-  title,
-  value,
-}: {
-  description: string;
-  icon: ComponentType<{ className?: string }>;
-  title: string;
-  value: string | number;
-}) {
-  return (
-    <Card>
-      <CardContent className="flex items-center gap-4 p-5">
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-          <Icon className="size-5" />
-        </span>
-        <div className="min-w-0">
-          <p className="text-sm text-muted-foreground">{title}</p>
-          <p className="text-2xl font-semibold tracking-tight">{value}</p>
-          <p className="truncate text-xs text-muted-foreground">
-            {description}
-          </p>
-        </div>
-      </CardContent>
-    </Card>
-  );
 }
 
 export default function AdminPaymentsPage() {

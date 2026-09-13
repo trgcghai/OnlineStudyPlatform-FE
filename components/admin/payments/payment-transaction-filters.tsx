@@ -10,7 +10,6 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   InputGroup,
   InputGroupAddon,
@@ -25,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { PaymentStatus } from "@/services/api/payment";
+import FilterField from "@/components/admin/payments/FilterField";
 
 export type PaymentStatusFilter = "" | PaymentStatus;
 
@@ -37,21 +37,6 @@ const STATUS_LABELS: Record<PaymentStatusFilter, string> = {
   expired: "Hết hạn",
   refunded: "Đã hoàn tiền",
 };
-
-function FilterField({
-  children,
-  label,
-}: {
-  children: React.ReactNode;
-  label: string;
-}) {
-  return (
-    <label className="flex flex-col gap-1.5 text-xs font-medium text-muted-foreground">
-      {label}
-      {children}
-    </label>
-  );
-}
 
 export function PaymentTransactionFilters({
   amountMax,
@@ -136,8 +121,11 @@ export function PaymentTransactionFilters({
         </Button>
       </div>
 
-      <div className="grid gap-3 xl:grid-cols-[minmax(18rem,1fr)_repeat(4,minmax(9rem,12rem))]">
-        <form onSubmit={(event) => event.preventDefault()}>
+      <div className="grid gap-3 grid-cols-[repeat(2,minmax(9rem,1fr))_repeat(3,minmax(9rem,16rem))]">
+        <form
+          className="col-span-2"
+          onSubmit={(event) => event.preventDefault()}
+        >
           <FilterField label="Tìm kiếm">
             <InputGroup className="bg-background">
               <InputGroupAddon>
@@ -213,18 +201,6 @@ export function PaymentTransactionFilters({
             />
           </InputGroup>
         </FilterField>
-        <FilterField label="Học viên">
-          <InputGroup className="bg-background">
-            <InputGroupAddon>
-              <UserRound />
-            </InputGroupAddon>
-            <InputGroupInput
-              placeholder="Learner ID"
-              value={learnerId}
-              onChange={(event) => onLearnerIdChange(event.target.value)}
-            />
-          </InputGroup>
-        </FilterField>
         <FilterField label="Khóa học">
           <InputGroup className="bg-background">
             <InputGroupAddon>
@@ -234,6 +210,18 @@ export function PaymentTransactionFilters({
               placeholder="Course ID"
               value={courseId}
               onChange={(event) => onCourseIdChange(event.target.value)}
+            />
+          </InputGroup>
+        </FilterField>
+        <FilterField label="Học viên">
+          <InputGroup className="bg-background">
+            <InputGroupAddon>
+              <UserRound />
+            </InputGroupAddon>
+            <InputGroupInput
+              placeholder="Learner ID"
+              value={learnerId}
+              onChange={(event) => onLearnerIdChange(event.target.value)}
             />
           </InputGroup>
         </FilterField>
