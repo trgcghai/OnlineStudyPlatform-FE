@@ -80,6 +80,11 @@ export const searchParser = parseAsString.withDefault("").withOptions({
   limitUrlUpdates: debounce(URL_SEARCH_DEBOUNCE_MS),
 });
 
+export const debouncedStringParser = parseAsString.withDefault("").withOptions({
+  history: URL_FILTER_HISTORY,
+  limitUrlUpdates: debounce(URL_SEARCH_DEBOUNCE_MS),
+});
+
 export const courseCategoryFilterParser = parseAsStringLiteral([
   "",
   ...COURSE_CATEGORIES,

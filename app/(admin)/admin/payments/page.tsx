@@ -29,6 +29,7 @@ import {
 } from "@/hooks/usePayment";
 import { useClampUrlPage } from "@/hooks/useClampUrlPage";
 import {
+  debouncedStringParser,
   limitParser,
   optionalStringParser,
   pageParser,
@@ -91,8 +92,8 @@ export default function AdminPaymentsPage() {
       txFrom: optionalStringParser,
       txTo: optionalStringParser,
       txSearch: searchParser,
-      txLearnerId: optionalStringParser,
-      txCourseId: optionalStringParser,
+      txLearnerId: debouncedStringParser,
+      txCourseId: debouncedStringParser,
       txAmountMin: optionalStringParser,
       txAmountMax: optionalStringParser,
       txPage: pageParser,
@@ -101,7 +102,7 @@ export default function AdminPaymentsPage() {
       eventFrom: optionalStringParser,
       eventTo: optionalStringParser,
       eventSearch: searchParser,
-      eventTransferType: optionalStringParser,
+      eventTransferType: debouncedStringParser,
       eventPaymentStatus: paymentStatusFilterParser,
       eventGateway: optionalStringParser,
       eventPage: pageParser,

@@ -113,6 +113,7 @@ export default function RegisterPage() {
                   <InputGroupInput
                     id="name"
                     autoComplete="name"
+                    placeholder="Nhập họ và tên của bạn..."
                     aria-invalid={!!errors.name}
                     {...register("name")}
                   />
@@ -129,6 +130,7 @@ export default function RegisterPage() {
                   <InputGroupInput
                     id="email"
                     type="email"
+                    placeholder="Nhập email của bạn..."
                     autoComplete="email"
                     aria-invalid={!!errors.email}
                     {...register("email")}
@@ -146,6 +148,7 @@ export default function RegisterPage() {
                   <InputGroupInput
                     id="password"
                     type="password"
+                    placeholder="Nhập mật khẩu..."
                     autoComplete="new-password"
                     aria-invalid={!!errors.password}
                     {...register("password")}
@@ -165,6 +168,7 @@ export default function RegisterPage() {
                   <InputGroupInput
                     id="confirmPassword"
                     type="password"
+                    placeholder="Nhập lại mật khẩu..."
                     autoComplete="new-password"
                     aria-invalid={!!errors.confirmPassword}
                     {...register("confirmPassword")}
