@@ -117,6 +117,20 @@ export function mapWithdrawError(error: unknown): string {
       return "Vui lòng cấu hình tài khoản nhận tiền trước khi tạo yêu cầu rút tiền.";
     }
     if (data.error.message === "Amount is below minimum withdrawal amount") {
+      const details = Object.fromEntries(
+        data.error.details.flatMap((detail) => {
+          const [key, value] = detail.split("=");
+
+          return key && value ? [[key, value]] : [];
+        }),
+      );
+      const minimum = Number(details.minimumWithdrawalAmount);
+      const currency = details.currency || "VND";
+
+      if (Number.isFinite(minimum) && minimum > 0) {
+        return `Số tiền rút thấp hơn mức tối thiểu ${minimum.toLocaleString("vi-VN")} ${currency}.`;
+      }
+
       return "Số tiền rút thấp hơn mức tối thiểu đang được cấu hình.";
     }
 
