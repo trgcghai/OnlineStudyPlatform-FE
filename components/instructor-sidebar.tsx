@@ -2,11 +2,12 @@
 
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  BanknoteArrowDownIcon,
+  Atm01FreeIcons,
   BookEditIcon,
   CircleUserRound,
   CreditCardIcon,
   DashboardSquare01Icon,
+  Money01Icon,
   Presentation,
 } from "@hugeicons/core-free-icons";
 import Link from "next/link";
@@ -53,9 +54,14 @@ const adminNavItems = [
     icon: CreditCardIcon,
   },
   {
+    title: "Số dư",
+    href: "/instructor/balance",
+    icon: Money01Icon,
+  },
+  {
     title: "Rút tiền",
     href: "/instructor/withdrawals",
-    icon: BanknoteArrowDownIcon,
+    icon: Atm01FreeIcons,
   },
 ];
 

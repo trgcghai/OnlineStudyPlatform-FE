@@ -132,6 +132,43 @@ export interface LearnerPaymentTransactionItem {
   paidAt: string | null;
 }
 
+export type InstructorBalanceLedgerType = "earning_credit" | "withdraw_debit";
+
+export interface InstructorBalanceSummary {
+  currentBalance: number;
+  totalEarned: number;
+  totalWithdrawn: number;
+  currency: PaymentConfigCurrency;
+}
+
+export interface InstructorBalanceHistoryFilters {
+  page?: number;
+  limit?: number;
+}
+
+export interface InstructorBalanceHistoryItem {
+  id: string;
+  type: InstructorBalanceLedgerType;
+  amountDelta: number;
+  currency: PaymentConfigCurrency;
+  grossAmount: number | null;
+  platformFeeAmount: number | null;
+  netAmount: number | null;
+  description: string;
+  createdAt: string;
+  course: { id: string; title: string } | null;
+  paymentTransactionId: string | null;
+  withdrawRequestId: string | null;
+}
+
+export interface InstructorBalanceHistoryList {
+  items: InstructorBalanceHistoryItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export interface WithdrawRequest {
   id: string;
   instructorId: string;
@@ -407,6 +444,24 @@ export async function listLearnerPaymentTransactions(
   const { data } = await axiosClient.get<
     ApiSuccessResponse<AdminPaymentList<LearnerPaymentTransactionItem>>
   >(`/payments/transactions${buildPaymentAdminQuery(filters)}`);
+
+  return data.data;
+}
+
+export async function getInstructorBalanceSummary(): Promise<InstructorBalanceSummary> {
+  const { data } = await axiosClient.get<
+    ApiSuccessResponse<InstructorBalanceSummary>
+  >("/payments/instructor/balance/summary");
+
+  return data.data;
+}
+
+export async function listInstructorBalanceHistory(
+  filters: InstructorBalanceHistoryFilters = {},
+): Promise<InstructorBalanceHistoryList> {
+  const { data } = await axiosClient.get<
+    ApiSuccessResponse<InstructorBalanceHistoryList>
+  >(`/payments/instructor/balance/history${buildPaymentAdminQuery(filters)}`);
 
   return data.data;
 }

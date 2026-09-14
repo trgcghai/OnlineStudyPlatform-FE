@@ -5,6 +5,7 @@ import type {
   AdminPaymentTransactionFilters,
   AdminProviderEventFilters,
   AdminWithdrawRequestFilters,
+  InstructorBalanceHistoryFilters,
   LearnerPaymentTransactionFilters,
   PaymentConfigAuditFilters,
   WithdrawRequestFilters,
@@ -57,6 +58,10 @@ export const paymentKeys = {
     [...paymentKeys.all, "transaction", transactionId] as const,
   learnerTransactions: (filters: LearnerPaymentTransactionFilters) =>
     [...paymentKeys.all, "learner-transactions", filters] as const,
+  instructorBalanceSummary: () =>
+    [...paymentKeys.all, "instructor-balance-summary"] as const,
+  instructorBalanceHistory: (filters: InstructorBalanceHistoryFilters) =>
+    [...paymentKeys.all, "instructor-balance-history", filters] as const,
   adminTransactions: (filters: AdminPaymentTransactionFilters) =>
     [...paymentKeys.all, "admin-transactions", filters] as const,
   adminTransactionDetail: (transactionId: string) =>

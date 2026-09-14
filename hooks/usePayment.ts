@@ -14,9 +14,11 @@ import {
   getAdminPaymentProviderEventDetail,
   getAdminPaymentTransactionDetail,
   getCoursePricing,
+  getInstructorBalanceSummary,
   getPaymentConfig,
   getPaymentTransaction,
   listAdminWithdrawRequests,
+  listInstructorBalanceHistory,
   listLearnerPaymentTransactions,
   listMyWithdrawRequests,
   listAdminPaymentProviderEvents,
@@ -31,6 +33,7 @@ import {
   type AdminPaymentTransactionFilters,
   type AdminProviderEventFilters,
   type CheckoutResult,
+  type InstructorBalanceHistoryFilters,
   type LearnerPaymentTransactionFilters,
   type PaymentConfig,
   type PaymentConfigAuditFilters,
@@ -245,6 +248,22 @@ export function useLearnerPaymentTransactions(
   return useQuery({
     queryKey: paymentKeys.learnerTransactions(filters),
     queryFn: () => listLearnerPaymentTransactions(filters),
+  });
+}
+
+export function useInstructorBalanceSummary() {
+  return useQuery({
+    queryKey: paymentKeys.instructorBalanceSummary(),
+    queryFn: getInstructorBalanceSummary,
+  });
+}
+
+export function useInstructorBalanceHistory(
+  filters: InstructorBalanceHistoryFilters,
+) {
+  return useQuery({
+    queryKey: paymentKeys.instructorBalanceHistory(filters),
+    queryFn: () => listInstructorBalanceHistory(filters),
   });
 }
 

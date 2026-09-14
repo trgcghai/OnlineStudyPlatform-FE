@@ -160,7 +160,11 @@ export default function InstructorAccountForm() {
                 <FieldLabel htmlFor="bankName" required>
                   Tên ngân hàng
                 </FieldLabel>
-                <Input id="bankName" {...form.register("bankName")} />
+                <Input
+                  id="bankName"
+                  placeholder="Tên ngân hàng..."
+                  {...form.register("bankName")}
+                />
                 <FieldError errors={[form.formState.errors.bankName]} />
               </Field>
 
@@ -172,6 +176,7 @@ export default function InstructorAccountForm() {
                     <FieldLabel htmlFor="bankCode">Mã ngân hàng</FieldLabel>
                     <Input
                       id="bankCode"
+                      placeholder="Mã ngân hàng..."
                       value={valueForInput(field.value)}
                       onBlur={field.onBlur}
                       onChange={(event) => field.onChange(event.target.value)}
@@ -189,6 +194,7 @@ export default function InstructorAccountForm() {
                 </FieldLabel>
                 <Input
                   id="bankAccountNumber"
+                  placeholder="Số tài khoản..."
                   {...form.register("bankAccountNumber")}
                 />
                 <FieldError
@@ -202,6 +208,7 @@ export default function InstructorAccountForm() {
                 </FieldLabel>
                 <Input
                   id="accountHolderName"
+                  placeholder="Tên chủ tài khoản..."
                   {...form.register("accountHolderName")}
                 />
                 <FieldError
@@ -219,6 +226,7 @@ export default function InstructorAccountForm() {
                     <FieldLabel htmlFor="branchName">Chi nhánh</FieldLabel>
                     <Input
                       id="branchName"
+                      placeholder="Chi nhánh ngân hàng..."
                       value={valueForInput(field.value)}
                       onBlur={field.onBlur}
                       onChange={(event) => field.onChange(event.target.value)}
@@ -236,6 +244,7 @@ export default function InstructorAccountForm() {
                     <FieldLabel htmlFor="phoneNumber">Số điện thoại</FieldLabel>
                     <Input
                       id="phoneNumber"
+                      placeholder="Số điện thoại..."
                       value={valueForInput(field.value)}
                       onBlur={field.onBlur}
                       onChange={(event) => field.onChange(event.target.value)}
@@ -254,6 +263,7 @@ export default function InstructorAccountForm() {
                   <FieldLabel htmlFor="note">Ghi chú</FieldLabel>
                   <Input
                     id="note"
+                    placeholder="Ghi chú..."
                     value={valueForInput(field.value)}
                     onBlur={field.onBlur}
                     onChange={(event) => field.onChange(event.target.value)}
