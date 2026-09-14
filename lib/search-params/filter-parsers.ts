@@ -127,9 +127,10 @@ export const providerEventResultFilterParser = parseAsStringLiteral([
   ...PROVIDER_EVENT_RESULT_FILTER_VALUES,
 ] as const).withDefault("");
 
-export const withdrawStatusFilterParser = parseAsStringLiteral(
-  WITHDRAW_STATUS_FILTER_VALUES,
-).withDefault("pending");
+export const withdrawStatusFilterParser = parseAsStringLiteral([
+  "",
+  ...WITHDRAW_STATUS_FILTER_VALUES,
+] as const).withDefault("pending");
 
 export const amountSortParser =
   parseAsStringLiteral(AMOUNT_SORT_VALUES).withDefault("desc");

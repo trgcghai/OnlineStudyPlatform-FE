@@ -43,7 +43,7 @@ export default function AdminWithdrawalsPage() {
   const withdrawFilters = useMemo<AdminWithdrawRequestFilters>(
     () => ({
       instructorEmail: debouncedInstructorEmail || undefined,
-      status: filtersState.status,
+      status: filtersState.status || undefined,
       requestedAtFrom: filtersState.requestedAtFrom || undefined,
       requestedAtTo: filtersState.requestedAtTo || undefined,
       amountSort: filtersState.amountSort,

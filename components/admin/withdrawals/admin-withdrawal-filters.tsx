@@ -17,7 +17,10 @@ import {
 } from "@/components/ui/select";
 import type { WithdrawRequestStatus } from "@/services/api/payment";
 
-const STATUS_LABELS: Record<WithdrawRequestStatus, string> = {
+type WithdrawStatusFilter = WithdrawRequestStatus | "";
+
+const STATUS_LABELS: Record<WithdrawStatusFilter, string> = {
+  "": "Tất cả trạng thái",
   pending: "Đang chờ",
   processed: "Đã xử lý",
   cancelled: "Đã hủy",
@@ -46,13 +49,13 @@ export function AdminWithdrawalFilters({
   instructorEmail: string;
   requestedAtFrom: string;
   requestedAtTo: string;
-  status: WithdrawRequestStatus;
+  status: WithdrawStatusFilter;
   onAmountSortChange: (value: "asc" | "desc") => void;
   onClear: () => void;
   onInstructorEmailChange: (value: string) => void;
   onRequestedAtFromChange: (value: string) => void;
   onRequestedAtToChange: (value: string) => void;
-  onStatusChange: (value: WithdrawRequestStatus) => void;
+  onStatusChange: (value: WithdrawStatusFilter) => void;
 }) {
   const hasActiveFilters = Boolean(
     instructorEmail ||
@@ -113,7 +116,7 @@ export function AdminWithdrawalFilters({
           <Select
             value={status}
             onValueChange={(value) =>
-              onStatusChange(value as WithdrawRequestStatus)
+              onStatusChange(value as WithdrawStatusFilter)
             }
             items={STATUS_LABELS}
           >
@@ -124,7 +127,7 @@ export function AdminWithdrawalFilters({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {(Object.keys(STATUS_LABELS) as WithdrawRequestStatus[]).map(
+              {(Object.keys(STATUS_LABELS) as WithdrawStatusFilter[]).map(
                 (value) => (
                   <SelectItem key={value} value={value}>
                     {STATUS_LABELS[value]}
