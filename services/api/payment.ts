@@ -135,7 +135,10 @@ export interface LearnerPaymentTransactionItem {
 export type InstructorBalanceLedgerType = "earning_credit" | "withdraw_debit";
 
 export interface InstructorBalanceSummary {
+  totalBalance: number;
   currentBalance: number;
+  withdrawableBalance: number;
+  nonWithdrawableBalance: number;
   totalEarned: number;
   totalWithdrawn: number;
   currency: PaymentConfigCurrency;
@@ -155,6 +158,7 @@ export interface InstructorBalanceHistoryItem {
   platformFeeAmount: number | null;
   netAmount: number | null;
   description: string;
+  availableAt: string | null;
   createdAt: string;
   course: { id: string; title: string } | null;
   paymentTransactionId: string | null;

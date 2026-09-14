@@ -11,14 +11,19 @@ import type { InstructorBalanceSummary } from "@/services/api/payment";
 
 const SUMMARY_ITEMS = [
   {
-    key: "currentBalance",
-    label: "Số dư hiện tại",
-    description: "Tổng thay đổi từ lịch sử số dư.",
+    key: "totalBalance",
+    label: "Tổng số dư",
+    description: "Toàn bộ số dư từ doanh thu và rút tiền đã xử lý.",
   },
   {
-    key: "totalEarned",
-    label: "Tổng thu nhập",
-    description: "Doanh thu ròng từ khóa học đã bán.",
+    key: "withdrawableBalance",
+    label: "Có thể rút",
+    description: "Số dư đã qua thời gian giữ tiền và có thể rút.",
+  },
+  {
+    key: "nonWithdrawableBalance",
+    label: "Chờ khả dụng",
+    description: "Doanh thu còn trong thời gian giữ tiền.",
   },
   {
     key: "totalWithdrawn",
@@ -35,7 +40,7 @@ export function BalanceSummaryCards({
   isLoading: boolean;
 }) {
   return (
-    <div className="grid gap-4 md:grid-cols-3">
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       {SUMMARY_ITEMS.map((item) => (
         <Card key={item.key}>
           <CardHeader className="space-y-1">

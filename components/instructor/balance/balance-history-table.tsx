@@ -42,6 +42,16 @@ function getSourceLabel(item: InstructorBalanceHistoryItem): string {
   return item.description;
 }
 
+function getAvailableLabel(item: InstructorBalanceHistoryItem): string {
+  if (item.type !== "earning_credit") return "-";
+  if (!item.availableAt) return "Có thể rút ngay";
+
+  const availableAt = new Date(item.availableAt);
+  if (availableAt.getTime() <= Date.now()) return "Đã khả dụng";
+
+  return formatDateTime(item.availableAt);
+}
+
 export function BalanceHistoryTable({
   data,
   isLoading,
@@ -105,6 +115,7 @@ export function BalanceHistoryTable({
                   <TableHead>Nguồn</TableHead>
                   <TableHead>Doanh thu gốc</TableHead>
                   <TableHead>Phí nền tảng</TableHead>
+                  <TableHead>Khả dụng</TableHead>
                   <TableHead>Thay đổi</TableHead>
                 </TableRow>
               </TableHeader>
@@ -126,6 +137,7 @@ export function BalanceHistoryTable({
                         ? "-"
                         : formatVndAmount(item.platformFeeAmount)}
                     </TableCell>
+                    <TableCell>{getAvailableLabel(item)}</TableCell>
                     <TableCell
                       className={
                         item.amountDelta >= 0
