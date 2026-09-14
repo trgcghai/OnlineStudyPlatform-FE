@@ -59,7 +59,8 @@ export interface CoursePricingReference {
 export type PaymentStatus =
   "pending" | "paid" | "failed" | "cancelled" | "expired" | "refunded";
 
-export type WithdrawRequestStatus = "pending" | "processed" | "cancelled";
+export type WithdrawRequestStatus =
+  "pending" | "processed" | "cancelled" | "rejected";
 
 export interface PaymentTransaction {
   id: string;
@@ -139,6 +140,10 @@ export interface WithdrawRequest {
   status: WithdrawRequestStatus;
   requestedAt: string;
   note: string | null;
+  cancelReason: string | null;
+  cancelledAt: string | null;
+  rejectReason: string | null;
+  rejectedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -146,6 +151,14 @@ export interface WithdrawRequest {
 export interface CreateWithdrawRequestPayload {
   amount: number;
   note?: string;
+}
+
+export interface CancelWithdrawRequestPayload {
+  reason?: string;
+}
+
+export interface RejectWithdrawRequestPayload {
+  reason: string;
 }
 
 export interface WithdrawRequestFilters {
@@ -178,6 +191,10 @@ export interface AdminWithdrawRequestItem {
   status: WithdrawRequestStatus;
   requestedAt: string;
   note: string | null;
+  cancelReason: string | null;
+  cancelledAt: string | null;
+  rejectReason: string | null;
+  rejectedAt: string | null;
   createdAt: string;
   updatedAt: string;
   instructor: {
@@ -421,6 +438,29 @@ export async function listAdminWithdrawRequests(
   const { data } = await axiosClient.get<
     ApiSuccessResponse<AdminWithdrawRequestList>
   >(`/withdraw/admin${buildPaymentAdminQuery(filters)}`);
+
+  return data.data;
+}
+
+export async function cancelWithdrawRequest(
+  id: string,
+  payload: CancelWithdrawRequestPayload,
+): Promise<WithdrawRequest> {
+  const { data } = await axiosClient.post<ApiSuccessResponse<WithdrawRequest>>(
+    `/withdraw/${id}/cancel`,
+    payload,
+  );
+
+  return data.data;
+}
+
+export async function rejectWithdrawRequest(
+  id: string,
+  payload: RejectWithdrawRequestPayload,
+): Promise<AdminWithdrawRequestItem> {
+  const { data } = await axiosClient.post<
+    ApiSuccessResponse<AdminWithdrawRequestItem>
+  >(`/withdraw/${id}/reject`, payload);
 
   return data.data;
 }

@@ -81,8 +81,8 @@ export default function AdminWithdrawalsPage() {
         <p className="text-sm font-medium text-primary">Thanh toán</p>
         <h1 className="text-2xl font-bold tracking-tight">Yêu cầu rút tiền</h1>
         <p className="max-w-3xl text-sm text-muted-foreground">
-          Theo dõi các yêu cầu rút tiền của giảng viên. Giai đoạn này chỉ hiển
-          thị danh sách và bộ lọc, chưa có thao tác xử lý yêu cầu.
+          Theo dõi các yêu cầu rút tiền của giảng viên, lọc theo trạng thái và
+          từ chối những yêu cầu đang chờ khi thông tin chưa hợp lệ.
         </p>
       </div>
 

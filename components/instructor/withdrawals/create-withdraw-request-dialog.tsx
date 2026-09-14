@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import {
   AlertDialog,
@@ -36,11 +36,21 @@ const withdrawRequestSchema = z.object({
   amount: z
     .number("Số tiền rút là bắt buộc")
     .int("Số tiền rút phải là số nguyên")
-    .min(1, "Số tiền rút phải lớn hơn 0"),
+    .min(1000, "Số tiền rút phải lớn hơn 1000"),
   note: z.string().trim().max(500, "Ghi chú tối đa 500 ký tự").optional(),
 });
 
 type WithdrawRequestFormValues = z.infer<typeof withdrawRequestSchema>;
+
+function formatAmountInput(value: number): string {
+  return Number.isFinite(value) ? value.toLocaleString("vi-VN") : "";
+}
+
+function parseAmountInput(value: string): number {
+  const digits = value.replace(/\D/g, "");
+
+  return digits ? Number(digits) : Number.NaN;
+}
 
 export function CreateWithdrawRequestDialog() {
   const [open, setOpen] = useState(false);
@@ -49,7 +59,7 @@ export function CreateWithdrawRequestDialog() {
   const createMutation = useCreateWithdrawRequest();
   const form = useForm<WithdrawRequestFormValues>({
     resolver: zodResolver(withdrawRequestSchema),
-    defaultValues: { amount: 1, note: "" },
+    defaultValues: { amount: 1000, note: "" },
   });
 
   function handleOpenRequest() {
@@ -66,7 +76,7 @@ export function CreateWithdrawRequestDialog() {
       amount: values.amount,
       note: values.note?.trim() || undefined,
     });
-    form.reset({ amount: 1, note: "" });
+    form.reset({ amount: 1000, note: "" });
     setOpen(false);
   }
 
@@ -97,12 +107,22 @@ export function CreateWithdrawRequestDialog() {
                 Số tiền
               </FieldLabel>
               <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
-                <Input
-                  id="withdrawAmount"
-                  type="number"
-                  min={1}
-                  step={1000}
-                  {...form.register("amount", { valueAsNumber: true })}
+                <Controller
+                  control={form.control}
+                  name="amount"
+                  render={({ field }) => (
+                    <Input
+                      id="withdrawAmount"
+                      type="text"
+                      inputMode="numeric"
+                      min={1000}
+                      value={formatAmountInput(field.value)}
+                      onBlur={field.onBlur}
+                      onChange={(event) =>
+                        field.onChange(parseAmountInput(event.target.value))
+                      }
+                    />
+                  )}
                 />
                 <div className="flex h-9 items-center rounded-4xl border border-input bg-input/30 px-4 text-sm font-medium">
                   VND

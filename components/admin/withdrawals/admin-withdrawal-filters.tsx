@@ -21,6 +21,7 @@ const STATUS_LABELS: Record<WithdrawRequestStatus, string> = {
   pending: "Đang chờ",
   processed: "Đã xử lý",
   cancelled: "Đã hủy",
+  rejected: "Bị từ chối",
 };
 
 const SORT_LABELS: Record<"asc" | "desc", string> = {

@@ -8,6 +8,7 @@ import {
 import { paymentKeys } from "@/lib/query-keys";
 import {
   cancelPaymentTransaction,
+  cancelWithdrawRequest,
   createWithdrawRequest,
   createPaymentCheckout,
   getAdminPaymentProviderEventDetail,
@@ -21,8 +22,11 @@ import {
   listAdminPaymentProviderEvents,
   listAdminPaymentTransactions,
   listPaymentConfigAudits,
+  rejectWithdrawRequest,
   updatePaymentConfig,
   type AdminWithdrawRequestFilters,
+  type AdminWithdrawRequestItem,
+  type CancelWithdrawRequestPayload,
   type CreateWithdrawRequestPayload,
   type AdminPaymentTransactionFilters,
   type AdminProviderEventFilters,
@@ -30,6 +34,7 @@ import {
   type LearnerPaymentTransactionFilters,
   type PaymentConfig,
   type PaymentConfigAuditFilters,
+  type RejectWithdrawRequestPayload,
   type UpdatePaymentConfigPayload,
   type WithdrawRequest,
   type WithdrawRequestFilters,
@@ -133,11 +138,22 @@ export function mapWithdrawError(error: unknown): string {
 
       return "Số tiền rút thấp hơn mức tối thiểu đang được cấu hình.";
     }
+    if (
+      data.error.message === "Only pending withdraw requests can be cancelled"
+    ) {
+      return "Chỉ có thể hủy yêu cầu rút tiền đang chờ xử lý.";
+    }
+    if (
+      data.error.message === "Only pending withdraw requests can be rejected"
+    ) {
+      return "Chỉ có thể từ chối yêu cầu rút tiền đang chờ xử lý.";
+    }
 
     return data.error.message || "Yêu cầu rút tiền không hợp lệ.";
   }
 
   if (status === 403) return "Bạn không có quyền thực hiện thao tác này.";
+  if (status === 404) return "Không tìm thấy yêu cầu rút tiền.";
 
   return data.error.message || GENERIC_ERROR_MESSAGE;
 }
@@ -254,6 +270,44 @@ export function useCreateWithdrawRequest() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: withdrawKeys.meAll() });
       toast.add({ title: "Đã tạo yêu cầu rút tiền.", type: "success" });
+    },
+    onError: (error) => {
+      toast.add({ title: mapWithdrawError(error), type: "error" });
+    },
+  });
+}
+
+export function useCancelWithdrawRequest() {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    WithdrawRequest,
+    unknown,
+    { id: string; payload: CancelWithdrawRequestPayload }
+  >({
+    mutationFn: ({ id, payload }) => cancelWithdrawRequest(id, payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: withdrawKeys.meAll() });
+      toast.add({ title: "Đã hủy yêu cầu rút tiền.", type: "success" });
+    },
+    onError: (error) => {
+      toast.add({ title: mapWithdrawError(error), type: "error" });
+    },
+  });
+}
+
+export function useRejectWithdrawRequest() {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    AdminWithdrawRequestItem,
+    unknown,
+    { id: string; payload: RejectWithdrawRequestPayload }
+  >({
+    mutationFn: ({ id, payload }) => rejectWithdrawRequest(id, payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: withdrawKeys.adminAll() });
+      toast.add({ title: "Đã từ chối yêu cầu rút tiền.", type: "success" });
     },
     onError: (error) => {
       toast.add({ title: mapWithdrawError(error), type: "error" });

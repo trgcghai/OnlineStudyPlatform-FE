@@ -51,6 +51,7 @@ export const WITHDRAW_STATUS_FILTER_VALUES = [
   "pending",
   "processed",
   "cancelled",
+  "rejected",
 ] as const satisfies readonly WithdrawRequestStatus[];
 export const AMOUNT_SORT_VALUES = ["asc", "desc"] as const;
 
