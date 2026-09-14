@@ -60,7 +60,7 @@ export const paymentConfigSchema = z
     earningHoldDays: z
       .number("Số ngày giữ thu nhập là bắt buộc")
       .int("Số ngày giữ thu nhập phải là số nguyên")
-      .min(7, "Số ngày giữ thu nhập phải từ 7 ngày trở lên"),
+      .min(0, "Số ngày giữ thu nhập không được âm"),
   })
   .superRefine((value, ctx) => {
     if (!value.allowedPrices.includes(0)) {
