@@ -29,6 +29,7 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateWithdrawRequest } from "@/hooks/usePayment";
+import { MINIMUM_WITHDRAWAL_AMOUNT_MIN } from "@/lib/schemas/payment-config";
 import { useMyInstructorAccount } from "@/hooks/useUsers";
 import { CircleDollarSignIcon } from "lucide-react";
 
@@ -36,7 +37,10 @@ const withdrawRequestSchema = z.object({
   amount: z
     .number("Số tiền rút là bắt buộc")
     .int("Số tiền rút phải là số nguyên")
-    .min(1000, "Số tiền rút phải lớn hơn 1000"),
+    .min(
+      MINIMUM_WITHDRAWAL_AMOUNT_MIN,
+      `Số tiền rút phải từ ${MINIMUM_WITHDRAWAL_AMOUNT_MIN.toLocaleString("vi-VN")} VND`,
+    ),
   note: z.string().trim().max(500, "Ghi chú tối đa 500 ký tự").optional(),
 });
 
@@ -59,7 +63,7 @@ export function CreateWithdrawRequestDialog() {
   const createMutation = useCreateWithdrawRequest();
   const form = useForm<WithdrawRequestFormValues>({
     resolver: zodResolver(withdrawRequestSchema),
-    defaultValues: { amount: 1000, note: "" },
+    defaultValues: { amount: MINIMUM_WITHDRAWAL_AMOUNT_MIN, note: "" },
   });
 
   function handleOpenRequest() {
@@ -76,7 +80,7 @@ export function CreateWithdrawRequestDialog() {
       amount: values.amount,
       note: values.note?.trim() || undefined,
     });
-    form.reset({ amount: 1000, note: "" });
+    form.reset({ amount: MINIMUM_WITHDRAWAL_AMOUNT_MIN, note: "" });
     setOpen(false);
   }
 
@@ -115,7 +119,7 @@ export function CreateWithdrawRequestDialog() {
                       id="withdrawAmount"
                       type="text"
                       inputMode="numeric"
-                      min={1000}
+                      min={MINIMUM_WITHDRAWAL_AMOUNT_MIN}
                       value={formatAmountInput(field.value)}
                       onBlur={field.onBlur}
                       onChange={(event) =>

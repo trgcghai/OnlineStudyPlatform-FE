@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/tooltip";
 import {
   formatVndAmount,
+  EARNING_HOLD_DAYS_MIN,
   MINIMUM_WITHDRAWAL_AMOUNT_MIN,
   MINIMUM_WITHDRAWAL_AMOUNT_STEP,
   paymentConfigSchema,
@@ -237,7 +238,9 @@ export function PaymentConfigForm({ config }: PaymentConfigFormProps) {
                       <InputGroupInput
                         id="minimumWithdrawalAmount"
                         value={formatNumberInputValue(field.value)}
-                        placeholder="1.000.000"
+                        placeholder={formatNumberInputValue(
+                          MINIMUM_WITHDRAWAL_AMOUNT_MIN,
+                        )}
                         aria-invalid={fieldState.invalid}
                         onBlur={field.onBlur}
                         readOnly
@@ -364,7 +367,7 @@ export function PaymentConfigForm({ config }: PaymentConfigFormProps) {
                     </InputGroup>
                     <FieldDescription>
                       Số ngày thu nhập của giảng viên ở trạng thái chờ trước khi
-                      có thể rút.
+                      có thể rút. Tối thiểu {EARNING_HOLD_DAYS_MIN} ngày.
                     </FieldDescription>
                     <FieldError errors={[fieldState.error]} />
                   </Field>

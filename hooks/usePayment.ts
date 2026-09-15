@@ -141,6 +141,23 @@ export function mapWithdrawError(error: unknown): string {
 
       return "Số tiền rút thấp hơn mức tối thiểu đang được cấu hình.";
     }
+    if (data.error.message === "Amount exceeds withdrawable balance") {
+      const details = Object.fromEntries(
+        data.error.details.flatMap((detail) => {
+          const [key, value] = detail.split("=");
+
+          return key && value ? [[key, value]] : [];
+        }),
+      );
+      const withdrawableBalance = Number(details.withdrawableBalance);
+      const currency = details.currency || "VND";
+
+      if (Number.isFinite(withdrawableBalance) && withdrawableBalance >= 0) {
+        return `Số tiền rút vượt quá số dư có thể rút ${withdrawableBalance.toLocaleString("vi-VN")} ${currency}.`;
+      }
+
+      return "Số tiền rút vượt quá số dư có thể rút hiện tại.";
+    }
     if (
       data.error.message === "Only pending withdraw requests can be cancelled"
     ) {
