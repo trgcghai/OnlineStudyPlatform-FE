@@ -60,7 +60,7 @@ export type PaymentStatus =
   "pending" | "paid" | "failed" | "cancelled" | "expired" | "refunded";
 
 export type WithdrawRequestStatus =
-  "pending" | "processed" | "cancelled" | "rejected";
+  "pending" | "processing" | "processed" | "cancelled" | "rejected";
 
 export interface PaymentTransaction {
   id: string;
@@ -185,6 +185,10 @@ export interface WithdrawRequest {
   cancelledAt: string | null;
   rejectReason: string | null;
   rejectedAt: string | null;
+  processingAt: string | null;
+  processedAt: string | null;
+  payoutReference: string | null;
+  payoutDescription: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -200,6 +204,10 @@ export interface CancelWithdrawRequestPayload {
 
 export interface RejectWithdrawRequestPayload {
   reason: string;
+}
+
+export interface MarkWithdrawProcessedPayload {
+  payoutReference?: string;
 }
 
 export interface WithdrawRequestFilters {
@@ -236,6 +244,10 @@ export interface AdminWithdrawRequestItem {
   cancelledAt: string | null;
   rejectReason: string | null;
   rejectedAt: string | null;
+  processingAt: string | null;
+  processedAt: string | null;
+  payoutReference: string | null;
+  payoutDescription: string | null;
   createdAt: string;
   updatedAt: string;
   instructor: {
@@ -250,6 +262,17 @@ export interface AdminWithdrawRequestList {
   page: number;
   limit: number;
   totalPages: number;
+}
+
+export interface AdminWithdrawPayoutResponse extends AdminWithdrawRequestItem {
+  payoutDescription: string;
+  qrImageUrl: string;
+  payoutAccount: {
+    bankName: string;
+    bankCode: string;
+    bankAccountNumber: string;
+    accountHolderName: string;
+  };
 }
 
 export type AdminProviderEventResult =
@@ -520,6 +543,27 @@ export async function rejectWithdrawRequest(
   const { data } = await axiosClient.post<
     ApiSuccessResponse<AdminWithdrawRequestItem>
   >(`/withdraw/${id}/reject`, payload);
+
+  return data.data;
+}
+
+export async function processWithdrawRequest(
+  id: string,
+): Promise<AdminWithdrawPayoutResponse> {
+  const { data } = await axiosClient.post<
+    ApiSuccessResponse<AdminWithdrawPayoutResponse>
+  >(`/withdraw/${id}/process`);
+
+  return data.data;
+}
+
+export async function markWithdrawProcessed(
+  id: string,
+  payload: MarkWithdrawProcessedPayload,
+): Promise<AdminWithdrawRequestItem> {
+  const { data } = await axiosClient.post<
+    ApiSuccessResponse<AdminWithdrawRequestItem>
+  >(`/withdraw/${id}/mark-processed`, payload);
 
   return data.data;
 }

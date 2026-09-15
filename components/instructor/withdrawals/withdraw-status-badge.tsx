@@ -4,6 +4,7 @@ import type { WithdrawRequestStatus } from "@/services/api/payment";
 
 const STATUS_LABELS: Record<WithdrawRequestStatus, string> = {
   pending: "Đang chờ",
+  processing: "Đang xử lý",
   processed: "Đã xử lý",
   cancelled: "Đã hủy",
   rejected: "Bị từ chối",
@@ -12,6 +13,8 @@ const STATUS_LABELS: Record<WithdrawRequestStatus, string> = {
 const STATUS_CLASSES: Record<WithdrawRequestStatus, string> = {
   pending:
     "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300",
+  processing:
+    "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-300",
   processed:
     "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300",
   cancelled:

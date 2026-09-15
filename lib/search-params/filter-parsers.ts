@@ -49,6 +49,7 @@ export const PROVIDER_EVENT_RESULT_FILTER_VALUES = [
 ] as const satisfies readonly AdminProviderEventResult[];
 export const WITHDRAW_STATUS_FILTER_VALUES = [
   "pending",
+  "processing",
   "processed",
   "cancelled",
   "rejected",

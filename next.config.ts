@@ -16,6 +16,12 @@ const nextConfig: NextConfig = {
         port: "9000",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "vietqr.app",
+        port: "",
+        pathname: "/**",
+      },
     ],
     dangerouslyAllowLocalIP: true,
   },

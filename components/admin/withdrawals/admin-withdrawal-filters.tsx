@@ -22,6 +22,7 @@ type WithdrawStatusFilter = WithdrawRequestStatus | "";
 const STATUS_LABELS: Record<WithdrawStatusFilter, string> = {
   "": "Tất cả trạng thái",
   pending: "Đang chờ",
+  processing: "Đang xử lý",
   processed: "Đã xử lý",
   cancelled: "Đã hủy",
   rejected: "Bị từ chối",

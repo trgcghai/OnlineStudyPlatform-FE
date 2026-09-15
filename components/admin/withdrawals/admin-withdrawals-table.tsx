@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { CreditCard, X } from "lucide-react";
+import { CheckCircle2, CreditCard, QrCode, X } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,10 +25,18 @@ import {
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { WithdrawStatusBadge } from "@/components/instructor/withdrawals/withdraw-status-badge";
-import { useRejectWithdrawRequest } from "@/hooks/usePayment";
+import {
+  useMarkWithdrawProcessed,
+  useProcessWithdrawRequest,
+  useRejectWithdrawRequest,
+} from "@/hooks/usePayment";
 import { formatVndAmount } from "@/lib/schemas/payment-config";
-import type { AdminWithdrawRequestItem } from "@/services/api/payment";
+import type {
+  AdminWithdrawPayoutResponse,
+  AdminWithdrawRequestItem,
+} from "@/services/api/payment";
 import { formatDateTime } from "@/utils/dateTimeUtil";
+import Image from "next/image";
 
 function RejectWithdrawRequestDialog({
   item,
@@ -139,6 +147,158 @@ function RejectWithdrawRequestDialog({
   );
 }
 
+function ProcessWithdrawRequestDialog({
+  item,
+}: {
+  item: AdminWithdrawRequestItem;
+}) {
+  const [open, setOpen] = useState(false);
+  const [detail, setDetail] = useState<AdminWithdrawPayoutResponse | null>(
+    null,
+  );
+  const [payoutReference, setPayoutReference] = useState("");
+  const processMutation = useProcessWithdrawRequest();
+  const markProcessedMutation = useMarkWithdrawProcessed();
+
+  async function openDialog() {
+    setOpen(true);
+    try {
+      const response = await processMutation.mutateAsync(item.id);
+      setDetail(response);
+      setPayoutReference(response.payoutReference ?? "");
+    } catch {
+      setOpen(false);
+    }
+  }
+
+  async function handleMarkProcessed(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    await markProcessedMutation.mutateAsync({
+      id: item.id,
+      payload: { payoutReference: payoutReference.trim() || undefined },
+    });
+    setOpen(false);
+    setDetail(null);
+    setPayoutReference("");
+  }
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+        if (!nextOpen) {
+          setDetail(null);
+          setPayoutReference("");
+        }
+      }}
+    >
+      <Button
+        type="button"
+        size="sm"
+        onClick={() => void openDialog()}
+        disabled={processMutation.isPending}
+      >
+        {processMutation.isPending ? (
+          <Spinner />
+        ) : (
+          <QrCode className="size-4" aria-hidden="true" />
+        )}
+        {item.status === "processing" ? "Tiếp tục xử lý" : "Xử lý payout"}
+      </Button>
+      <DialogContent className="max-w-4xl!">
+        <DialogHeader>
+          <DialogTitle>Xử lý yêu cầu rút tiền</DialogTitle>
+          <DialogDescription>
+            Quét mã VietQR bằng ứng dụng ngân hàng, xác nhận chuyển khoản thủ
+            công, sau đó ghi nhận yêu cầu đã xử lý.
+          </DialogDescription>
+        </DialogHeader>
+
+        {processMutation.isPending && !detail ? (
+          <div className="flex justify-center py-8">
+            <Spinner />
+          </div>
+        ) : detail ? (
+          <form onSubmit={handleMarkProcessed} className="space-y-5">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+              <div className="rounded-2xl border bg-white p-3 shadow-sm">
+                <Image
+                  src={detail.qrImageUrl}
+                  alt="Mã VietQR rút tiền"
+                  className="h-auto w-full rounded-xl"
+                  width={500}
+                  height={500}
+                />
+              </div>
+              <div className="space-y-2 rounded-2xl bg-muted/40 p-4 text-sm">
+                <p>
+                  <span className="text-muted-foreground">Số tiền:</span>{" "}
+                  <strong>{formatVndAmount(detail.amount)}</strong>
+                </p>
+                <p>
+                  <span className="text-muted-foreground">Ngân hàng:</span>{" "}
+                  {detail.payoutAccount.bankName} (
+                  {detail.payoutAccount.bankCode})
+                </p>
+                <p>
+                  <span className="text-muted-foreground">Số tài khoản:</span>{" "}
+                  {detail.payoutAccount.bankAccountNumber}
+                </p>
+                <p>
+                  <span className="text-muted-foreground">Chủ tài khoản:</span>{" "}
+                  {detail.payoutAccount.accountHolderName}
+                </p>
+                <p>
+                  <span className="text-muted-foreground">Nội dung:</span>{" "}
+                  <strong>{detail.payoutDescription}</strong>
+                </p>
+
+                <Field className="mt-6">
+                  <FieldLabel htmlFor={`payoutReference-${item.id}`}>
+                    Mã giao dịch ngân hàng
+                  </FieldLabel>
+                  <Textarea
+                    id={`payoutReference-${item.id}`}
+                    rows={4}
+                    maxLength={120}
+                    placeholder="Nhập mã giao dịch nếu có"
+                    value={payoutReference}
+                    onChange={(event) => setPayoutReference(event.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {payoutReference.length}/120 ký tự
+                  </p>
+                </Field>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+                disabled={markProcessedMutation.isPending}
+              >
+                Đóng
+              </Button>
+              <Button type="submit" disabled={markProcessedMutation.isPending}>
+                {markProcessedMutation.isPending ? (
+                  <Spinner />
+                ) : (
+                  <CheckCircle2 className="size-4" aria-hidden="true" />
+                )}
+                Ghi nhận đã xử lý
+              </Button>
+            </DialogFooter>
+          </form>
+        ) : null}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function AdminWithdrawalRow({ item }: { item: AdminWithdrawRequestItem }) {
   return (
     <TableRow>
@@ -164,7 +324,12 @@ function AdminWithdrawalRow({ item }: { item: AdminWithdrawRequestItem }) {
       </TableCell>
       <TableCell>
         {item.status === "pending" ? (
-          <RejectWithdrawRequestDialog item={item} />
+          <div className="flex flex-wrap gap-2">
+            <ProcessWithdrawRequestDialog item={item} />
+            <RejectWithdrawRequestDialog item={item} />
+          </div>
+        ) : item.status === "processing" ? (
+          <ProcessWithdrawRequestDialog item={item} />
         ) : (
           <span className="text-sm text-muted-foreground">-</span>
         )}

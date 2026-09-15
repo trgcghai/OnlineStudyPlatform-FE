@@ -24,10 +24,13 @@ import {
   listAdminPaymentProviderEvents,
   listAdminPaymentTransactions,
   listPaymentConfigAudits,
+  markWithdrawProcessed,
+  processWithdrawRequest,
   rejectWithdrawRequest,
   updatePaymentConfig,
   type AdminWithdrawRequestFilters,
   type AdminWithdrawRequestItem,
+  type AdminWithdrawPayoutResponse,
   type CancelWithdrawRequestPayload,
   type CreateWithdrawRequestPayload,
   type AdminPaymentTransactionFilters,
@@ -35,6 +38,7 @@ import {
   type CheckoutResult,
   type InstructorBalanceHistoryFilters,
   type LearnerPaymentTransactionFilters,
+  type MarkWithdrawProcessedPayload,
   type PaymentConfig,
   type PaymentConfigAuditFilters,
   type RejectWithdrawRequestPayload,
@@ -124,6 +128,9 @@ export function mapWithdrawError(error: unknown): string {
     if (data.error.message === "Instructor payout account is required") {
       return "Vui lòng cấu hình tài khoản nhận tiền trước khi tạo yêu cầu rút tiền.";
     }
+    if (data.error.message === "Instructor payout account is incomplete") {
+      return "Tài khoản nhận tiền của giảng viên chưa đầy đủ. Vui lòng yêu cầu giảng viên cập nhật thông tin.";
+    }
     if (data.error.message === "Amount is below minimum withdrawal amount") {
       const details = Object.fromEntries(
         data.error.details.flatMap((detail) => {
@@ -167,6 +174,18 @@ export function mapWithdrawError(error: unknown): string {
       data.error.message === "Only pending withdraw requests can be rejected"
     ) {
       return "Chỉ có thể từ chối yêu cầu rút tiền đang chờ xử lý.";
+    }
+    if (
+      data.error.message ===
+      "Only pending withdraw requests can start processing"
+    ) {
+      return "Chỉ có thể bắt đầu xử lý yêu cầu rút tiền đang chờ.";
+    }
+    if (
+      data.error.message ===
+      "Only processing withdraw requests can be marked processed"
+    ) {
+      return "Chỉ có thể đánh dấu đã xử lý cho yêu cầu đang xử lý.";
     }
 
     return data.error.message || "Yêu cầu rút tiền không hợp lệ.";
@@ -344,6 +363,37 @@ export function useRejectWithdrawRequest() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: withdrawKeys.adminAll() });
       toast.add({ title: "Đã từ chối yêu cầu rút tiền.", type: "success" });
+    },
+    onError: (error) => {
+      toast.add({ title: mapWithdrawError(error), type: "error" });
+    },
+  });
+}
+
+export function useProcessWithdrawRequest() {
+  return useMutation<AdminWithdrawPayoutResponse, unknown, string>({
+    mutationFn: processWithdrawRequest,
+    onError: (error) => {
+      toast.add({ title: mapWithdrawError(error), type: "error" });
+    },
+  });
+}
+
+export function useMarkWithdrawProcessed() {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    AdminWithdrawRequestItem,
+    unknown,
+    { id: string; payload: MarkWithdrawProcessedPayload }
+  >({
+    mutationFn: ({ id, payload }) => markWithdrawProcessed(id, payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: withdrawKeys.adminAll() });
+      toast.add({
+        title: "Đã ghi nhận yêu cầu rút tiền đã xử lý.",
+        type: "success",
+      });
     },
     onError: (error) => {
       toast.add({ title: mapWithdrawError(error), type: "error" });
