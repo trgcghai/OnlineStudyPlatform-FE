@@ -67,11 +67,17 @@ export interface InstructorAccount {
   updatedAt: string;
 }
 
+export interface BankOption {
+  name: string;
+  code: string;
+  bin: string;
+  shortName: string;
+}
+
 export interface UpsertInstructorAccountPayload {
-  bankName: string;
   bankAccountNumber: string;
   accountHolderName: string;
-  bankCode?: string | null;
+  bankCode: string;
   branchName?: string | null;
   phoneNumber?: string | null;
   note?: string | null;
@@ -108,6 +114,13 @@ export async function getMyInstructorAccount(): Promise<InstructorAccount | null
   const { data } = await axiosClient.get<
     ApiSuccessResponse<InstructorAccount | null>
   >("/users/me/instructor-account");
+
+  return data.data;
+}
+
+export async function listBanks(): Promise<BankOption[]> {
+  const { data } =
+    await axiosClient.get<ApiSuccessResponse<BankOption[]>>("/users/banks");
 
   return data.data;
 }

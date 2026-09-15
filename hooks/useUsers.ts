@@ -14,6 +14,7 @@ import {
   getInstructorAccountForAdmin,
   getMyInstructorAccount,
   getMyProfile,
+  listBanks,
   registerUser as registerUserApi,
   updateMyProfile,
   upsertMyInstructorAccount,
@@ -206,7 +207,6 @@ function mapInstructorAccountError(error: unknown): InstructorAccountFailure {
     const fieldErrors: InstructorAccountFailure["fieldErrors"] = [];
 
     for (const field of [
-      "bankName",
       "bankAccountNumber",
       "accountHolderName",
       "bankCode",
@@ -358,6 +358,14 @@ export function useMyInstructorAccount() {
   return useQuery({
     queryKey: instructorAccountKeys.me(),
     queryFn: getMyInstructorAccount,
+  });
+}
+
+export function useBanks() {
+  return useQuery({
+    queryKey: userKeys.banks(),
+    queryFn: listBanks,
+    staleTime: 24 * 60 * 60 * 1000,
   });
 }
 

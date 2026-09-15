@@ -21,21 +21,28 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import {
   instructorAccountSchema,
   type InstructorAccountFormValues,
 } from "@/lib/schemas/instructor-account";
 import {
+  useBanks,
   useMyInstructorAccount,
   useUpsertMyInstructorAccount,
 } from "@/hooks/useUsers";
 
 const emptyValues: InstructorAccountFormValues = {
-  bankName: "",
   bankAccountNumber: "",
   accountHolderName: "",
-  bankCode: null,
+  bankCode: "",
   branchName: null,
   phoneNumber: null,
   note: null,
@@ -52,6 +59,12 @@ export default function InstructorAccountForm() {
     isError,
     refetch,
   } = useMyInstructorAccount();
+  const {
+    data: banks = [],
+    isLoading: isBanksLoading,
+    isError: isBanksError,
+    refetch: refetchBanks,
+  } = useBanks();
   const { upsertAccount, isPending } = useUpsertMyInstructorAccount();
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -67,10 +80,9 @@ export default function InstructorAccountForm() {
     }
 
     form.reset({
-      bankName: account.bankName,
       bankAccountNumber: account.bankAccountNumber,
       accountHolderName: account.accountHolderName,
-      bankCode: account.bankCode,
+      bankCode: account.bankCode ?? "",
       branchName: account.branchName,
       phoneNumber: account.phoneNumber,
       note: account.note,
@@ -92,7 +104,7 @@ export default function InstructorAccountForm() {
     form.reset(values);
   }
 
-  if (isLoading) {
+  if (isLoading || isBanksLoading) {
     return (
       <Card>
         <CardContent className="flex justify-center py-8">
@@ -154,38 +166,61 @@ export default function InstructorAccountForm() {
             </Alert>
           )}
 
-          <FieldGroup>
-            <div className="grid gap-4 md:grid-cols-2">
-              <Field data-invalid={!!form.formState.errors.bankName}>
-                <FieldLabel htmlFor="bankName" required>
-                  Tên ngân hàng
-                </FieldLabel>
-                <Input
-                  id="bankName"
-                  placeholder="Tên ngân hàng..."
-                  {...form.register("bankName")}
-                />
-                <FieldError errors={[form.formState.errors.bankName]} />
-              </Field>
+          {isBanksError && (
+            <Alert variant="destructive">
+              <AlertTitle>Không tải được danh sách ngân hàng</AlertTitle>
+              <AlertDescription className="flex flex-col gap-3">
+                <span>Vui lòng tải lại danh sách ngân hàng trước khi lưu.</span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => void refetchBanks()}
+                >
+                  Tải lại ngân hàng
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
 
-              <Controller
-                control={form.control}
-                name="bankCode"
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="bankCode">Mã ngân hàng</FieldLabel>
-                    <Input
-                      id="bankCode"
-                      placeholder="Mã ngân hàng..."
-                      value={valueForInput(field.value)}
-                      onBlur={field.onBlur}
-                      onChange={(event) => field.onChange(event.target.value)}
-                    />
-                    <FieldError errors={[fieldState.error]} />
-                  </Field>
-                )}
-              />
-            </div>
+          <FieldGroup>
+            <Controller
+              control={form.control}
+              name="bankCode"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel required>Ngân hàng</FieldLabel>
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    items={Object.fromEntries(
+                      banks.map((bank) => [
+                        bank.code,
+                        `${bank.shortName} - ${bank.name}`,
+                      ]),
+                    )}
+                    disabled={isBanksError || banks.length === 0}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Chọn ngân hàng" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {banks.map((bank) => (
+                        <SelectItem key={bank.code} value={bank.code}>
+                          <span className="font-medium">{bank.shortName}</span>
+                          <span className="text-muted-foreground">
+                            {bank.name}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FieldDescription>
+                    Hệ thống tự lưu tên ngân hàng theo danh sách VietQR.
+                  </FieldDescription>
+                  <FieldError errors={[fieldState.error]} />
+                </Field>
+              )}
+            />
 
             <div className="grid gap-4 md:grid-cols-2">
               <Field data-invalid={!!form.formState.errors.bankAccountNumber}>
@@ -277,7 +312,10 @@ export default function InstructorAccountForm() {
             />
           </FieldGroup>
 
-          <Button type="submit" disabled={isPending || !form.formState.isDirty}>
+          <Button
+            type="submit"
+            disabled={isPending || isBanksError || !form.formState.isDirty}
+          >
             {isPending ? <Spinner /> : <Save aria-hidden="true" />}
             {isPending ? "Đang lưu..." : "Lưu tài khoản nhận tiền"}
           </Button>

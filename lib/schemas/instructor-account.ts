@@ -10,11 +10,6 @@ const optionalAccountField = z
   .nullable();
 
 export const instructorAccountSchema = z.object({
-  bankName: z
-    .string()
-    .trim()
-    .min(1, "Tên ngân hàng là bắt buộc")
-    .max(120, "Tên ngân hàng không được vượt quá 120 ký tự"),
   bankAccountNumber: z
     .string()
     .trim()
@@ -25,7 +20,11 @@ export const instructorAccountSchema = z.object({
     .trim()
     .min(1, "Tên chủ tài khoản là bắt buộc")
     .max(120, "Tên chủ tài khoản không được vượt quá 120 ký tự"),
-  bankCode: optionalAccountField,
+  bankCode: z
+    .string()
+    .trim()
+    .min(1, "Vui lòng chọn ngân hàng")
+    .max(120, "Mã ngân hàng không được vượt quá 120 ký tự"),
   branchName: optionalAccountField,
   phoneNumber: optionalAccountField,
   note: z

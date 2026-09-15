@@ -21,6 +21,7 @@ export const authKeys = {
 export const userKeys = {
   all: ["users"] as const,
   me: () => [...userKeys.all, "me"] as const,
+  banks: () => [...userKeys.all, "banks"] as const,
 };
 
 export const instructorAccountKeys = {
