@@ -53,6 +53,36 @@ export interface UserProfile {
   updatedAt: string;
 }
 
+export interface InstructorAccount {
+  id: string;
+  instructorId: string;
+  bankName: string;
+  bankAccountNumber: string;
+  accountHolderName: string;
+  bankCode: string | null;
+  branchName: string | null;
+  phoneNumber: string | null;
+  note: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BankOption {
+  name: string;
+  code: string;
+  bin: string;
+  shortName: string;
+}
+
+export interface UpsertInstructorAccountPayload {
+  bankAccountNumber: string;
+  accountHolderName: string;
+  bankCode: string;
+  branchName?: string | null;
+  phoneNumber?: string | null;
+  note?: string | null;
+}
+
 export interface UpdateProfilePayload {
   name?: string;
 }
@@ -63,9 +93,8 @@ export interface ChangePasswordPayload {
 }
 
 export async function getMyProfile(): Promise<UserProfile> {
-  const { data } = await axiosClient.get<ApiSuccessResponse<UserProfile>>(
-    "/users/me",
-  );
+  const { data } =
+    await axiosClient.get<ApiSuccessResponse<UserProfile>>("/users/me");
 
   return data.data;
 }
@@ -73,9 +102,46 @@ export async function getMyProfile(): Promise<UserProfile> {
 export async function updateMyProfile(
   payload: UpdateProfilePayload,
 ): Promise<UserProfile> {
-  const { data } = await axiosClient.patch<
-    ApiSuccessResponse<UserProfile>
-  >("/users/me", payload);
+  const { data } = await axiosClient.patch<ApiSuccessResponse<UserProfile>>(
+    "/users/me",
+    payload,
+  );
+
+  return data.data;
+}
+
+export async function getMyInstructorAccount(): Promise<InstructorAccount | null> {
+  const { data } = await axiosClient.get<
+    ApiSuccessResponse<InstructorAccount | null>
+  >("/users/me/instructor-account");
+
+  return data.data;
+}
+
+export async function listBanks(): Promise<BankOption[]> {
+  const { data } =
+    await axiosClient.get<ApiSuccessResponse<BankOption[]>>("/users/banks");
+
+  return data.data;
+}
+
+export async function upsertMyInstructorAccount(
+  payload: UpsertInstructorAccountPayload,
+): Promise<InstructorAccount> {
+  const { data } = await axiosClient.put<ApiSuccessResponse<InstructorAccount>>(
+    "/users/me/instructor-account",
+    payload,
+  );
+
+  return data.data;
+}
+
+export async function getInstructorAccountForAdmin(
+  instructorId: string,
+): Promise<InstructorAccount | null> {
+  const { data } = await axiosClient.get<
+    ApiSuccessResponse<InstructorAccount | null>
+  >(`/users/admin/instructors/${instructorId}/account`);
 
   return data.data;
 }
@@ -137,7 +203,8 @@ function buildAdminUsersQuery(filters: AdminUserFilters): string {
 
   if (filters.role) params.set("role", filters.role);
   if (filters.status) params.set("status", filters.status);
-  if (filters.q && filters.q.trim().length > 0) params.set("q", filters.q.trim());
+  if (filters.q && filters.q.trim().length > 0)
+    params.set("q", filters.q.trim());
   if (filters.page) params.set("page", String(filters.page));
   if (filters.limit) params.set("limit", String(filters.limit));
 

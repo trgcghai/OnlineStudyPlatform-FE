@@ -4,8 +4,11 @@ import type { EssayGradingStatusFilter } from "@/services/api/essay-grading";
 import type {
   AdminPaymentTransactionFilters,
   AdminProviderEventFilters,
+  AdminWithdrawRequestFilters,
+  InstructorBalanceHistoryFilters,
   LearnerPaymentTransactionFilters,
   PaymentConfigAuditFilters,
+  WithdrawRequestFilters,
 } from "@/services/api/payment";
 import type { PublicCourseListFilters } from "@/services/api/public-courses";
 import type { AdminUserFilters } from "@/services/api/users";
@@ -18,6 +21,14 @@ export const authKeys = {
 export const userKeys = {
   all: ["users"] as const,
   me: () => [...userKeys.all, "me"] as const,
+  banks: () => [...userKeys.all, "banks"] as const,
+};
+
+export const instructorAccountKeys = {
+  all: ["instructor-account"] as const,
+  me: () => [...instructorAccountKeys.all, "me"] as const,
+  adminDetail: (instructorId: string) =>
+    [...instructorAccountKeys.all, "admin-detail", instructorId] as const,
 };
 
 export const adminUserKeys = {
@@ -48,6 +59,10 @@ export const paymentKeys = {
     [...paymentKeys.all, "transaction", transactionId] as const,
   learnerTransactions: (filters: LearnerPaymentTransactionFilters) =>
     [...paymentKeys.all, "learner-transactions", filters] as const,
+  instructorBalanceSummary: () =>
+    [...paymentKeys.all, "instructor-balance-summary"] as const,
+  instructorBalanceHistory: (filters: InstructorBalanceHistoryFilters) =>
+    [...paymentKeys.all, "instructor-balance-history", filters] as const,
   adminTransactions: (filters: AdminPaymentTransactionFilters) =>
     [...paymentKeys.all, "admin-transactions", filters] as const,
   adminTransactionDetail: (transactionId: string) =>
@@ -56,6 +71,16 @@ export const paymentKeys = {
     [...paymentKeys.all, "admin-provider-events", filters] as const,
   adminProviderEventDetail: (eventId: string) =>
     [...paymentKeys.all, "admin-provider-event-detail", eventId] as const,
+};
+
+export const withdrawKeys = {
+  all: ["withdraw"] as const,
+  meAll: () => [...withdrawKeys.all, "me"] as const,
+  me: (filters: WithdrawRequestFilters) =>
+    [...withdrawKeys.meAll(), filters] as const,
+  adminAll: () => [...withdrawKeys.all, "admin"] as const,
+  admin: (filters: AdminWithdrawRequestFilters) =>
+    [...withdrawKeys.adminAll(), filters] as const,
 };
 
 export const instructorCourseKeys = {

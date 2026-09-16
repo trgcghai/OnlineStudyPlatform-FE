@@ -50,6 +50,10 @@ function formatAuditValue(
     return formatVndAmount(value);
   }
 
+  if (field === "earningHoldDays" && typeof value === "number") {
+    return `${value} ngày`;
+  }
+
   if (field === "freeCourseLimit") {
     return value === null ? "Không giới hạn" : String(value);
   }

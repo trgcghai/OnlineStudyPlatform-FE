@@ -1,8 +1,18 @@
 import { z } from "zod";
 
 export const PAYMENT_CONFIG_CURRENCIES = ["VND"] as const;
-export const MINIMUM_WITHDRAWAL_AMOUNT_MIN = 1_000_000;
-export const MINIMUM_WITHDRAWAL_AMOUNT_STEP = 100_000;
+export type PaymentConfigEnvironment = "development" | "production";
+
+export const PAYMENT_CONFIG_ENV: PaymentConfigEnvironment = process.env
+  .NEXT_PUBLIC_ENV as PaymentConfigEnvironment;
+
+export const MINIMUM_WITHDRAWAL_AMOUNT_MIN =
+  process.env.NEXT_PUBLIC_ENV === "development" ? 1_000 : 1_000_000;
+export const MINIMUM_WITHDRAWAL_AMOUNT_STEP =
+  process.env.NEXT_PUBLIC_ENV === "development" ? 1_000 : 100_000;
+export const EARNING_HOLD_DAYS_MIN =
+  process.env.NEXT_PUBLIC_ENV === "development" ? 0 : 7;
+export const DEFAULT_EARNING_HOLD_DAYS = 7;
 
 export const PAYMENT_CONFIG_FIELD_LABELS = {
   platformFeePercent: "Phí nền tảng",
@@ -10,6 +20,7 @@ export const PAYMENT_CONFIG_FIELD_LABELS = {
   allowedPrices: "Danh sách giá",
   freeCourseLimit: "Giới hạn khóa học miễn phí",
   minimumWithdrawalAmount: "Rút tiền tối thiểu",
+  earningHoldDays: "Số ngày giữ thu nhập",
   updatedById: "Người cập nhật",
 } as const;
 
@@ -50,11 +61,20 @@ export const paymentConfigSchema = z
       .int("Số tiền rút tối thiểu phải là số nguyên")
       .min(
         MINIMUM_WITHDRAWAL_AMOUNT_MIN,
-        "Số tiền rút tối thiểu phải từ 1.000.000 VND",
+        `Số tiền rút tối thiểu phải từ ${formatVndAmount(MINIMUM_WITHDRAWAL_AMOUNT_MIN)}`,
       )
       .refine(
         (amount) => amount % MINIMUM_WITHDRAWAL_AMOUNT_STEP === 0,
-        "Số tiền rút tối thiểu phải tăng theo bội số 100.000 VND",
+        `Số tiền rút tối thiểu phải tăng theo bội số ${formatVndAmount(MINIMUM_WITHDRAWAL_AMOUNT_STEP)}`,
+      ),
+    earningHoldDays: z
+      .number("Số ngày giữ thu nhập là bắt buộc")
+      .int("Số ngày giữ thu nhập phải là số nguyên")
+      .min(
+        EARNING_HOLD_DAYS_MIN,
+        EARNING_HOLD_DAYS_MIN === 0
+          ? "Số ngày giữ thu nhập không được âm"
+          : `Số ngày giữ thu nhập phải từ ${EARNING_HOLD_DAYS_MIN} ngày trở lên`,
       ),
   })
   .superRefine((value, ctx) => {
