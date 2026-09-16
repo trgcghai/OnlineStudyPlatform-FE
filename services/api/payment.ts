@@ -9,6 +9,7 @@ export interface PaymentConfig {
   allowedPrices: number[];
   freeCourseLimit: number | null;
   minimumWithdrawalAmount: number;
+  earningHoldDays: number;
   updatedById: string | null;
   createdAt: string;
   updatedAt: string;
@@ -20,6 +21,7 @@ export interface UpdatePaymentConfigPayload {
   allowedPrices: number[];
   freeCourseLimit: number | null;
   minimumWithdrawalAmount: number;
+  earningHoldDays: number;
 }
 
 export interface PaymentConfigSnapshot extends UpdatePaymentConfigPayload {
@@ -56,6 +58,9 @@ export interface CoursePricingReference {
 
 export type PaymentStatus =
   "pending" | "paid" | "failed" | "cancelled" | "expired" | "refunded";
+
+export type WithdrawRequestStatus =
+  "pending" | "processing" | "processed" | "cancelled" | "rejected";
 
 export interface PaymentTransaction {
   id: string;
@@ -125,6 +130,149 @@ export interface LearnerPaymentTransactionItem {
   status: PaymentStatus;
   createdAt: string;
   paidAt: string | null;
+}
+
+export type InstructorBalanceLedgerType = "earning_credit" | "withdraw_debit";
+
+export interface InstructorBalanceSummary {
+  totalBalance: number;
+  currentBalance: number;
+  withdrawableBalance: number;
+  nonWithdrawableBalance: number;
+  totalEarned: number;
+  totalWithdrawn: number;
+  currency: PaymentConfigCurrency;
+}
+
+export interface InstructorBalanceHistoryFilters {
+  page?: number;
+  limit?: number;
+}
+
+export interface InstructorBalanceHistoryItem {
+  id: string;
+  type: InstructorBalanceLedgerType;
+  amountDelta: number;
+  currency: PaymentConfigCurrency;
+  grossAmount: number | null;
+  platformFeeAmount: number | null;
+  netAmount: number | null;
+  description: string;
+  availableAt: string | null;
+  createdAt: string;
+  course: { id: string; title: string } | null;
+  paymentTransactionId: string | null;
+  withdrawRequestId: string | null;
+}
+
+export interface InstructorBalanceHistoryList {
+  items: InstructorBalanceHistoryItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface WithdrawRequest {
+  id: string;
+  instructorId: string;
+  amount: number;
+  currency: PaymentConfigCurrency;
+  status: WithdrawRequestStatus;
+  requestedAt: string;
+  note: string | null;
+  cancelReason: string | null;
+  cancelledAt: string | null;
+  rejectReason: string | null;
+  rejectedAt: string | null;
+  processingAt: string | null;
+  processedAt: string | null;
+  payoutReference: string | null;
+  payoutDescription: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateWithdrawRequestPayload {
+  amount: number;
+  note?: string;
+}
+
+export interface CancelWithdrawRequestPayload {
+  reason?: string;
+}
+
+export interface RejectWithdrawRequestPayload {
+  reason: string;
+}
+
+export interface MarkWithdrawProcessedPayload {
+  payoutReference?: string;
+}
+
+export interface WithdrawRequestFilters {
+  page?: number;
+  limit?: number;
+}
+
+export interface WithdrawRequestList {
+  items: WithdrawRequest[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface AdminWithdrawRequestFilters {
+  instructorEmail?: string;
+  status?: WithdrawRequestStatus;
+  requestedAtFrom?: string;
+  requestedAtTo?: string;
+  amountSort?: "asc" | "desc";
+  page?: number;
+  limit?: number;
+}
+
+export interface AdminWithdrawRequestItem {
+  id: string;
+  amount: number;
+  currency: PaymentConfigCurrency;
+  status: WithdrawRequestStatus;
+  requestedAt: string;
+  note: string | null;
+  cancelReason: string | null;
+  cancelledAt: string | null;
+  rejectReason: string | null;
+  rejectedAt: string | null;
+  processingAt: string | null;
+  processedAt: string | null;
+  payoutReference: string | null;
+  payoutDescription: string | null;
+  createdAt: string;
+  updatedAt: string;
+  instructor: {
+    name: string;
+    email: string;
+  };
+}
+
+export interface AdminWithdrawRequestList {
+  items: AdminWithdrawRequestItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface AdminWithdrawPayoutResponse extends AdminWithdrawRequestItem {
+  payoutDescription: string;
+  qrImageUrl: string;
+  payoutAccount: {
+    bankName: string;
+    bankCode: string;
+    bankAccountNumber: string;
+    accountHolderName: string;
+  };
 }
 
 export type AdminProviderEventResult =
@@ -323,6 +471,99 @@ export async function listLearnerPaymentTransactions(
   const { data } = await axiosClient.get<
     ApiSuccessResponse<AdminPaymentList<LearnerPaymentTransactionItem>>
   >(`/payments/transactions${buildPaymentAdminQuery(filters)}`);
+
+  return data.data;
+}
+
+export async function getInstructorBalanceSummary(): Promise<InstructorBalanceSummary> {
+  const { data } = await axiosClient.get<
+    ApiSuccessResponse<InstructorBalanceSummary>
+  >("/payments/instructor/balance/summary");
+
+  return data.data;
+}
+
+export async function listInstructorBalanceHistory(
+  filters: InstructorBalanceHistoryFilters = {},
+): Promise<InstructorBalanceHistoryList> {
+  const { data } = await axiosClient.get<
+    ApiSuccessResponse<InstructorBalanceHistoryList>
+  >(`/payments/instructor/balance/history${buildPaymentAdminQuery(filters)}`);
+
+  return data.data;
+}
+
+export async function createWithdrawRequest(
+  payload: CreateWithdrawRequestPayload,
+): Promise<WithdrawRequest> {
+  const { data } = await axiosClient.post<ApiSuccessResponse<WithdrawRequest>>(
+    "/withdraw",
+    payload,
+  );
+
+  return data.data;
+}
+
+export async function listMyWithdrawRequests(
+  filters: WithdrawRequestFilters = {},
+): Promise<WithdrawRequestList> {
+  const { data } = await axiosClient.get<
+    ApiSuccessResponse<WithdrawRequestList>
+  >(`/withdraw/me${buildPaymentAdminQuery(filters)}`);
+
+  return data.data;
+}
+
+export async function listAdminWithdrawRequests(
+  filters: AdminWithdrawRequestFilters = {},
+): Promise<AdminWithdrawRequestList> {
+  const { data } = await axiosClient.get<
+    ApiSuccessResponse<AdminWithdrawRequestList>
+  >(`/withdraw/admin${buildPaymentAdminQuery(filters)}`);
+
+  return data.data;
+}
+
+export async function cancelWithdrawRequest(
+  id: string,
+  payload: CancelWithdrawRequestPayload,
+): Promise<WithdrawRequest> {
+  const { data } = await axiosClient.post<ApiSuccessResponse<WithdrawRequest>>(
+    `/withdraw/${id}/cancel`,
+    payload,
+  );
+
+  return data.data;
+}
+
+export async function rejectWithdrawRequest(
+  id: string,
+  payload: RejectWithdrawRequestPayload,
+): Promise<AdminWithdrawRequestItem> {
+  const { data } = await axiosClient.post<
+    ApiSuccessResponse<AdminWithdrawRequestItem>
+  >(`/withdraw/${id}/reject`, payload);
+
+  return data.data;
+}
+
+export async function processWithdrawRequest(
+  id: string,
+): Promise<AdminWithdrawPayoutResponse> {
+  const { data } = await axiosClient.post<
+    ApiSuccessResponse<AdminWithdrawPayoutResponse>
+  >(`/withdraw/${id}/process`);
+
+  return data.data;
+}
+
+export async function markWithdrawProcessed(
+  id: string,
+  payload: MarkWithdrawProcessedPayload,
+): Promise<AdminWithdrawRequestItem> {
+  const { data } = await axiosClient.post<
+    ApiSuccessResponse<AdminWithdrawRequestItem>
+  >(`/withdraw/${id}/mark-processed`, payload);
 
   return data.data;
 }

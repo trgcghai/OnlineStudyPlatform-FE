@@ -76,7 +76,10 @@ function PasswordForm() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <LockKeyhole className="size-5 text-muted-foreground" aria-hidden="true" />
+          <LockKeyhole
+            className="size-5 text-muted-foreground"
+            aria-hidden="true"
+          />
           Đổi mật khẩu
         </CardTitle>
         <CardDescription>
@@ -105,9 +108,12 @@ function PasswordForm() {
                   id="currentPassword"
                   type="password"
                   autoComplete="current-password"
+                  placeholder="Nhập mật khẩu hiện tại..."
                   aria-invalid={!!errors.currentPassword}
                   aria-describedby={
-                    errors.currentPassword ? PASSWORD_CURRENT_ERROR_ID : undefined
+                    errors.currentPassword
+                      ? PASSWORD_CURRENT_ERROR_ID
+                      : undefined
                   }
                   {...register("currentPassword")}
                 />
@@ -128,6 +134,7 @@ function PasswordForm() {
                   id="newPassword"
                   type="password"
                   autoComplete="new-password"
+                  placeholder="Nhập mật khẩu mới..."
                   aria-invalid={!!errors.newPassword}
                   aria-describedby={
                     errors.newPassword ? PASSWORD_NEW_ERROR_ID : undefined
@@ -153,9 +160,12 @@ function PasswordForm() {
                   id="confirmPassword"
                   type="password"
                   autoComplete="new-password"
+                  placeholder="Xác nhận mật khẩu mới..."
                   aria-invalid={!!errors.confirmPassword}
                   aria-describedby={
-                    errors.confirmPassword ? PASSWORD_CONFIRM_ERROR_ID : undefined
+                    errors.confirmPassword
+                      ? PASSWORD_CONFIRM_ERROR_ID
+                      : undefined
                   }
                   {...register("confirmPassword")}
                 />

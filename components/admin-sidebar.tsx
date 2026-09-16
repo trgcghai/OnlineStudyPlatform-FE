@@ -2,6 +2,8 @@
 
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
+  BanknoteArrowDownIcon,
+  BoltIcon,
   CreditCardIcon,
   DashboardSquare01Icon,
   GraduationCapIcon,
@@ -46,9 +48,14 @@ const adminNavItems = [
     icon: CreditCardIcon,
   },
   {
+    title: "Yêu cầu rút tiền",
+    href: "/admin/withdrawals",
+    icon: BanknoteArrowDownIcon,
+  },
+  {
     title: "Cấu hình thanh toán",
     href: "/admin/payment-config",
-    icon: CreditCardIcon,
+    icon: BoltIcon,
   },
 ];
 
