@@ -67,6 +67,34 @@ export interface LearningWatchEventResponse {
   enrollment: LearningEnrollmentSummary;
 }
 
+export type AiChatRole = "user" | "assistant";
+
+export interface AiChatCitation {
+  lessonId: string | null;
+  lessonTitle: string;
+  excerpt: string;
+}
+
+export interface AiChatMessage {
+  id: string;
+  role: AiChatRole;
+  content: string;
+  inScope: boolean | null;
+  similarity: number | null;
+  citations: AiChatCitation[];
+  createdAt: string;
+}
+
+export interface AiChatSession {
+  sessionId: string;
+  isAiAvailable: boolean;
+  messages: AiChatMessage[];
+}
+
+export interface AiChatSendResponse extends AiChatSession {
+  reply: AiChatMessage;
+}
+
 export async function getLearningCourse(
   courseId: string,
 ): Promise<LearningCourse> {
@@ -96,6 +124,27 @@ export async function sendLessonWatchEvent(
   const { data } = await axiosClient.post<
     ApiSuccessResponse<LearningWatchEventResponse>
   >(`/learning/courses/${courseId}/lessons/${lessonId}/watch-events`, payload);
+
+  return data.data;
+}
+
+export async function getCourseChatSession(
+  courseId: string,
+): Promise<AiChatSession> {
+  const { data } = await axiosClient.get<ApiSuccessResponse<AiChatSession>>(
+    `/learning/courses/${courseId}/chat`,
+  );
+
+  return data.data;
+}
+
+export async function sendCourseChatMessage(
+  courseId: string,
+  question: string,
+): Promise<AiChatSendResponse> {
+  const { data } = await axiosClient.post<
+    ApiSuccessResponse<AiChatSendResponse>
+  >(`/learning/courses/${courseId}/chat`, { question });
 
   return data.data;
 }
