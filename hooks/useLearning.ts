@@ -10,8 +10,10 @@ import {
   learningKeys,
 } from "@/lib/query-keys";
 import {
+  getCourseChatSession,
   getLearningCourse,
   getLearningLesson,
+  sendCourseChatMessage,
   sendLessonWatchEvent,
   type CreateWatchEventPayload,
 } from "@/services/api/learning";
@@ -100,6 +102,28 @@ export function useSendLessonWatchEvent(
           queryKey: learningKeys.lesson(courseId, lessonId),
         }),
       ]);
+    },
+  });
+}
+
+export function useCourseChatSession(courseId: string) {
+  return useQuery({
+    queryKey: learningKeys.chat(courseId),
+    queryFn: () => getCourseChatSession(courseId),
+    enabled: courseId.trim().length > 0,
+  });
+}
+
+export function useSendCourseChatMessage(courseId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (question: string) => sendCourseChatMessage(courseId, question),
+    onSuccess: async (data) => {
+      queryClient.setQueryData(learningKeys.chat(courseId), data);
+      await queryClient.invalidateQueries({
+        queryKey: learningKeys.chat(courseId),
+      });
     },
   });
 }

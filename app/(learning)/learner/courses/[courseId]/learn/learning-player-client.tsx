@@ -12,6 +12,7 @@ import {
   LearningSidebar,
   LessonContentCard,
 } from "@/components/learner/learning/learning-player-sections";
+import { AiChatCard } from "@/components/learner/learning/ai-chat-card";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -134,6 +135,7 @@ export function LearningPlayerClient({ courseId }: LearningPlayerClientProps) {
               onVolumeChange={videoTracking.handleVolumeChange}
               onTimeUpdate={videoTracking.handleVideoTimeUpdate}
             />
+            <AiChatCard courseId={courseId} />
           </div>
         </main>
         {lessonPanelOpen ? (
