@@ -1,4 +1,5 @@
 import axiosClient, { type ApiSuccessResponse } from "@/services/axios";
+import type { CheckoutResult } from "@/services/api/payment";
 
 export interface CartCourseInstructor {
   id: string;
@@ -71,4 +72,13 @@ export async function addCartItem(courseId: string): Promise<CartItem> {
 
 export async function removeCartItem(courseId: string): Promise<void> {
   await axiosClient.delete(`/cart/items/${courseId}`);
+}
+
+export async function checkoutCart(): Promise<CheckoutResult> {
+  const { data } =
+    await axiosClient.post<ApiSuccessResponse<CheckoutResult>>(
+      "/cart/checkout",
+    );
+
+  return data.data;
 }

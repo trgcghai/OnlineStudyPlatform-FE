@@ -253,6 +253,7 @@ export default function AdminProviderEventDetailPage() {
             <Button
               variant="outline"
               size="sm"
+              nativeButton={false}
               render={
                 <Link
                   href={`/admin/payments/transactions/${data.paymentTransaction.id}`}

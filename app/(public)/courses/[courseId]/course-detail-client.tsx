@@ -17,7 +17,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toast";
 import { useAddCartItem } from "@/hooks/useCart";
 import { useEnrollInCourse } from "@/hooks/useEnrollments";
-import { useCreatePaymentCheckout } from "@/hooks/usePayment";
 import { usePublishedCourse } from "@/hooks/usePublicCourses";
 import { formatCoursePrice } from "@/lib/schemas/course";
 import {
@@ -40,7 +39,6 @@ export function CourseDetailClient({ courseId }: CourseDetailClientProps) {
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const userRole = useSelector(selectUserRole);
   const { enroll, isPending } = useEnrollInCourse();
-  const createCheckout = useCreatePaymentCheckout();
   const addCartItem = useAddCartItem();
   const isLearner = userRole === USER_ROLES.LEARNER;
   const isPaid = course && course.price > 0;
@@ -79,17 +77,6 @@ export function CourseDetailClient({ courseId }: CourseDetailClientProps) {
       title: result.message ?? "Không thể đăng ký khóa học.",
       type: "error",
     });
-  }
-
-  async function handleBuy() {
-    if (!course) return;
-
-    try {
-      const checkout = await createCheckout.mutateAsync(course.id);
-      router.push(`/learner/payment/checkout/${checkout.id}`);
-    } catch {
-      console.error("Failed to create checkout session");
-    }
   }
 
   async function handleAddToCart() {
@@ -243,29 +230,16 @@ export function CourseDetailClient({ courseId }: CourseDetailClientProps) {
               !paymentRequired &&
               isLearner &&
               isPaid && (
-                <>
-                  <Button
-                    type="button"
-                    size="lg"
-                    onClick={handleBuy}
-                    disabled={createCheckout.isPending}
-                  >
-                    {createCheckout.isPending
-                      ? "Đang tạo đơn thanh toán..."
-                      : "Mua khóa học"}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="lg"
-                    onClick={handleAddToCart}
-                    disabled={addCartItem.isPending}
-                  >
-                    {addCartItem.isPending
-                      ? "Đang thêm vào giỏ hàng..."
-                      : "Thêm vào giỏ hàng"}
-                  </Button>
-                </>
+                <Button
+                  type="button"
+                  size="lg"
+                  onClick={handleAddToCart}
+                  disabled={addCartItem.isPending}
+                >
+                  {addCartItem.isPending
+                    ? "Đang thêm vào giỏ hàng..."
+                    : "Thêm vào giỏ hàng"}
+                </Button>
               )}
 
             {isAuthenticated &&

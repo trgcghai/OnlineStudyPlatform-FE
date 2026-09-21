@@ -9,11 +9,13 @@ import { cartKeys } from "@/lib/query-keys";
 import { isApiErrorResponse } from "@/services/axios";
 import {
   addCartItem,
+  checkoutCart,
   getCart,
   removeCartItem,
   type CartFilters,
   type CartItem,
 } from "@/services/api/cart";
+import type { CheckoutResult } from "@/services/api/payment";
 
 function mapCartError(error: unknown): string {
   if (!isAxiosError(error) || !error.response) return NETWORK_ERROR_MESSAGE;
@@ -63,6 +65,20 @@ export function useRemoveCartItem() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: cartKeys.all });
       toast.add({ title: "Đã xóa khóa học khỏi giỏ hàng.", type: "info" });
+    },
+    onError: (error) => {
+      toast.add({ title: mapCartError(error), type: "error" });
+    },
+  });
+}
+
+export function useCheckoutCart() {
+  const queryClient = useQueryClient();
+
+  return useMutation<CheckoutResult, unknown, void>({
+    mutationFn: checkoutCart,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: cartKeys.all });
     },
     onError: (error) => {
       toast.add({ title: mapCartError(error), type: "error" });

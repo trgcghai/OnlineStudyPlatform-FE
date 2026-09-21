@@ -66,6 +66,7 @@ export interface PaymentTransaction {
   id: string;
   learnerId: string;
   courseId: string;
+  orderId?: string | null;
   amount: number;
   currency: "VND";
   status: PaymentStatus;
@@ -77,6 +78,15 @@ export interface PaymentTransaction {
   expiresAt: string;
   paidAt: string | null;
   createdAt: string;
+  orderItems?: PaymentOrderItem[];
+}
+
+export interface PaymentOrderItem {
+  id: string;
+  courseId: string;
+  courseTitle: string;
+  instructorName: string | null;
+  unitPrice: number;
 }
 
 export interface AdminPaymentList<T> {

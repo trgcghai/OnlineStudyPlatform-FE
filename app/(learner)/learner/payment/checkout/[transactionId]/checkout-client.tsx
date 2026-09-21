@@ -5,13 +5,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
+  ArrowLeft,
   BookOpen,
   CalendarClock,
   CheckCircle2,
   Copy,
   Landmark,
   Loader2,
-  ShoppingBag,
   X,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -121,8 +121,12 @@ export function CheckoutClient({ transactionId }: CheckoutClientProps) {
         </Alert>
         <Link
           href="/learner/courses"
-          className={buttonVariants({ variant: "outline", className: "mt-6" })}
+          className={buttonVariants({
+            variant: "outline",
+            className: "mt-6 block mx-auto",
+          })}
         >
+          <ArrowLeft className="size-4 mr-1" aria-hidden="true" />
           Quay lại khóa học của tôi
         </Link>
       </section>
@@ -156,6 +160,7 @@ export function CheckoutClient({ transactionId }: CheckoutClientProps) {
     bankCode,
     qrImageUrl,
   } = transaction;
+  const orderItems = transaction.orderItems ?? [];
   const isPending = status === "pending";
 
   return (
@@ -171,6 +176,39 @@ export function CheckoutClient({ transactionId }: CheckoutClientProps) {
                 {formatCoursePrice(amount)}
               </p>
             </div>
+
+            {orderItems.length > 0 && (
+              <div className="rounded-xl border bg-background p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    Khóa học trong đơn
+                  </p>
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {orderItems.length} khóa học
+                  </span>
+                </div>
+                <div className="mt-3 divide-y">
+                  {orderItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0"
+                    >
+                      <div className="min-w-0">
+                        <p className="line-clamp-2 text-sm font-medium">
+                          {item.courseTitle}
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {item.instructorName ?? "Giảng viên đang cập nhật"}
+                        </p>
+                      </div>
+                      <p className="shrink-0 text-sm font-semibold">
+                        {formatCoursePrice(item.unitPrice)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-start">
               <div className="space-y-3">
@@ -219,7 +257,11 @@ export function CheckoutClient({ transactionId }: CheckoutClientProps) {
               Khóa học đã được mở cho tài khoản của bạn.
             </AlertDescription>
             <Link
-              href={`/learner/courses/${transaction.courseId}/learn`}
+              href={
+                orderItems.length > 1
+                  ? "/learner/courses"
+                  : `/learner/courses/${transaction.courseId}/learn`
+              }
               className={buttonVariants({ className: "mt-4" })}
             >
               Vào khóa học
@@ -384,17 +426,6 @@ export function CheckoutClient({ transactionId }: CheckoutClientProps) {
                       : "Đã hoàn tiền."}
               </p>
             </div>
-            {status === "cancelled" && (
-              <Button
-                type="button"
-                size="sm"
-                onClick={handleRetry}
-                disabled={createCheckout.isPending}
-              >
-                <ShoppingBag className="size-4 mr-1" aria-hidden="true" />
-                Mua lại khóa học
-              </Button>
-            )}
             <Link
               href={`/courses/${transaction.courseId}`}
               className={buttonVariants({ variant: "outline", size: "sm" })}

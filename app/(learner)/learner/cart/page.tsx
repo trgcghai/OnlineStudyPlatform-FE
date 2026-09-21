@@ -59,6 +59,14 @@ export default function LearnerCartPage() {
           <p className="mt-1 text-2xl font-bold">
             {formatCoursePrice(cart?.summary.totalPrice ?? 0)}
           </p>
+          {items.length > 0 ? (
+            <Link
+              href="/learner/checkout"
+              className={buttonVariants({ className: "mt-4 w-full" })}
+            >
+              Xem lại đơn hàng
+            </Link>
+          ) : null}
         </div>
       </div>
 
