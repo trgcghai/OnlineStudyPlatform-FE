@@ -10,7 +10,6 @@ import {
   cancelPaymentTransaction,
   cancelWithdrawRequest,
   createWithdrawRequest,
-  createPaymentCheckout,
   getAdminPaymentProviderEventDetail,
   getAdminPaymentTransactionDetail,
   getCoursePricing,
@@ -399,17 +398,6 @@ export function useMarkWithdrawProcessed() {
       toast.add({ title: mapWithdrawError(error), type: "error" });
     },
   });
-}
-
-export function useCreatePaymentCheckout() {
-  const mutation = useMutation<CheckoutResult, unknown, string>({
-    mutationFn: createPaymentCheckout,
-    onError: (error) => {
-      toast.add({ title: mapPaymentError(error), type: "error" });
-    },
-  });
-
-  return mutation;
 }
 
 export function useCancelPaymentTransaction(transactionId: string) {

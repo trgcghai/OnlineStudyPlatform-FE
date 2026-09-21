@@ -294,7 +294,9 @@ export default function AdminProviderEventDetailPage() {
               {
                 icon: BookOpen,
                 label: "Course ID",
-                value: data.paymentTransaction.courseId,
+                value: data.paymentTransaction.orderItems
+                  .map((item) => item.courseId)
+                  .join(", "),
               },
               {
                 icon: CircleDollarSign,

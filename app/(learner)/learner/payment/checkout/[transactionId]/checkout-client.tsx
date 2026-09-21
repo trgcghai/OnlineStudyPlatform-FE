@@ -21,10 +21,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toast";
 import {
   useCancelPaymentTransaction,
-  useCreatePaymentCheckout,
   usePaymentTransaction,
 } from "@/hooks/usePayment";
-import { usePublishedCourse } from "@/hooks/usePublicCourses";
 import { formatCoursePrice } from "@/lib/schemas/course";
 import type { PaymentTransaction } from "@/services/api/payment";
 
@@ -70,11 +68,9 @@ export function CheckoutClient({ transactionId }: CheckoutClientProps) {
   const [confirmingCancel, setConfirmingCancel] = useState(false);
   const txQuery = usePaymentTransaction(transactionId);
   const transaction = txQuery.data;
-  const courseQuery = usePublishedCourse(transaction?.courseId ?? "");
   const cancelTransaction = useCancelPaymentTransaction(transactionId);
-  const createCheckout = useCreatePaymentCheckout();
   const countdown = useCountdown(transaction?.expiresAt);
-  const isLoading = txQuery.isLoading || courseQuery.isLoading;
+  const isLoading = txQuery.isLoading;
 
   async function handleCopyPaymentCode() {
     if (!transaction) return;
@@ -101,13 +97,8 @@ export function CheckoutClient({ transactionId }: CheckoutClientProps) {
   async function handleRetry() {
     if (!transaction) return;
 
-    try {
-      const checkout = await createCheckout.mutateAsync(transaction.courseId);
-      setConfirmingCancel(false);
-      router.replace(`/learner/payment/checkout/${checkout.id}`);
-    } catch {
-      console.error("Failed to create new checkout");
-    }
+    setConfirmingCancel(false);
+    router.replace("/learner/cart");
   }
 
   if (txQuery.isError) {
@@ -260,11 +251,8 @@ export function CheckoutClient({ transactionId }: CheckoutClientProps) {
               variant="outline"
               className="mt-4"
               onClick={handleRetry}
-              disabled={createCheckout.isPending}
             >
-              {createCheckout.isPending
-                ? "Đang tạo..."
-                : "Tạo đơn thanh toán mới"}
+              Quay lại giỏ hàng
             </Button>
           </Alert>
         )}
@@ -387,7 +375,7 @@ export function CheckoutClient({ transactionId }: CheckoutClientProps) {
               href={
                 orderItems.length > 1
                   ? "/learner/courses"
-                  : `/learner/courses/${transaction.courseId}/learn`
+                  : `/learner/courses/${orderItems[0]?.courseId}/learn`
               }
               className={buttonVariants({ className: "mt-4" })}
             >
@@ -417,7 +405,11 @@ export function CheckoutClient({ transactionId }: CheckoutClientProps) {
               </p>
             </div>
             <Link
-              href={`/courses/${transaction.courseId}`}
+              href={
+                orderItems[0]?.courseId
+                  ? `/courses/${orderItems[0].courseId}`
+                  : "/courses"
+              }
               className={buttonVariants({ variant: "outline", size: "sm" })}
             >
               <Landmark className="size-4 mr-1" aria-hidden="true" />

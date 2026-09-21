@@ -186,7 +186,7 @@ export default function AdminPaymentTransactionDetailPage() {
             <SummaryCard
               icon={BookOpen}
               label="Khóa học"
-              value={data.course?.title ?? "-"}
+              value={data.order?.items[0]?.courseTitle ?? "-"}
             />
           </div>
         </CardContent>
@@ -219,10 +219,11 @@ export default function AdminPaymentTransactionDetailPage() {
             { icon: GraduationCap, label: "Learner ID", value: data.learnerId },
             {
               icon: BookOpen,
-              label: "Khóa học",
-              value: data.course?.title ?? "-",
+              label: "Courses",
+              value:
+                data.order?.items.map((item) => item.courseTitle).join(", ") ??
+                "-",
             },
-            { icon: BookOpen, label: "Course ID", value: data.courseId },
             { icon: Landmark, label: "Provider", value: data.provider },
             {
               icon: RadioTower,

@@ -65,8 +65,7 @@ export type WithdrawRequestStatus =
 export interface PaymentTransaction {
   id: string;
   learnerId: string;
-  courseId: string;
-  orderId?: string | null;
+  orderId: string;
   amount: number;
   currency: "VND";
   status: PaymentStatus;
@@ -78,7 +77,7 @@ export interface PaymentTransaction {
   expiresAt: string;
   paidAt: string | null;
   createdAt: string;
-  orderItems?: PaymentOrderItem[];
+  orderItems: PaymentOrderItem[];
 }
 
 export interface PaymentOrderItem {
@@ -108,6 +107,13 @@ export interface AdminPaymentCourseSummary {
   title: string;
 }
 
+export interface AdminPaymentOrderSummary {
+  id: string;
+  totalAmount: number;
+  itemCount: number;
+  items: PaymentOrderItem[];
+}
+
 export interface AdminPaymentTransactionFilters {
   status?: PaymentStatus;
   dateFrom?: string;
@@ -124,7 +130,7 @@ export interface AdminPaymentTransactionFilters {
 export interface AdminPaymentTransactionItem extends PaymentTransaction {
   updatedAt: string;
   learner: AdminPaymentPersonSummary | null;
-  course: AdminPaymentCourseSummary | null;
+  order: AdminPaymentOrderSummary | null;
 }
 
 export interface LearnerPaymentTransactionFilters {
@@ -365,7 +371,8 @@ export interface AdminProviderEventDetail extends Omit<
     | "id"
     | "paymentCode"
     | "status"
-    | "courseId"
+    | "orderId"
+    | "orderItems"
     | "learnerId"
     | "amount"
     | "currency"
@@ -440,17 +447,6 @@ export async function getCoursePricing(): Promise<CoursePricingReference> {
     await axiosClient.get<ApiSuccessResponse<CoursePricingReference>>(
       "/payments/pricing",
     );
-
-  return data.data;
-}
-
-export async function createPaymentCheckout(
-  courseId: string,
-): Promise<CheckoutResult> {
-  const { data } = await axiosClient.post<ApiSuccessResponse<CheckoutResult>>(
-    "/payments/checkout",
-    { courseId },
-  );
 
   return data.data;
 }
