@@ -49,7 +49,7 @@ function getActivityLabel(eventType: string): string {
 
 function DashboardSkeleton() {
   return (
-    <div className="container w-full max-w-7xl space-y-6 px-6">
+    <div className="w-full space-y-6">
       <div className="space-y-2">
         <Skeleton className="h-5 w-36" />
         <Skeleton className="h-9 w-72" />
@@ -243,7 +243,7 @@ export default function LearnerDashboardPage() {
   }
 
   return (
-    <div className="container w-full max-w-7xl space-y-6 px-6">
+    <div className="w-full space-y-6">
       <div>
         <p className="text-sm font-medium text-primary">Bảng điều khiển</p>
         <h1 className="text-3xl font-bold tracking-tight">Tổng quan học tập</h1>

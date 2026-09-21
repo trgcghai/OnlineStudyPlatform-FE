@@ -105,7 +105,7 @@ export function CheckoutClient({ transactionId }: CheckoutClientProps) {
       setConfirmingCancel(false);
       router.replace(`/learner/payment/checkout/${checkout.id}`);
     } catch {
-      // The mutation already surfaced the error toast.
+      console.error("Failed to create new checkout");
     }
   }
 
@@ -149,7 +149,7 @@ export function CheckoutClient({ transactionId }: CheckoutClientProps) {
   const isPending = status === "pending";
 
   return (
-    <section className="grid w-full max-w-4xl gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+    <section className="grid w-full max-w-7xl gap-8 lg:grid-cols-[0.9fr_1.1fr]">
       <div className="space-y-6">
         <div className="rounded-3xl border bg-card p-6 shadow-sm">
           <Badge variant="secondary">Đơn thanh toán</Badge>

@@ -4,18 +4,23 @@ import Link from "next/link";
 import { useSelector } from "react-redux";
 import { CircleUserRound, GraduationCap, LogIn, UserPlus } from "lucide-react";
 import { LogoutButton } from "@/components/auth/logout-button";
+import { CartPopover } from "@/components/cart/cart-popover";
 import { ModeToggle } from "@/components/mode-toggle";
 import { NotificationPopover } from "@/components/notifications/notification-popover";
 import { buttonVariants } from "@/components/ui/button";
 import {
   selectAuthUser,
   selectIsAuthenticated,
+  selectUserRole,
 } from "@/lib/features/authSlice";
 import { cn } from "@/lib/utils";
+import { USER_ROLES } from "@/services/api/users";
 
 export function PublicHeader() {
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const user = useSelector(selectAuthUser);
+  const userRole = useSelector(selectUserRole);
+  const isLearner = userRole === USER_ROLES.LEARNER;
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur">
@@ -41,6 +46,7 @@ export function PublicHeader() {
           <ModeToggle />
           {isAuthenticated ? (
             <>
+              {isLearner ? <CartPopover /> : null}
               <NotificationPopover />
               <Link
                 href="/profile"
