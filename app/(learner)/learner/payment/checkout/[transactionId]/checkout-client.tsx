@@ -249,26 +249,6 @@ export function CheckoutClient({ transactionId }: CheckoutClientProps) {
           </div>
         </div>
 
-        {status === "paid" && (
-          <Alert className="rounded-2xl border-primary/20 bg-primary/5 p-5">
-            <CheckCircle2 className="size-4" aria-hidden="true" />
-            <AlertTitle>Thanh toán thành công</AlertTitle>
-            <AlertDescription>
-              Khóa học đã được mở cho tài khoản của bạn.
-            </AlertDescription>
-            <Link
-              href={
-                orderItems.length > 1
-                  ? "/learner/courses"
-                  : `/learner/courses/${transaction.courseId}/learn`
-              }
-              className={buttonVariants({ className: "mt-4" })}
-            >
-              Vào khóa học
-            </Link>
-          </Alert>
-        )}
-
         {status === "expired" && (
           <Alert className="rounded-2xl p-5">
             <AlertTitle>Đơn thanh toán đã hết hạn</AlertTitle>
@@ -403,6 +383,16 @@ export function CheckoutClient({ transactionId }: CheckoutClientProps) {
                 Đơn thanh toán đã được xác nhận và khóa học đã được mở.
               </p>
             </div>
+            <Link
+              href={
+                orderItems.length > 1
+                  ? "/learner/courses"
+                  : `/learner/courses/${transaction.courseId}/learn`
+              }
+              className={buttonVariants({ className: "mt-4" })}
+            >
+              Vào khóa học
+            </Link>
           </div>
         ) : (
           <div className="flex min-h-96 flex-col items-center justify-center gap-4 p-8 text-center">
