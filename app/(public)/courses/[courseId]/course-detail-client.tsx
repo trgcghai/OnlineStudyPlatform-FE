@@ -10,13 +10,13 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useSelector } from "react-redux";
-import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toast";
+import { useAddCartItem } from "@/hooks/useCart";
 import { useEnrollInCourse } from "@/hooks/useEnrollments";
-import { useCreatePaymentCheckout } from "@/hooks/usePayment";
 import { usePublishedCourse } from "@/hooks/usePublicCourses";
 import { formatCoursePrice } from "@/lib/schemas/course";
 import {
@@ -39,7 +39,7 @@ export function CourseDetailClient({ courseId }: CourseDetailClientProps) {
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const userRole = useSelector(selectUserRole);
   const { enroll, isPending } = useEnrollInCourse();
-  const createCheckout = useCreatePaymentCheckout();
+  const addCartItem = useAddCartItem();
   const isLearner = userRole === USER_ROLES.LEARNER;
   const isPaid = course && course.price > 0;
   const learnHref = course
@@ -79,14 +79,13 @@ export function CourseDetailClient({ courseId }: CourseDetailClientProps) {
     });
   }
 
-  async function handleBuy() {
+  async function handleAddToCart() {
     if (!course) return;
 
     try {
-      const checkout = await createCheckout.mutateAsync(course.id);
-      router.push(`/learner/payment/checkout/${checkout.id}`);
+      await addCartItem.mutateAsync(course.id);
     } catch {
-      // The mutation already surfaced the error toast.
+      console.error("Failed to add item to cart");
     }
   }
 
@@ -117,7 +116,7 @@ export function CourseDetailClient({ courseId }: CourseDetailClientProps) {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 py-10">
+    <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 px-6 py-10">
       <Link
         href="/courses"
         className="inline-flex w-fit items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
@@ -190,7 +189,7 @@ export function CourseDetailClient({ courseId }: CourseDetailClientProps) {
               : "Khóa học trả phí. Bạn phải hoàn tất thanh toán trước khi truy cập nội dung."}
           </p>
           <div className="mt-5 grid gap-3">
-            {!isAuthenticated ? (
+            {!isAuthenticated && (
               <>
                 <Link
                   href="/register"
@@ -205,32 +204,49 @@ export function CourseDetailClient({ courseId }: CourseDetailClientProps) {
                   Đăng nhập
                 </Link>
               </>
-            ) : isLearner && course.isEnrolled ? (
+            )}
+
+            {isAuthenticated && isLearner && course.isEnrolled && (
               <Link href={learnHref} className={buttonVariants({ size: "lg" })}>
                 Tiếp tục học
               </Link>
-            ) : paymentRequired ? (
-              <Alert>
-                <AlertTitle>Khóa học trả phí</AlertTitle>
-                <AlertDescription>
-                  {formatCoursePrice(course.price)}. Vui lòng hoàn tất thanh
-                  toán để mở khóa nội dung. Liên hệ quản trị viên nếu bạn cần hỗ
-                  trợ.
-                </AlertDescription>
-              </Alert>
-            ) : isLearner ? (
-              isPaid ? (
+            )}
+
+            {isAuthenticated &&
+              !(isLearner && course.isEnrolled) &&
+              paymentRequired && (
+                <Alert>
+                  <AlertTitle>Khóa học trả phí</AlertTitle>
+                  <AlertDescription>
+                    {formatCoursePrice(course.price)}. Vui lòng hoàn tất thanh
+                    toán để mở khóa nội dung. Liên hệ quản trị viên nếu bạn cần
+                    hỗ trợ.
+                  </AlertDescription>
+                </Alert>
+              )}
+
+            {isAuthenticated &&
+              !(isLearner && course.isEnrolled) &&
+              !paymentRequired &&
+              isLearner &&
+              isPaid && (
                 <Button
                   type="button"
                   size="lg"
-                  onClick={handleBuy}
-                  disabled={createCheckout.isPending}
+                  onClick={handleAddToCart}
+                  disabled={addCartItem.isPending}
                 >
-                  {createCheckout.isPending
-                    ? "Đang tạo đơn thanh toán..."
-                    : "Mua khóa học"}
+                  {addCartItem.isPending
+                    ? "Đang thêm vào giỏ hàng..."
+                    : "Thêm vào giỏ hàng"}
                 </Button>
-              ) : (
+              )}
+
+            {isAuthenticated &&
+              !(isLearner && course.isEnrolled) &&
+              !paymentRequired &&
+              isLearner &&
+              !isPaid && (
                 <Button
                   type="button"
                   size="lg"
@@ -239,12 +255,16 @@ export function CourseDetailClient({ courseId }: CourseDetailClientProps) {
                 >
                   {isPending ? "Đang đăng ký..." : "Đăng ký khóa học"}
                 </Button>
-              )
-            ) : (
-              <div className="rounded-2xl bg-muted p-4 text-sm text-muted-foreground">
-                Chỉ tài khoản học viên mới có thể đăng ký khóa học này.
-              </div>
-            )}
+              )}
+
+            {isAuthenticated &&
+              !(isLearner && course.isEnrolled) &&
+              !paymentRequired &&
+              !isLearner && (
+                <div className="rounded-2xl bg-muted p-4 text-sm text-muted-foreground">
+                  Chỉ tài khoản học viên mới có thể đăng ký khóa học này.
+                </div>
+              )}
           </div>
           <div className="mt-6 rounded-2xl bg-muted p-4">
             <h3 className="font-medium">Danh sách bài học</h3>

@@ -62,7 +62,7 @@ export default function LearnerPaymentsPage() {
   });
 
   return (
-    <div className="container w-full max-w-7xl space-y-6 px-6">
+    <div className="w-full space-y-6">
       <div className="space-y-2">
         <p className="inline-flex items-center gap-2 text-sm font-medium text-primary">
           <CreditCard className="size-4" aria-hidden="true" />

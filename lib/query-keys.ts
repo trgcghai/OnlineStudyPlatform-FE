@@ -1,3 +1,4 @@
+import type { CartFilters } from "@/services/api/cart";
 import type { CourseListFilters } from "@/services/api/courses";
 import type { CourseEnrollmentListFilters } from "@/services/api/enrollments";
 import type { EssayGradingStatusFilter } from "@/services/api/essay-grading";
@@ -81,6 +82,11 @@ export const withdrawKeys = {
   adminAll: () => [...withdrawKeys.all, "admin"] as const,
   admin: (filters: AdminWithdrawRequestFilters) =>
     [...withdrawKeys.adminAll(), filters] as const,
+};
+
+export const cartKeys = {
+  all: ["cart"] as const,
+  list: (filters: CartFilters) => [...cartKeys.all, "list", filters] as const,
 };
 
 export const instructorCourseKeys = {

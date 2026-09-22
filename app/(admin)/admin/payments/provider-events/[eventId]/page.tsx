@@ -253,6 +253,7 @@ export default function AdminProviderEventDetailPage() {
             <Button
               variant="outline"
               size="sm"
+              nativeButton={false}
               render={
                 <Link
                   href={`/admin/payments/transactions/${data.paymentTransaction.id}`}
@@ -293,7 +294,9 @@ export default function AdminProviderEventDetailPage() {
               {
                 icon: BookOpen,
                 label: "Course ID",
-                value: data.paymentTransaction.courseId,
+                value: data.paymentTransaction.orderItems
+                  .map((item) => item.courseId)
+                  .join(", "),
               },
               {
                 icon: CircleDollarSign,

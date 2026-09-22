@@ -58,7 +58,9 @@ function PaymentTransactionRow({
       </TableCell>
       <TableCell>
         <span className="line-clamp-2 min-w-52">
-          {transaction.course?.title ?? "-"}
+          {transaction.order?.items
+            .map((item) => item.courseTitle)
+            .join(", ") ?? "-"}
         </span>
       </TableCell>
       <TableCell>
