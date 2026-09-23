@@ -44,6 +44,22 @@ function hasAccountDisabledMessage(data: unknown): boolean {
   );
 }
 
+function hasEmailVerificationMessage(data: unknown): boolean {
+  if (!isApiErrorResponse(data)) {
+    return false;
+  }
+
+  const message = data.error.message.toLowerCase();
+  const details = data.error.details
+    .filter((detail) => typeof detail === "string")
+    .map((detail) => detail.toLowerCase());
+
+  return (
+    message.includes("email verification required") ||
+    details.some((detail) => detail.includes("email verification required"))
+  );
+}
+
 function mapLoginError(error: unknown): LoginResult {
   if (!isAxiosError(error) || !error.response) {
     return { ok: false, formError: NETWORK_ERROR_MESSAGE };
@@ -57,6 +73,13 @@ function mapLoginError(error: unknown): LoginResult {
 
   if (status === 403 && hasAccountDisabledMessage(data)) {
     return { ok: false, formError: "Tài khoản của bạn đã bị vô hiệu hóa." };
+  }
+
+  if (status === 403 && hasEmailVerificationMessage(data)) {
+    return {
+      ok: false,
+      formError: "Vui lòng xác thực email trước khi đăng nhập.",
+    };
   }
 
   return { ok: false, formError: GENERIC_ERROR_MESSAGE };

@@ -19,6 +19,22 @@ export interface CurrentUserResponse {
   status: UserStatus;
 }
 
+export interface VerifyEmailPayload {
+  email: string;
+  otp: string;
+}
+
+export interface ResendEmailOtpPayload {
+  email: string;
+}
+
+export interface EmailOtpDispatchResponse {
+  email: string;
+  expiresInSeconds: number;
+  resendCooldownSeconds: number;
+  emailDelivery: "sent" | "unavailable";
+}
+
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
   const { data } = await axiosClient.post<ApiSuccessResponse<LoginResponse>>(
     "/auth/login",
@@ -29,9 +45,8 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
 }
 
 export async function refresh(): Promise<LoginResponse> {
-  const { data } = await axiosClient.post<ApiSuccessResponse<LoginResponse>>(
-    "/auth/refresh",
-  );
+  const { data } =
+    await axiosClient.post<ApiSuccessResponse<LoginResponse>>("/auth/refresh");
 
   return data.data;
 }
@@ -41,9 +56,28 @@ export async function logout(): Promise<void> {
 }
 
 export async function getMe(): Promise<CurrentUserResponse> {
-  const { data } = await axiosClient.get<
+  const { data } =
+    await axiosClient.get<ApiSuccessResponse<CurrentUserResponse>>("/auth/me");
+
+  return data.data;
+}
+
+export async function verifyEmailOtp(
+  payload: VerifyEmailPayload,
+): Promise<CurrentUserResponse> {
+  const { data } = await axiosClient.post<
     ApiSuccessResponse<CurrentUserResponse>
-  >("/auth/me");
+  >("/auth/email/verify", payload);
+
+  return data.data;
+}
+
+export async function resendEmailOtp(
+  payload: ResendEmailOtpPayload,
+): Promise<EmailOtpDispatchResponse> {
+  const { data } = await axiosClient.post<
+    ApiSuccessResponse<EmailOtpDispatchResponse>
+  >("/auth/email/resend-otp", payload);
 
   return data.data;
 }
