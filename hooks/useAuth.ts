@@ -16,6 +16,8 @@ import {
   getMe,
   login as loginApi,
   logout as logoutApi,
+  resendEmailOtp,
+  verifyEmailOtp,
 } from "@/services/api/auth";
 import type { UserRole } from "@/services/api/users";
 import {
@@ -91,6 +93,24 @@ export function getLoginFormError(error: unknown): string {
   return result.ok ? GENERIC_ERROR_MESSAGE : result.formError;
 }
 
+export function getEmailVerificationError(error: unknown): string {
+  if (!isAxiosError(error) || !error.response) {
+    return NETWORK_ERROR_MESSAGE;
+  }
+
+  const { status, data } = error.response;
+
+  if (status === 400) {
+    return "Mã OTP không hợp lệ, đã hết hạn hoặc đã được sử dụng.";
+  }
+
+  if (status === 429 && isApiErrorResponse(data)) {
+    return data.error.message;
+  }
+
+  return GENERIC_ERROR_MESSAGE;
+}
+
 export function useLogin() {
   const dispatch = useDispatch<AppDispatch>();
 
@@ -113,6 +133,18 @@ export function useLogout() {
       dispatch(clearAuth());
       queryClient.clear();
     },
+  });
+}
+
+export function useVerifyEmailOtp() {
+  return useMutation({
+    mutationFn: verifyEmailOtp,
+  });
+}
+
+export function useResendEmailOtp() {
+  return useMutation({
+    mutationFn: resendEmailOtp,
   });
 }
 
