@@ -1,8 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
-import { isAxiosError } from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -29,17 +27,15 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import {
-  forgotPasswordEmailSchema,
-  forgotPasswordResetSchema,
-  type ForgotPasswordEmailValues,
-  type ForgotPasswordResetValues,
-} from "@/lib/schemas/forgot-password";
+  getPasswordResetError,
+  useRequestPasswordResetOtp,
+  useResetPassword,
+  useVerifyPasswordResetOtp,
+} from "@/hooks/useAuth";
 import {
-  requestPasswordResetOtp,
-  resetPassword,
-  verifyPasswordResetOtp,
-} from "@/services/api/auth";
-import { isApiErrorResponse } from "@/services/axios";
+  forgotPasswordSchema,
+  type ForgotPasswordFormValues,
+} from "@/lib/schemas/forgot-password";
 import { Lock, Mail, MailCheck, RotateCcw, ShieldCheck } from "lucide-react";
 
 type ResetStep = "email" | "otp" | "reset" | "done";
@@ -47,71 +43,33 @@ type ResetStep = "email" | "otp" | "reset" | "done";
 const GENERIC_REQUEST_MESSAGE =
   "Nếu email thuộc tài khoản hợp lệ, mã OTP đặt lại mật khẩu đã được gửi.";
 
-function getResetError(error: unknown): string {
-  if (!isAxiosError(error) || !error.response) {
-    return "Không thể kết nối đến máy chủ. Vui lòng thử lại.";
-  }
-
-  const { status, data } = error.response;
-
-  if (status === 400) {
-    return "Mã OTP hoặc phiên đặt lại mật khẩu không hợp lệ, đã hết hạn hoặc đã được sử dụng.";
-  }
-
-  if (status === 429 && isApiErrorResponse(data)) {
-    return data.error.message;
-  }
-
-  return "Đã có lỗi xảy ra. Vui lòng thử lại sau.";
-}
-
 export default function ForgotPasswordPage() {
   const router = useRouter();
   const [step, setStep] = useState<ResetStep>("email");
-  const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState("");
   const [resetToken, setResetToken] = useState("");
   const [cooldown, setCooldown] = useState(0);
   const [formError, setFormError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const emailForm = useForm<ForgotPasswordEmailValues>({
-    resolver: zodResolver(forgotPasswordEmailSchema),
-    defaultValues: { email: "" },
-  });
-  const passwordForm = useForm<ForgotPasswordResetValues>({
-    resolver: zodResolver(forgotPasswordResetSchema),
-    defaultValues: { newPassword: "", confirmPassword: "" },
+  const {
+    formState: { errors },
+    getValues,
+    register,
+    setValue,
+    trigger,
+  } = useForm<ForgotPasswordFormValues>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: {
+      email: "",
+      otp: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
   });
 
-  const requestMutation = useMutation({
-    mutationFn: (value: string) => requestPasswordResetOtp({ email: value }),
-    onSuccess: (result, value) => {
-      setEmail(value);
-      setCooldown(result.resendCooldownSeconds);
-      setSuccessMessage(GENERIC_REQUEST_MESSAGE);
-      setStep("otp");
-    },
-  });
-  const verifyMutation = useMutation({
-    mutationFn: () => verifyPasswordResetOtp({ email, otp }),
-    onSuccess: (result) => {
-      setResetToken(result.resetToken);
-      setSuccessMessage("OTP hợp lệ. Vui lòng tạo mật khẩu mới.");
-      setStep("reset");
-    },
-  });
-  const resetMutation = useMutation({
-    mutationFn: (values: ForgotPasswordResetValues) =>
-      resetPassword({ resetToken, newPassword: values.newPassword }),
-    onSuccess: () => {
-      setSuccessMessage(
-        "Mật khẩu đã được đặt lại. Đang chuyển đến đăng nhập...",
-      );
-      setStep("done");
-      window.setTimeout(() => router.push("/signin"), 1000);
-    },
-  });
+  const requestMutation = useRequestPasswordResetOtp();
+  const verifyMutation = useVerifyPasswordResetOtp();
+  const resetMutation = useResetPassword();
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -123,31 +81,41 @@ export default function ForgotPasswordPage() {
     return () => window.clearTimeout(timer);
   }, [cooldown]);
 
-  async function onRequest(values: ForgotPasswordEmailValues) {
+  async function onRequest() {
     setFormError(null);
     setSuccessMessage(null);
 
+    if (!(await trigger("email", { shouldFocus: true }))) return;
+
+    const email = getValues("email").trim().toLowerCase();
+
     try {
-      await requestMutation.mutateAsync(values.email);
+      const result = await requestMutation.mutateAsync({ email });
+      setValue("email", email);
+      setCooldown(result.resendCooldownSeconds);
+      setSuccessMessage(GENERIC_REQUEST_MESSAGE);
+      setStep("otp");
     } catch (error) {
-      setFormError(getResetError(error));
+      setFormError(getPasswordResetError(error));
     }
   }
 
-  async function onVerify(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function onVerify() {
     setFormError(null);
     setSuccessMessage(null);
 
-    if (!/^\d{6}$/.test(otp)) {
-      setFormError("Vui lòng nhập mã OTP gồm 6 chữ số.");
-      return;
-    }
+    if (!(await trigger("otp", { shouldFocus: true }))) return;
 
     try {
-      await verifyMutation.mutateAsync();
+      const result = await verifyMutation.mutateAsync({
+        email: getValues("email"),
+        otp: getValues("otp"),
+      });
+      setResetToken(result.resetToken);
+      setSuccessMessage("OTP hợp lệ. Vui lòng tạo mật khẩu mới.");
+      setStep("reset");
     } catch (error) {
-      setFormError(getResetError(error));
+      setFormError(getPasswordResetError(error));
     }
   }
 
@@ -156,23 +124,52 @@ export default function ForgotPasswordPage() {
     setSuccessMessage(null);
 
     try {
-      await requestMutation.mutateAsync(email);
+      const result = await requestMutation.mutateAsync({
+        email: getValues("email"),
+      });
+      setCooldown(result.resendCooldownSeconds);
       setSuccessMessage(GENERIC_REQUEST_MESSAGE);
     } catch (error) {
-      setFormError(getResetError(error));
+      setFormError(getPasswordResetError(error));
     }
   }
 
-  async function onReset(values: ForgotPasswordResetValues) {
+  async function onReset() {
     setFormError(null);
     setSuccessMessage(null);
 
+    if (
+      !(await trigger(["newPassword", "confirmPassword"], {
+        shouldFocus: true,
+      }))
+    ) {
+      return;
+    }
+
     try {
-      await resetMutation.mutateAsync(values);
+      await resetMutation.mutateAsync({
+        resetToken,
+        newPassword: getValues("newPassword"),
+      });
+      setSuccessMessage(
+        "Mật khẩu đã được đặt lại. Đang chuyển đến đăng nhập...",
+      );
+      setStep("done");
+      window.setTimeout(() => router.push("/signin"), 1000);
     } catch (error) {
-      setFormError(getResetError(error));
+      setFormError(getPasswordResetError(error));
     }
   }
+
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (step === "email") await onRequest();
+    if (step === "otp") await onVerify();
+    if (step === "reset") await onReset();
+  }
+
+  const { onChange: onOtpChange, ...otpField } = register("otp");
 
   return (
     <section className="flex flex-1 items-center justify-center px-6 py-12">
@@ -187,7 +184,7 @@ export default function ForgotPasswordPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col gap-6">
+          <form onSubmit={onSubmit} className="flex flex-col gap-6">
             {formError && (
               <Alert variant="destructive">
                 <AlertTitle>Không thể đặt lại mật khẩu</AlertTitle>
@@ -203,12 +200,9 @@ export default function ForgotPasswordPage() {
             )}
 
             {step === "email" && (
-              <form
-                onSubmit={emailForm.handleSubmit(onRequest)}
-                className="flex flex-col gap-6"
-              >
+              <>
                 <FieldGroup>
-                  <Field data-invalid={!!emailForm.formState.errors.email}>
+                  <Field data-invalid={!!errors.email}>
                     <FieldLabel htmlFor="email">Email</FieldLabel>
                     <InputGroup>
                       <InputGroupAddon>
@@ -219,23 +213,23 @@ export default function ForgotPasswordPage() {
                         type="email"
                         autoComplete="email"
                         placeholder="Nhập email tài khoản..."
-                        aria-invalid={!!emailForm.formState.errors.email}
-                        {...emailForm.register("email")}
+                        aria-invalid={!!errors.email}
+                        {...register("email")}
                       />
                     </InputGroup>
-                    <FieldError errors={[emailForm.formState.errors.email]} />
+                    <FieldError errors={[errors.email]} />
                   </Field>
                 </FieldGroup>
                 <Button type="submit" disabled={requestMutation.isPending}>
                   {requestMutation.isPending ? "Đang gửi..." : "Gửi mã OTP"}
                 </Button>
-              </form>
+              </>
             )}
 
             {step === "otp" && (
-              <form onSubmit={onVerify} className="flex flex-col gap-6">
+              <>
                 <FieldGroup>
-                  <Field data-invalid={Boolean(formError)}>
+                  <Field data-invalid={!!errors.otp}>
                     <FieldLabel htmlFor="otp">Mã OTP</FieldLabel>
                     <InputGroup>
                       <InputGroupAddon>
@@ -247,15 +241,17 @@ export default function ForgotPasswordPage() {
                         autoComplete="one-time-code"
                         maxLength={6}
                         placeholder="Nhập 6 chữ số"
-                        value={otp}
-                        onChange={(event) =>
-                          setOtp(
-                            event.target.value.replace(/\D/g, "").slice(0, 6),
-                          )
-                        }
+                        aria-invalid={!!errors.otp}
+                        {...otpField}
+                        onChange={(event) => {
+                          event.target.value = event.target.value
+                            .replace(/\D/g, "")
+                            .slice(0, 6);
+                          void onOtpChange(event);
+                        }}
                       />
                     </InputGroup>
-                    <FieldError />
+                    <FieldError errors={[errors.otp]} />
                   </Field>
                 </FieldGroup>
                 <Button type="submit" disabled={verifyMutation.isPending}>
@@ -272,18 +268,13 @@ export default function ForgotPasswordPage() {
                   <RotateCcw aria-hidden="true" />
                   {cooldown > 0 ? `Gửi lại sau ${cooldown}s` : "Gửi lại mã OTP"}
                 </Button>
-              </form>
+              </>
             )}
 
             {step === "reset" && (
-              <form
-                onSubmit={passwordForm.handleSubmit(onReset)}
-                className="flex flex-col gap-6"
-              >
+              <>
                 <FieldGroup>
-                  <Field
-                    data-invalid={!!passwordForm.formState.errors.newPassword}
-                  >
+                  <Field data-invalid={!!errors.newPassword}>
                     <FieldLabel htmlFor="newPassword">Mật khẩu mới</FieldLabel>
                     <InputGroup>
                       <InputGroupAddon>
@@ -294,21 +285,13 @@ export default function ForgotPasswordPage() {
                         type="password"
                         autoComplete="new-password"
                         placeholder="Nhập mật khẩu mới..."
-                        aria-invalid={
-                          !!passwordForm.formState.errors.newPassword
-                        }
-                        {...passwordForm.register("newPassword")}
+                        aria-invalid={!!errors.newPassword}
+                        {...register("newPassword")}
                       />
                     </InputGroup>
-                    <FieldError
-                      errors={[passwordForm.formState.errors.newPassword]}
-                    />
+                    <FieldError errors={[errors.newPassword]} />
                   </Field>
-                  <Field
-                    data-invalid={
-                      !!passwordForm.formState.errors.confirmPassword
-                    }
-                  >
+                  <Field data-invalid={!!errors.confirmPassword}>
                     <FieldLabel htmlFor="confirmPassword">
                       Xác nhận mật khẩu
                     </FieldLabel>
@@ -321,15 +304,11 @@ export default function ForgotPasswordPage() {
                         type="password"
                         autoComplete="new-password"
                         placeholder="Nhập lại mật khẩu mới..."
-                        aria-invalid={
-                          !!passwordForm.formState.errors.confirmPassword
-                        }
-                        {...passwordForm.register("confirmPassword")}
+                        aria-invalid={!!errors.confirmPassword}
+                        {...register("confirmPassword")}
                       />
                     </InputGroup>
-                    <FieldError
-                      errors={[passwordForm.formState.errors.confirmPassword]}
-                    />
+                    <FieldError errors={[errors.confirmPassword]} />
                   </Field>
                 </FieldGroup>
                 <Button type="submit" disabled={resetMutation.isPending}>
@@ -337,9 +316,9 @@ export default function ForgotPasswordPage() {
                     ? "Đang cập nhật..."
                     : "Cập nhật mật khẩu"}
                 </Button>
-              </form>
+              </>
             )}
-          </div>
+          </form>
         </CardContent>
         <CardFooter className="justify-center">
           <Link

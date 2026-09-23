@@ -17,7 +17,10 @@ import {
   login as loginApi,
   logout as logoutApi,
   resendEmailOtp,
+  requestPasswordResetOtp,
+  resetPassword,
   verifyEmailOtp,
+  verifyPasswordResetOtp,
 } from "@/services/api/auth";
 import type { UserRole } from "@/services/api/users";
 import {
@@ -111,6 +114,24 @@ export function getEmailVerificationError(error: unknown): string {
   return GENERIC_ERROR_MESSAGE;
 }
 
+export function getPasswordResetError(error: unknown): string {
+  if (!isAxiosError(error) || !error.response) {
+    return NETWORK_ERROR_MESSAGE;
+  }
+
+  const { status, data } = error.response;
+
+  if (status === 400) {
+    return "Mã OTP hoặc phiên đặt lại mật khẩu không hợp lệ, đã hết hạn hoặc đã được sử dụng.";
+  }
+
+  if (status === 429 && isApiErrorResponse(data)) {
+    return data.error.message;
+  }
+
+  return GENERIC_ERROR_MESSAGE;
+}
+
 export function useLogin() {
   const dispatch = useDispatch<AppDispatch>();
 
@@ -145,6 +166,24 @@ export function useVerifyEmailOtp() {
 export function useResendEmailOtp() {
   return useMutation({
     mutationFn: resendEmailOtp,
+  });
+}
+
+export function useRequestPasswordResetOtp() {
+  return useMutation({
+    mutationFn: requestPasswordResetOtp,
+  });
+}
+
+export function useVerifyPasswordResetOtp() {
+  return useMutation({
+    mutationFn: verifyPasswordResetOtp,
+  });
+}
+
+export function useResetPassword() {
+  return useMutation({
+    mutationFn: resetPassword,
   });
 }
 

@@ -7,12 +7,10 @@ const passwordSchema = z
   .regex(/\d/, "Mật khẩu phải chứa ít nhất một chữ số")
   .regex(/[^A-Za-z0-9]/, "Mật khẩu phải chứa ít nhất một ký tự đặc biệt");
 
-export const forgotPasswordEmailSchema = z.object({
-  email: z.string().trim().toLowerCase().pipe(z.email("Email không hợp lệ")),
-});
-
-export const forgotPasswordResetSchema = z
+export const forgotPasswordSchema = z
   .object({
+    email: z.string().trim().toLowerCase().pipe(z.email("Email không hợp lệ")),
+    otp: z.string().regex(/^\d{6}$/, "Vui lòng nhập mã OTP gồm 6 chữ số"),
     newPassword: passwordSchema,
     confirmPassword: z.string().nonempty("Vui lòng xác nhận mật khẩu"),
   })
@@ -21,9 +19,4 @@ export const forgotPasswordResetSchema = z
     path: ["confirmPassword"],
   });
 
-export type ForgotPasswordEmailValues = z.infer<
-  typeof forgotPasswordEmailSchema
->;
-export type ForgotPasswordResetValues = z.infer<
-  typeof forgotPasswordResetSchema
->;
+export type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
