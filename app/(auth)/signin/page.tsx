@@ -123,6 +123,15 @@ export default function SignInPage() {
               </Field>
             </FieldGroup>
 
+            <div className="flex justify-end">
+              <Link
+                href="/forgot-password"
+                className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+              >
+                Quên mật khẩu?
+              </Link>
+            </div>
+
             <Button type="submit" disabled={loginMutation.isPending}>
               {loginMutation.isPending ? (
                 "Đang đăng nhập..."
