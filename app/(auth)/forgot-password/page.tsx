@@ -42,7 +42,7 @@ import {
 import { isApiErrorResponse } from "@/services/axios";
 import { Lock, Mail, MailCheck, RotateCcw, ShieldCheck } from "lucide-react";
 
-type ResetStep = "email" | "otp" | "password" | "done";
+type ResetStep = "email" | "otp" | "reset" | "done";
 
 const GENERIC_REQUEST_MESSAGE =
   "Nếu email thuộc tài khoản hợp lệ, mã OTP đặt lại mật khẩu đã được gửi.";
@@ -98,7 +98,7 @@ export default function ForgotPasswordPage() {
     onSuccess: (result) => {
       setResetToken(result.resetToken);
       setSuccessMessage("OTP hợp lệ. Vui lòng tạo mật khẩu mới.");
-      setStep("password");
+      setStep("reset");
     },
   });
   const resetMutation = useMutation({
@@ -275,7 +275,7 @@ export default function ForgotPasswordPage() {
               </form>
             )}
 
-            {step === "password" && (
+            {step === "reset" && (
               <form
                 onSubmit={passwordForm.handleSubmit(onReset)}
                 className="flex flex-col gap-6"
