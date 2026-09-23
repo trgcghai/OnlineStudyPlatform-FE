@@ -1,10 +1,8 @@
 "use client";
 
-import { isAxiosError } from "axios";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,27 +24,12 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { isApiErrorResponse } from "@/services/axios";
-import { resendEmailOtp, verifyEmailOtp } from "@/services/api/auth";
+import {
+  getEmailVerificationError,
+  useResendEmailOtp,
+  useVerifyEmailOtp,
+} from "@/hooks/useAuth";
 import { MailCheck, RotateCcw, ShieldCheck } from "lucide-react";
-
-function getOtpError(error: unknown): string {
-  if (!isAxiosError(error) || !error.response) {
-    return "Không thể kết nối đến máy chủ. Vui lòng thử lại.";
-  }
-
-  const { status, data } = error.response;
-
-  if (status === 400) {
-    return "Mã OTP không hợp lệ, đã hết hạn hoặc đã được sử dụng.";
-  }
-
-  if (status === 429 && isApiErrorResponse(data)) {
-    return data.error.message;
-  }
-
-  return "Đã có lỗi xảy ra. Vui lòng thử lại sau.";
-}
 
 export default function VerifyEmailPage() {
   const router = useRouter();
@@ -62,20 +45,8 @@ export default function VerifyEmailPage() {
   );
   const [cooldown, setCooldown] = useState(60);
 
-  const verifyMutation = useMutation({
-    mutationFn: () => verifyEmailOtp({ email, otp }),
-  });
-  const resendMutation = useMutation({
-    mutationFn: () => resendEmailOtp({ email }),
-    onSuccess: (result) => {
-      setCooldown(result.resendCooldownSeconds);
-      setSuccessMessage(
-        result.emailDelivery === "sent"
-          ? "Mã OTP mới đã được gửi đến email của bạn."
-          : "Yêu cầu gửi lại đã được ghi nhận. Vui lòng thử lại nếu chưa nhận được mã.",
-      );
-    },
-  });
+  const verifyMutation = useVerifyEmailOtp();
+  const resendMutation = useResendEmailOtp();
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -103,13 +74,13 @@ export default function VerifyEmailPage() {
     }
 
     try {
-      await verifyMutation.mutateAsync();
+      await verifyMutation.mutateAsync({ email, otp });
       setSuccessMessage(
         "Xác thực email thành công. Đang chuyển đến đăng nhập...",
       );
       window.setTimeout(() => router.push("/signin"), 800);
     } catch (error) {
-      setFormError(getOtpError(error));
+      setFormError(getEmailVerificationError(error));
     }
   }
 
@@ -123,9 +94,15 @@ export default function VerifyEmailPage() {
     }
 
     try {
-      await resendMutation.mutateAsync();
+      const result = await resendMutation.mutateAsync({ email });
+      setCooldown(result.resendCooldownSeconds);
+      setSuccessMessage(
+        result.emailDelivery === "sent"
+          ? "Mã OTP mới đã được gửi đến email của bạn."
+          : "Yêu cầu gửi lại đã được ghi nhận. Vui lòng thử lại nếu chưa nhận được mã.",
+      );
     } catch (error) {
-      setFormError(getOtpError(error));
+      setFormError(getEmailVerificationError(error));
     }
   }
 
