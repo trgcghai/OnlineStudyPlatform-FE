@@ -16,6 +16,11 @@ import {
   getMe,
   login as loginApi,
   logout as logoutApi,
+  resendEmailOtp,
+  requestPasswordResetOtp,
+  resetPassword,
+  verifyEmailOtp,
+  verifyPasswordResetOtp,
 } from "@/services/api/auth";
 import type { UserRole } from "@/services/api/users";
 import {
@@ -44,6 +49,22 @@ function hasAccountDisabledMessage(data: unknown): boolean {
   );
 }
 
+function hasEmailVerificationMessage(data: unknown): boolean {
+  if (!isApiErrorResponse(data)) {
+    return false;
+  }
+
+  const message = data.error.message.toLowerCase();
+  const details = data.error.details
+    .filter((detail) => typeof detail === "string")
+    .map((detail) => detail.toLowerCase());
+
+  return (
+    message.includes("email verification required") ||
+    details.some((detail) => detail.includes("email verification required"))
+  );
+}
+
 function mapLoginError(error: unknown): LoginResult {
   if (!isAxiosError(error) || !error.response) {
     return { ok: false, formError: NETWORK_ERROR_MESSAGE };
@@ -59,6 +80,13 @@ function mapLoginError(error: unknown): LoginResult {
     return { ok: false, formError: "Tài khoản của bạn đã bị vô hiệu hóa." };
   }
 
+  if (status === 403 && hasEmailVerificationMessage(data)) {
+    return {
+      ok: false,
+      formError: "Vui lòng xác thực email trước khi đăng nhập.",
+    };
+  }
+
   return { ok: false, formError: GENERIC_ERROR_MESSAGE };
 }
 
@@ -66,6 +94,42 @@ export function getLoginFormError(error: unknown): string {
   const result = mapLoginError(error);
 
   return result.ok ? GENERIC_ERROR_MESSAGE : result.formError;
+}
+
+export function getEmailVerificationError(error: unknown): string {
+  if (!isAxiosError(error) || !error.response) {
+    return NETWORK_ERROR_MESSAGE;
+  }
+
+  const { status, data } = error.response;
+
+  if (status === 400) {
+    return "Mã OTP không hợp lệ, đã hết hạn hoặc đã được sử dụng.";
+  }
+
+  if (status === 429 && isApiErrorResponse(data)) {
+    return data.error.message;
+  }
+
+  return GENERIC_ERROR_MESSAGE;
+}
+
+export function getPasswordResetError(error: unknown): string {
+  if (!isAxiosError(error) || !error.response) {
+    return NETWORK_ERROR_MESSAGE;
+  }
+
+  const { status, data } = error.response;
+
+  if (status === 400) {
+    return "Mã OTP hoặc phiên đặt lại mật khẩu không hợp lệ, đã hết hạn hoặc đã được sử dụng.";
+  }
+
+  if (status === 429 && isApiErrorResponse(data)) {
+    return data.error.message;
+  }
+
+  return GENERIC_ERROR_MESSAGE;
 }
 
 export function useLogin() {
@@ -90,6 +154,36 @@ export function useLogout() {
       dispatch(clearAuth());
       queryClient.clear();
     },
+  });
+}
+
+export function useVerifyEmailOtp() {
+  return useMutation({
+    mutationFn: verifyEmailOtp,
+  });
+}
+
+export function useResendEmailOtp() {
+  return useMutation({
+    mutationFn: resendEmailOtp,
+  });
+}
+
+export function useRequestPasswordResetOtp() {
+  return useMutation({
+    mutationFn: requestPasswordResetOtp,
+  });
+}
+
+export function useVerifyPasswordResetOtp() {
+  return useMutation({
+    mutationFn: verifyPasswordResetOtp,
+  });
+}
+
+export function useResetPassword() {
+  return useMutation({
+    mutationFn: resetPassword,
   });
 }
 
