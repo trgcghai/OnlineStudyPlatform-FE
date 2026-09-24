@@ -57,8 +57,10 @@ export default function RegisterPage() {
     setFormError(null);
 
     try {
-      await registerMutation.mutateAsync(values);
-      router.push("/signin");
+      const result = await registerMutation.mutateAsync(values);
+      const email = encodeURIComponent(result.email);
+      const delivery = encodeURIComponent(result.emailDelivery);
+      router.push(`/verify-email?email=${email}&delivery=${delivery}`);
       return;
     } catch (error) {
       const result = getRegisterFailure(error);

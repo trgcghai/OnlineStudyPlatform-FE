@@ -19,6 +19,31 @@ export interface CurrentUserResponse {
   status: UserStatus;
 }
 
+export interface VerifyEmailPayload {
+  email: string;
+  otp: string;
+}
+
+export interface ResendEmailOtpPayload {
+  email: string;
+}
+
+export interface EmailOtpDispatchResponse {
+  email: string;
+  expiresInSeconds: number;
+  resendCooldownSeconds: number;
+  emailDelivery: "sent" | "unavailable";
+}
+
+export interface PasswordResetRequestResponse extends EmailOtpDispatchResponse {
+  message: string;
+}
+
+export interface PasswordResetVerifyResponse {
+  resetToken: string;
+  expiresInSeconds: number;
+}
+
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
   const { data } = await axiosClient.post<ApiSuccessResponse<LoginResponse>>(
     "/auth/login",
@@ -29,9 +54,8 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
 }
 
 export async function refresh(): Promise<LoginResponse> {
-  const { data } = await axiosClient.post<ApiSuccessResponse<LoginResponse>>(
-    "/auth/refresh",
-  );
+  const { data } =
+    await axiosClient.post<ApiSuccessResponse<LoginResponse>>("/auth/refresh");
 
   return data.data;
 }
@@ -41,9 +65,61 @@ export async function logout(): Promise<void> {
 }
 
 export async function getMe(): Promise<CurrentUserResponse> {
-  const { data } = await axiosClient.get<
+  const { data } =
+    await axiosClient.get<ApiSuccessResponse<CurrentUserResponse>>("/auth/me");
+
+  return data.data;
+}
+
+export async function verifyEmailOtp(
+  payload: VerifyEmailPayload,
+): Promise<CurrentUserResponse> {
+  const { data } = await axiosClient.post<
     ApiSuccessResponse<CurrentUserResponse>
-  >("/auth/me");
+  >("/auth/email/verify", payload);
+
+  return data.data;
+}
+
+export async function resendEmailOtp(
+  payload: ResendEmailOtpPayload,
+): Promise<EmailOtpDispatchResponse> {
+  const { data } = await axiosClient.post<
+    ApiSuccessResponse<EmailOtpDispatchResponse>
+  >("/auth/email/resend-otp", payload);
+
+  return data.data;
+}
+
+export async function requestPasswordResetOtp(payload: {
+  email: string;
+}): Promise<PasswordResetRequestResponse> {
+  const { data } = await axiosClient.post<
+    ApiSuccessResponse<PasswordResetRequestResponse>
+  >("/auth/password-reset/request-otp", payload);
+
+  return data.data;
+}
+
+export async function verifyPasswordResetOtp(payload: {
+  email: string;
+  otp: string;
+}): Promise<PasswordResetVerifyResponse> {
+  const { data } = await axiosClient.post<
+    ApiSuccessResponse<PasswordResetVerifyResponse>
+  >("/auth/password-reset/verify-otp", payload);
+
+  return data.data;
+}
+
+export async function resetPassword(payload: {
+  resetToken: string;
+  newPassword: string;
+}): Promise<{ reset: true }> {
+  const { data } = await axiosClient.post<ApiSuccessResponse<{ reset: true }>>(
+    "/auth/password-reset/reset",
+    payload,
+  );
 
   return data.data;
 }

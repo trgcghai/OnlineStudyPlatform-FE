@@ -11,6 +11,7 @@ export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES];
 export const USER_STATUSES = {
   ACTIVE: "Active",
   INACTIVE: "Inactive",
+  PENDING_VERIFICATION: "PendingVerification",
 } as const;
 
 export type UserStatus = (typeof USER_STATUSES)[keyof typeof USER_STATUSES];
@@ -22,6 +23,14 @@ export interface RegisterUserPayload {
 }
 
 export interface RegisterUserResponse {
+  user: UserProfile;
+  email: string;
+  expiresInSeconds: number;
+  resendCooldownSeconds: number;
+  emailDelivery: "sent" | "unavailable";
+}
+
+export interface UserProfile {
   id: string;
   name: string;
   email: string;
@@ -37,20 +46,9 @@ export async function registerUser(
 ): Promise<RegisterUserResponse> {
   const { data } = await axiosClient.post<
     ApiSuccessResponse<RegisterUserResponse>
-  >("/users", payload);
+  >("/auth/register", payload);
 
   return data.data;
-}
-
-export interface UserProfile {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  avatar: string | null;
-  status: UserStatus;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface InstructorAccount {

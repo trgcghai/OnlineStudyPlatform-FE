@@ -15,10 +15,10 @@ import {
   STATUS_LABELS,
   type AssignableRole,
 } from "@/lib/schemas/admin-user";
-import type { UserStatus } from "@/services/api/users";
+import type { USER_STATUS_FILTER_VALUES } from "@/lib/search-params/filter-parsers";
 
 export type RoleFilter = "" | AssignableRole;
-export type StatusFilter = "" | UserStatus;
+export type StatusFilter = "" | (typeof USER_STATUS_FILTER_VALUES)[number];
 
 const ALL_OPTION = "";
 
