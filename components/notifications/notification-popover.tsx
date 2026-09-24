@@ -2,12 +2,7 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Bell,
-  BellDot,
-  Inbox,
-  LoaderCircle,
-} from "lucide-react";
+import { Bell, BellDot, CheckCheck, Inbox, LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -18,15 +13,19 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
+  useMarkAllNotificationsSeen,
   useMarkNotificationSeen,
   useNotificationsList,
   useUnreadNotificationCount,
 } from "@/hooks/useNotifications";
 import { cn } from "@/lib/utils";
-import {
-  type NotificationItem,
-} from "@/services/api/notifications";
+import { type NotificationItem } from "@/services/api/notifications";
 import { formatSentAt } from "@/utils/dateTimeUtil";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 function NotificationRow({
   notification,
@@ -37,7 +36,6 @@ function NotificationRow({
   onOpen: (notification: NotificationItem) => void;
   disabled: boolean;
 }) {
-
   return (
     <button
       type="button"
@@ -84,8 +82,13 @@ export function NotificationPopover() {
     fetchNextPage,
     hasNextPage,
   } = useNotificationsList();
-  const { markSeen, isPending: isMarkingSeen, pendingNotificationId } =
-    useMarkNotificationSeen();
+  const {
+    markSeen,
+    isPending: isMarkingSeen,
+    pendingNotificationId,
+  } = useMarkNotificationSeen();
+  const { markAllSeen, isPending: isMarkingAllSeen } =
+    useMarkAllNotificationsSeen();
   const notifications = useMemo(
     () => data?.pages.flatMap((page) => page.items) ?? [],
     [data],
@@ -118,11 +121,20 @@ export function NotificationPopover() {
     }
   }
 
+  async function handleMarkAllSeen() {
+    await markAllSeen();
+  }
+
   return (
     <Popover>
       <PopoverTrigger
         render={
-          <Button variant="ghost" size="icon-sm" aria-label="Thông báo" className="relative">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Thông báo"
+            className="relative"
+          >
             {unreadCount > 0 ? <BellDot /> : <Bell />}
             {unreadCount > 0 && (
               <span className="absolute -right-1 -top-1 flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-destructive-foreground">
@@ -132,19 +144,49 @@ export function NotificationPopover() {
           </Button>
         }
       />
-      <PopoverContent align="end" className="w-[min(24rem,calc(100vw-2rem))] gap-3 p-0">
+      <PopoverContent
+        align="end"
+        className="w-[min(24rem,calc(100vw-2rem))] gap-3 p-0"
+      >
         <PopoverHeader className="p-4 pb-0">
-          <PopoverTitle>Thông báo</PopoverTitle>
-          <PopoverDescription>
-            {unreadCount > 0
-              ? `${unreadCount} thông báo chưa xem`
-              : "Không có thông báo chưa xem"}
-          </PopoverDescription>
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 space-y-1">
+              <PopoverTitle>Thông báo</PopoverTitle>
+              <PopoverDescription>
+                {unreadCount > 0
+                  ? `${unreadCount} thông báo chưa xem`
+                  : "Không có thông báo chưa xem"}
+              </PopoverDescription>
+            </div>
+
+            {unreadCount > 0 ? (
+              <Tooltip>
+                <TooltipTrigger>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    className="shrink-0 px-2 text-xs"
+                    disabled={isMarkingAllSeen}
+                    onClick={() => void handleMarkAllSeen()}
+                  >
+                    <CheckCheck className="size-4" aria-hidden="true" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Đánh dấu tất cả đã xem</p>
+                </TooltipContent>
+              </Tooltip>
+            ) : null}
+          </div>
         </PopoverHeader>
         <div className="max-h-[28rem] overflow-y-auto">
           {isPending && (
             <div className="flex items-center justify-center gap-2 py-8 text-sm text-muted-foreground">
-              <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
+              <LoaderCircle
+                className="size-4 animate-spin"
+                aria-hidden="true"
+              />
             </div>
           )}
 
@@ -176,7 +218,10 @@ export function NotificationPopover() {
 
           {isFetchingNextPage && (
             <div className="flex items-center justify-center gap-2 py-3 text-sm text-muted-foreground">
-              <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
+              <LoaderCircle
+                className="size-4 animate-spin"
+                aria-hidden="true"
+              />
               Đang tải thêm...
             </div>
           )}
