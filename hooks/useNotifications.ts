@@ -7,10 +7,13 @@ import {
 import {
   countUnreadNotifications,
   listMyNotifications,
+  markAllNotificationsSeen,
   markNotificationSeen,
+  type MarkAllNotificationsSeenResult,
   type NotificationItem,
 } from "@/services/api/notifications";
 import { notificationKeys } from "@/lib/query-keys";
+import { toast } from "@/components/ui/toast";
 
 const NOTIFICATION_PAGE_SIZE = 10;
 
@@ -50,5 +53,33 @@ export function useMarkNotificationSeen() {
     markSeen: mutation.mutateAsync,
     isPending: mutation.isPending,
     pendingNotificationId: mutation.variables,
+  };
+}
+
+export function useMarkAllNotificationsSeen() {
+  const queryClient = useQueryClient();
+  const mutation = useMutation<MarkAllNotificationsSeenResult>({
+    mutationFn: markAllNotificationsSeen,
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: notificationKeys.lists() }),
+        queryClient.invalidateQueries({
+          queryKey: notificationKeys.unreadCount(),
+        }),
+      ]);
+    },
+    onError: (error) => {
+      console.error("Error marking all notifications as seen:", error);
+      toast.add({
+        title: "Không thể đánh dấu tất cả thông báo",
+        description: "Vui lòng thử lại sau.",
+        type: "error",
+      });
+    },
+  });
+
+  return {
+    markAllSeen: mutation.mutateAsync,
+    isPending: mutation.isPending,
   };
 }

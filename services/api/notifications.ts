@@ -5,8 +5,17 @@ export const NOTIFICATION_TYPES = {
   QUEUE: "queue",
 } as const;
 
+// Future realtime handler contract: when NOTIFICATION_CREATED_EVENT is received,
+// invalidate notificationKeys.lists() and notificationKeys.unreadCount().
+// T3-02 does not open a socket or mount a subscription.
+export const NOTIFICATION_CREATED_EVENT = "notification.created";
+
 export type NotificationType =
   (typeof NOTIFICATION_TYPES)[keyof typeof NOTIFICATION_TYPES];
+
+export interface NotificationCreatedEventPayload {
+  notificationId: string;
+}
 
 export interface NotificationItem {
   id: string;
@@ -36,6 +45,10 @@ export interface UnreadNotificationCountResult {
   count: number;
 }
 
+export interface MarkAllNotificationsSeenResult {
+  modifiedCount: number;
+}
+
 function buildNotificationListQuery(filters: NotificationListFilters): string {
   const params = new URLSearchParams();
 
@@ -60,7 +73,7 @@ export async function listMyNotifications(
 export async function countUnreadNotifications(): Promise<UnreadNotificationCountResult> {
   const { data } = await axiosClient.get<
     ApiSuccessResponse<UnreadNotificationCountResult>
-  >( "/notifications/me/unread-count");
+  >("/notifications/me/unread-count");
 
   return data.data;
 }
@@ -68,9 +81,17 @@ export async function countUnreadNotifications(): Promise<UnreadNotificationCoun
 export async function markNotificationSeen(
   notificationId: string,
 ): Promise<NotificationItem> {
-  const { data } = await axiosClient.patch<ApiSuccessResponse<NotificationItem>>(
-    `/notifications/${notificationId}/seen`,
-  );
+  const { data } = await axiosClient.patch<
+    ApiSuccessResponse<NotificationItem>
+  >(`/notifications/${notificationId}/seen`);
+
+  return data.data;
+}
+
+export async function markAllNotificationsSeen(): Promise<MarkAllNotificationsSeenResult> {
+  const { data } = await axiosClient.patch<
+    ApiSuccessResponse<MarkAllNotificationsSeenResult>
+  >("/notifications/me/seen");
 
   return data.data;
 }
