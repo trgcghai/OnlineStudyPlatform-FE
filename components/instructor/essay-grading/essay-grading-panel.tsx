@@ -15,27 +15,14 @@ import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useGradeEssayAnswer } from "@/hooks/useEssayGrading";
-import type {
-  EssayGradingStatusFilter,
-  EssayGradingSubmission,
-} from "@/services/api/essay-grading";
+import type { EssayGradingSubmission } from "@/services/api/essay-grading";
 import { formatScore, getQuestionStatusLabel } from "@/utils/quizUtil";
 
 interface EssayGradingPanelProps {
-  courseId: string;
-  lessonId: string;
-  quizId: string;
-  status: EssayGradingStatusFilter;
   submission: EssayGradingSubmission | null;
 }
 
-export function EssayGradingPanel({
-  courseId,
-  lessonId,
-  quizId,
-  status,
-  submission,
-}: EssayGradingPanelProps) {
+export function EssayGradingPanel({ submission }: EssayGradingPanelProps) {
   const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(
     null,
   );
@@ -72,7 +59,9 @@ export function EssayGradingPanel({
         </div>
         <CardTitle className="text-lg">{selectedEssay.content}</CardTitle>
         <CardDescription>
-          {submission.learner.name || submission.learner.email || "Học viên"}
+          {submission.learner.name || submission.learner.email || "Học viên"} -{" "}
+          {submission.courseTitle} / {submission.lessonTitle} /{" "}
+          {submission.quizTitle}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
@@ -104,10 +93,9 @@ export function EssayGradingPanel({
         </section>
         <EssayGradingForm
           key={`${submission.attemptId}-${selectedEssay.questionId}-${selectedEssay.score}-${selectedEssay.feedback ?? ""}`}
-          courseId={courseId}
-          lessonId={lessonId}
-          quizId={quizId}
-          status={status}
+          courseId={submission.courseId}
+          lessonId={submission.lessonId}
+          quizId={submission.quizId}
           attemptId={submission.attemptId}
           questionId={selectedEssay.questionId}
           initialPoints={selectedEssay.score}
@@ -123,7 +111,6 @@ function EssayGradingForm({
   courseId,
   lessonId,
   quizId,
-  status,
   attemptId,
   questionId,
   initialPoints,
@@ -133,7 +120,6 @@ function EssayGradingForm({
   courseId: string;
   lessonId: string;
   quizId: string;
-  status: EssayGradingStatusFilter;
   attemptId: string;
   questionId: string;
   initialPoints: number;
@@ -173,7 +159,6 @@ function EssayGradingForm({
       quizId,
       attemptId,
       questionId,
-      status,
       payload: {
         points: Number(points),
         feedback: feedback.trim(),

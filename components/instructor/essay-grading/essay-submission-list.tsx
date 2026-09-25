@@ -57,6 +57,10 @@ export function EssaySubmissionList({
                 </Badge>
               </span>
               <span className="grid gap-1 text-xs text-muted-foreground">
+                <span>
+                  {submission.courseTitle} / {submission.lessonTitle} /{" "}
+                  {submission.quizTitle}
+                </span>
                 <span>Nộp: {formatDateTime(submission.submittedAt)}</span>
                 <span>
                   Điểm: {formatScore(submission.totalScore)} /{" "}

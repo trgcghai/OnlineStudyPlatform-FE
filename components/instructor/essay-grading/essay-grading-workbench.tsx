@@ -28,10 +28,6 @@ import {
   mapLessonError,
   useInstructorLessonsList,
 } from "@/hooks/useInstructorLessons";
-import {
-  mapQuizError,
-  useInstructorLessonQuiz,
-} from "@/hooks/useInstructorQuizzes";
 import { COURSE_LIST_PAGE_SIZE } from "@/lib/schemas/course";
 import {
   essayGradingStatusParser,
@@ -53,7 +49,6 @@ export function EssayGradingWorkbench() {
     {
       courseId: parseAsString.withDefault(""),
       lessonId: parseAsString.withDefault(""),
-      quizId: parseAsString.withDefault(""),
       status: essayGradingStatusParser,
       page: pageParser,
       limit: limitParser(ESSAY_GRADING_PAGE_SIZE),
@@ -71,13 +66,9 @@ export function EssayGradingWorkbench() {
     sortOrder: "DESC",
   });
   const lessonQuery = useInstructorLessonsList(filtersState.courseId);
-  const quizQuery = useInstructorLessonQuiz(
-    filtersState.courseId,
-    filtersState.lessonId,
-  );
   const queueQuery = useEssayGradingSubmissions(
     filtersState.courseId,
-    filtersState.quizId,
+    filtersState.lessonId,
     filtersState.status,
     filtersState.page,
     filtersState.limit,
@@ -85,7 +76,6 @@ export function EssayGradingWorkbench() {
 
   const courses = courseQuery.data?.items ?? [];
   const lessons = lessonQuery.data?.items ?? [];
-  const quizzes = quizQuery.data ? [quizQuery.data] : [];
   const submissions = queueQuery.data?.items ?? EMPTY_SUBMISSIONS;
   const totalPages = queueQuery.data?.totalPages ?? 0;
   const totalItems = queueQuery.data?.total ?? 0;
@@ -101,10 +91,7 @@ export function EssayGradingWorkbench() {
   useClampUrlPage({
     page: filtersState.page,
     totalPages,
-    enabled:
-      Boolean(filtersState.quizId) &&
-      !queueQuery.isPending &&
-      !queueQuery.isError,
+    enabled: !queueQuery.isPending && !queueQuery.isError,
     onPageChange: (nextPage) => {
       void setFiltersState({ page: nextPage });
     },
@@ -115,19 +102,13 @@ export function EssayGradingWorkbench() {
     void setFiltersState({
       courseId: value,
       lessonId: "",
-      quizId: "",
       page: 1,
     });
   }
 
   function handleLessonChange(value: string) {
     setSelectedAttemptId(null);
-    void setFiltersState({ lessonId: value, quizId: "", page: 1 });
-  }
-
-  function handleQuizChange(value: string) {
-    setSelectedAttemptId(null);
-    void setFiltersState({ quizId: value, page: 1 });
+    void setFiltersState({ lessonId: value, page: 1 });
   }
 
   function handleStatusChange(value: EssayGradingStatusFilter) {
@@ -147,32 +128,26 @@ export function EssayGradingWorkbench() {
           <div className="flex flex-col gap-1">
             <CardTitle>Hàng chờ chấm bài</CardTitle>
             <CardDescription>
-              Lọc theo khóa học, bài học và bài kiểm tra để xem lượt nộp tự
+              Lọc theo trạng thái, khóa học hoặc bài học để xem lượt nộp tự
               luận.
             </CardDescription>
           </div>
-          {filtersState.quizId && (
-            <Badge variant="secondary" className="w-fit">
-              {queueQuery.isPending ? "Đang tải" : `${submissions.length} lượt`}
-            </Badge>
-          )}
+          <Badge variant="secondary" className="w-fit">
+            {queueQuery.isPending ? "Đang tải" : `${totalItems} lượt`}
+          </Badge>
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
         <EssayGradingSelectors
           courses={courses}
           lessons={lessons}
-          quizzes={quizzes}
           courseId={filtersState.courseId}
           lessonId={filtersState.lessonId}
-          quizId={filtersState.quizId}
           status={filtersState.status}
           coursesLoading={courseQuery.isPending}
           lessonsLoading={lessonQuery.isPending}
-          quizzesLoading={quizQuery.isPending}
           onCourseChange={handleCourseChange}
           onLessonChange={handleLessonChange}
-          onQuizChange={handleQuizChange}
           onStatusChange={handleStatusChange}
         />
 
@@ -189,14 +164,6 @@ export function EssayGradingWorkbench() {
             title="Không thể tải bài học"
             message={mapLessonError(lessonQuery.error)}
             onRetry={() => lessonQuery.refetch()}
-          />
-        )}
-
-        {quizQuery.isError && (
-          <ErrorAlert
-            title="Không thể tải bài kiểm tra"
-            message={mapQuizError(quizQuery.error)}
-            onRetry={() => quizQuery.refetch()}
           />
         )}
 
@@ -221,25 +188,9 @@ export function EssayGradingWorkbench() {
             <EmptyState message="Khóa học này chưa có bài học." />
           )}
 
-        {filtersState.lessonId &&
-          !quizQuery.isPending &&
-          !quizQuery.isError &&
-          quizzes.length === 0 && (
-            <EmptyState message="Bài học này chưa có bài kiểm tra." />
-          )}
+        {queueQuery.isPending && <Skeleton className="h-48 rounded-3xl" />}
 
-        {!filtersState.lessonId &&
-          !filtersState.quizId &&
-          courses.length > 0 && (
-            <EmptyState message="Chọn đủ khóa học, bài học và bài kiểm tra để bắt đầu chấm tự luận." />
-          )}
-
-        {filtersState.quizId && queueQuery.isPending && (
-          <Skeleton className="h-48 rounded-3xl" />
-        )}
-
-        {filtersState.quizId &&
-          !queueQuery.isPending &&
+        {!queueQuery.isPending &&
           !queueQuery.isError &&
           (submissions.length > 0 ? (
             <div className="flex flex-col gap-4">
@@ -251,13 +202,7 @@ export function EssayGradingWorkbench() {
                     setSelectedAttemptId(submission.attemptId)
                   }
                 />
-                <EssayGradingPanel
-                  courseId={filtersState.courseId}
-                  lessonId={filtersState.lessonId}
-                  quizId={filtersState.quizId}
-                  status={filtersState.status}
-                  submission={selectedSubmission}
-                />
+                <EssayGradingPanel submission={selectedSubmission} />
               </div>
               <Pagination
                 page={filtersState.page}
