@@ -21,7 +21,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
-import { useAdminUsersList } from "@/hooks/useAdminUsers";
+import { useAdminUsersList, useEnableAdminUser } from "@/hooks/useAdminUsers";
 import { useClampUrlPage } from "@/hooks/useClampUrlPage";
 import { useDebounce } from "@/hooks/useDebounce";
 import {
@@ -65,6 +65,7 @@ export default function AdminUsersPage() {
   );
 
   const { data, isPending, isError, refetch } = useAdminUsersList(filters);
+  const { enableUser, isPending: isEnablePending } = useEnableAdminUser();
   const items = data?.items ?? [];
   const totalPages = data?.totalPages ?? 0;
   const totalUsers = data?.total ?? items.length;
@@ -120,9 +121,13 @@ export default function AdminUsersPage() {
 
           <AdminUsersTable
             isError={isError}
+            isActionPending={isEnablePending}
             isPending={isPending}
             items={items}
             onDisable={setDisablingUser}
+            onEnable={(user) => {
+              void enableUser(user.id);
+            }}
             onEdit={openEditDialog}
             onRefetch={() => refetch()}
           />

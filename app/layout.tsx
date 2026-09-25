@@ -8,6 +8,7 @@ import QueryProvider from "@/components/providers/query-provider";
 import ReduxProvider from "@/components/providers/redux-provider";
 import { Toaster } from "@/components/ui/toast";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { NotificationRealtimeListener } from "@/components/notifications/notification-realtime-listener";
 
 const figtree = Figtree({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -50,6 +51,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <ReduxProvider>
             <QueryProvider>
               <NuqsAdapter>
+                <NotificationRealtimeListener />
                 <TooltipProvider>{children}</TooltipProvider>
                 <Toaster />
               </NuqsAdapter>

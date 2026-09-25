@@ -9,8 +9,8 @@ export default function InstructorEssayGradingPage() {
         <p className="text-sm font-medium text-primary">Bài kiểm tra</p>
         <h1 className="text-2xl font-bold tracking-tight">Chấm tự luận</h1>
         <p className="max-w-3xl text-sm text-muted-foreground">
-          Chọn khóa học, bài học và bài kiểm tra để xem các câu tự luận đang chờ
-          chấm, nhập điểm và gửi phản hồi cho học viên.
+          Xem tất cả câu tự luận theo trạng thái, hoặc lọc thêm theo khóa học và
+          bài học để nhập điểm và gửi phản hồi cho học viên.
         </p>
       </div>
 

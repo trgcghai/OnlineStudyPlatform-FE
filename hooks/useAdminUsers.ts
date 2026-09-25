@@ -6,6 +6,7 @@ import {
   disableUserAsAdmin,
   listAdminUsers,
   updateUserAsAdmin,
+  USER_STATUSES,
 } from "@/services/api/users";
 import type {
   AdminUserFilters,
@@ -17,7 +18,10 @@ import type {
   CreateAdminUserFormValues,
   EditAdminUserFormValues,
 } from "@/lib/schemas/admin-user";
-import { GENERIC_ERROR_MESSAGE, NETWORK_ERROR_MESSAGE } from "@/constants/constants";
+import {
+  GENERIC_ERROR_MESSAGE,
+  NETWORK_ERROR_MESSAGE,
+} from "@/constants/constants";
 import { adminUserKeys } from "@/lib/query-keys";
 
 export interface AdminUserFailure {
@@ -212,4 +216,40 @@ export function useDisableAdminUser() {
   }
 
   return { disableUser, isPending: mutation.isPending };
+}
+
+export function useEnableAdminUser() {
+  const invalidate = useInvalidateAdminUsers();
+
+  const mutation = useMutation<UserProfile, unknown, string>({
+    mutationFn: (userId) =>
+      updateUserAsAdmin(userId, { status: USER_STATUSES.ACTIVE }),
+    onSuccess: () => {
+      void invalidate();
+      toast.add({
+        title: "Đã kích hoạt tài khoản.",
+        description: "Người dùng có thể đăng nhập lại vào hệ thống.",
+        type: "success",
+      });
+    },
+    onError: (error) => {
+      toast.add({
+        title:
+          mapAdminUserError(error).formError ??
+          "Không thể kích hoạt tài khoản.",
+        type: "error",
+      });
+    },
+  });
+
+  async function enableUser(userId: string): Promise<AdminUserResult> {
+    try {
+      await mutation.mutateAsync(userId);
+      return { ok: true };
+    } catch (error) {
+      return { ok: false, failure: mapAdminUserError(error) };
+    }
+  }
+
+  return { enableUser, isPending: mutation.isPending };
 }

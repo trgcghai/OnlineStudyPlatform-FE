@@ -45,26 +45,22 @@ export function mapEssayGradingError(error: unknown): string {
 
 export function useEssayGradingSubmissions(
   courseId: string | null,
-  quizId: string | null,
+  lessonId: string | null,
   status: EssayGradingStatusFilter,
   page: number,
   limit: number,
 ) {
+  const filters = {
+    ...(courseId?.trim() ? { courseId } : {}),
+    ...(lessonId?.trim() ? { lessonId } : {}),
+    status,
+    page,
+    limit,
+  };
+
   return useQuery({
-    queryKey: instructorEssayGradingKeys.list(
-      courseId ?? "",
-      quizId ?? "",
-      status,
-      page,
-      limit,
-    ),
-    queryFn: () =>
-      listEssayGradingSubmissions(courseId ?? "", quizId ?? "", {
-        status,
-        page,
-        limit,
-      }),
-    enabled: Boolean(courseId?.trim()) && Boolean(quizId?.trim()),
+    queryKey: instructorEssayGradingKeys.list(filters),
+    queryFn: () => listEssayGradingSubmissions(filters),
   });
 }
 
@@ -74,7 +70,6 @@ interface GradeEssayVariables {
   quizId: string;
   attemptId: string;
   questionId: string;
-  status: EssayGradingStatusFilter;
   payload: GradeEssayAnswerPayload;
 }
 
@@ -93,13 +88,7 @@ export function useGradeEssayAnswer() {
     onSuccess: async (_result, variables) => {
       await Promise.all([
         queryClient.invalidateQueries({
-          queryKey: [
-            ...instructorEssayGradingKeys.all,
-            "list",
-            variables.courseId,
-            variables.quizId,
-            variables.status,
-          ],
+          queryKey: instructorEssayGradingKeys.all,
         }),
         queryClient.invalidateQueries({
           queryKey: instructorQuizKeys.list(
