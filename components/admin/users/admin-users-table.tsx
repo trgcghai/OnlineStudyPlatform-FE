@@ -1,6 +1,6 @@
 "use client";
 
-import { PencilLine, UsersRound, UserX } from "lucide-react";
+import { PencilLine, UserCheck, UsersRound, UserX } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import RoleBadge from "@/components/admin/users/RoleBadge";
@@ -23,16 +23,22 @@ import type { UserProfile } from "@/services/api/users";
 import { formatDate } from "@/utils/dateTimeUtil";
 
 function AdminUserRow({
+  isActionPending,
   isPending,
   user,
   onDisable,
+  onEnable,
   onEdit,
 }: {
+  isActionPending: boolean;
   isPending: boolean;
   user: UserProfile;
   onDisable: (user: UserProfile) => void;
+  onEnable: (user: UserProfile) => void;
   onEdit: (user: UserProfile) => void;
 }) {
+  const isInactive = user.status === "Inactive";
+
   return (
     <TableRow>
       <TableCell>
@@ -70,25 +76,47 @@ function AdminUserRow({
               <p>Chỉnh sửa người dùng</p>
             </TooltipContent>
           </Tooltip>
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  className="text-destructive hover:text-destructive"
-                  aria-label={`Vô hiệu hóa ${user.name}`}
-                  disabled={isPending || user.status === "Inactive"}
-                  onClick={() => onDisable(user)}
-                >
-                  <UserX />
-                </Button>
-              }
-            />
-            <TooltipContent>
-              <p>Vô hiệu hóa người dùng</p>
-            </TooltipContent>
-          </Tooltip>
+          {isInactive ? (
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="text-emerald-600 hover:text-emerald-600"
+                    aria-label={`Kích hoạt ${user.name}`}
+                    disabled={isPending || isActionPending}
+                    onClick={() => onEnable(user)}
+                  >
+                    <UserCheck />
+                  </Button>
+                }
+              />
+              <TooltipContent>
+                <p>Kích hoạt người dùng</p>
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="text-destructive hover:text-destructive"
+                    aria-label={`Vô hiệu hóa ${user.name}`}
+                    disabled={isPending || isActionPending}
+                    onClick={() => onDisable(user)}
+                  >
+                    <UserX />
+                  </Button>
+                }
+              />
+              <TooltipContent>
+                <p>Vô hiệu hóa người dùng</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
         </div>
       </TableCell>
     </TableRow>
@@ -97,16 +125,20 @@ function AdminUserRow({
 
 export function AdminUsersTable({
   isError,
+  isActionPending,
   isPending,
   items,
   onDisable,
+  onEnable,
   onEdit,
   onRefetch,
 }: {
   isError: boolean;
+  isActionPending: boolean;
   isPending: boolean;
   items: UserProfile[];
   onDisable: (user: UserProfile) => void;
+  onEnable: (user: UserProfile) => void;
   onEdit: (user: UserProfile) => void;
   onRefetch: () => void;
 }) {
@@ -170,9 +202,11 @@ export function AdminUsersTable({
               items.map((user) => (
                 <AdminUserRow
                   key={user.id}
+                  isActionPending={isActionPending}
                   isPending={isPending}
                   user={user}
                   onDisable={onDisable}
+                  onEnable={onEnable}
                   onEdit={onEdit}
                 />
               ))

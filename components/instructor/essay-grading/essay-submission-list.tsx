@@ -4,16 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { EssayGradingSubmission } from "@/services/api/essay-grading";
-import { formatDateTime, formatScore } from "@/utils/quizUtil";
+import { formatDateTime, getAttemptStatusLabel } from "@/utils/quizUtil";
 
 interface EssaySubmissionListProps {
   submissions: EssayGradingSubmission[];
   selectedAttemptId: string | null;
   onSelect: (submission: EssayGradingSubmission) => void;
-}
-
-function getSubmissionStateLabel(submission: EssayGradingSubmission): string {
-  return submission.pendingEssayCount > 0 ? "Chờ chấm" : "Đã chấm";
 }
 
 export function EssaySubmissionList({
@@ -32,7 +28,7 @@ export function EssaySubmissionList({
             type="button"
             variant="ghost"
             className={cn(
-              "h-auto justify-start rounded-2xl border p-4 text-left hover:bg-muted/70 border-border",
+              "h-auto scroll-mt-24 justify-start rounded-2xl border p-4 text-left hover:bg-muted/70 border-border transition-all",
               selected && "border-primary bg-primary/5",
             )}
             onClick={() => onSelect(submission)}
@@ -48,7 +44,7 @@ export function EssaySubmissionList({
               </span>
               <span className="flex flex-wrap gap-2">
                 <Badge variant="outline">
-                  {getSubmissionStateLabel(submission)}
+                  {getAttemptStatusLabel(submission)}
                 </Badge>
                 <Badge
                   variant={submission.passed ? "secondary" : "destructive"}
@@ -56,14 +52,19 @@ export function EssaySubmissionList({
                   {submission.passed ? "Đạt" : "Chưa đạt"}
                 </Badge>
               </span>
-              <span className="grid gap-1 text-xs text-muted-foreground">
-                <span>Nộp: {formatDateTime(submission.submittedAt)}</span>
-                <span>
-                  Điểm: {formatScore(submission.totalScore)} /{" "}
-                  {formatScore(submission.totalPoints)}
+              <span className="grid gap-1 text-sm text-muted-foreground">
+                <span className="truncate line-clamp-1">
+                  Khóa học: {submission.courseTitle}
                 </span>
-                <span>Điểm đạt: {formatScore(submission.passScorePoints)}</span>
-                <span>{submission.pendingEssayCount} câu chờ chấm</span>
+                <span className="truncate line-clamp-1">
+                  Bài học: {submission.lessonTitle}
+                </span>
+                <span className="truncate line-clamp-1">
+                  Bài kiểm tra: {submission.quizTitle}
+                </span>
+                <span className="truncate line-clamp-1">
+                  Nộp: {formatDateTime(submission.submittedAt)}
+                </span>
               </span>
             </span>
           </Button>

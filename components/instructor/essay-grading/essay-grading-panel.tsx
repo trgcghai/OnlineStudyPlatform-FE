@@ -15,27 +15,14 @@ import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useGradeEssayAnswer } from "@/hooks/useEssayGrading";
-import type {
-  EssayGradingStatusFilter,
-  EssayGradingSubmission,
-} from "@/services/api/essay-grading";
+import type { EssayGradingSubmission } from "@/services/api/essay-grading";
 import { formatScore, getQuestionStatusLabel } from "@/utils/quizUtil";
 
 interface EssayGradingPanelProps {
-  courseId: string;
-  lessonId: string;
-  quizId: string;
-  status: EssayGradingStatusFilter;
   submission: EssayGradingSubmission | null;
 }
 
-export function EssayGradingPanel({
-  courseId,
-  lessonId,
-  quizId,
-  status,
-  submission,
-}: EssayGradingPanelProps) {
+export function EssayGradingPanel({ submission }: EssayGradingPanelProps) {
   const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(
     null,
   );
@@ -62,17 +49,33 @@ export function EssayGradingPanel({
     <Card className="h-full">
       <CardHeader>
         <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="outline">
+          <Badge variant="secondary">
             {getQuestionStatusLabel(selectedEssay.status)}
           </Badge>
-          <Badge variant="secondary">
+          <Badge
+            variant={
+              selectedEssay.status == "correct" ? "default" : "secondary"
+            }
+          >
             {formatScore(selectedEssay.score)} /{" "}
             {formatScore(selectedEssay.maxScore)} điểm
           </Badge>
         </div>
         <CardTitle className="text-lg">{selectedEssay.content}</CardTitle>
-        <CardDescription>
-          {submission.learner.name || submission.learner.email || "Học viên"}
+        <CardDescription className="space-y-1">
+          <p className="text-sm line-clamp-1 truncate cursor-default">
+            Học viên:{" "}
+            {submission.learner.name || submission.learner.email || "Học viên"}
+          </p>
+          <p className="text-sm line-clamp-1 truncate cursor-default">
+            Khóa học: {submission.courseTitle}
+          </p>
+          <p className="text-sm line-clamp-1 truncate cursor-default">
+            Bài học: {submission.lessonTitle}
+          </p>
+          <p className="text-sm line-clamp-1 truncate cursor-default">
+            Bài kiểm tra: {submission.quizTitle}
+          </p>
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
@@ -96,18 +99,25 @@ export function EssayGradingPanel({
           </div>
         )}
 
-        <section className="rounded-2xl bg-muted/60 p-4">
-          <h3 className="text-sm font-medium">Bài làm của học viên</h3>
-          <p className="mt-2 whitespace-pre-wrap text-sm leading-6">
-            {selectedEssay.text || "Học viên chưa nhập câu trả lời."}
-          </p>
+        <section className="rounded-xl bg-muted/60 p-4 space-y-4">
+          <div>
+            <h3 className="text-sm font-medium">Câu hỏi</h3>
+            <p className="mt-2 whitespace-pre-wrap text-sm leading-6">
+              {selectedEssay.content}
+            </p>
+          </div>
+          <div>
+            <h3 className="text-sm font-medium">Bài làm của học viên</h3>
+            <p className="mt-2 whitespace-pre-wrap text-sm leading-6">
+              {selectedEssay.text || "Học viên chưa nhập câu trả lời."}
+            </p>
+          </div>
         </section>
         <EssayGradingForm
           key={`${submission.attemptId}-${selectedEssay.questionId}-${selectedEssay.score}-${selectedEssay.feedback ?? ""}`}
-          courseId={courseId}
-          lessonId={lessonId}
-          quizId={quizId}
-          status={status}
+          courseId={submission.courseId}
+          lessonId={submission.lessonId}
+          quizId={submission.quizId}
           attemptId={submission.attemptId}
           questionId={selectedEssay.questionId}
           initialPoints={selectedEssay.score}
@@ -123,7 +133,6 @@ function EssayGradingForm({
   courseId,
   lessonId,
   quizId,
-  status,
   attemptId,
   questionId,
   initialPoints,
@@ -133,7 +142,6 @@ function EssayGradingForm({
   courseId: string;
   lessonId: string;
   quizId: string;
-  status: EssayGradingStatusFilter;
   attemptId: string;
   questionId: string;
   initialPoints: number;
@@ -173,7 +181,6 @@ function EssayGradingForm({
       quizId,
       attemptId,
       questionId,
-      status,
       payload: {
         points: Number(points),
         feedback: feedback.trim(),

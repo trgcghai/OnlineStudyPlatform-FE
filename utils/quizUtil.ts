@@ -1,3 +1,4 @@
+import { EssayGradingSubmission } from "@/services/api/essay-grading";
 import {
   QuizAttemptQuestionStatus,
   QuizAttemptResult,
@@ -22,7 +23,9 @@ function formatDateTime(value: string | null): string {
   return formatDate(value);
 }
 
-function getAttemptStatusLabel(result: QuizAttemptResult): string {
+function getAttemptStatusLabel(
+  result: QuizAttemptResult | EssayGradingSubmission,
+): string {
   if (result.pendingEssayCount > 0 && !result.passed) return "Chờ chấm";
 
   return result.passed ? "Đạt" : "Chưa đạt";
@@ -31,13 +34,15 @@ function getAttemptStatusLabel(result: QuizAttemptResult): string {
 function getQuestionStatusLabel(status: QuizAttemptQuestionStatus): string {
   if (status === "correct") return "Đúng";
   if (status === "partial") return "Đúng một phần";
-  if (status === "pending_grading") return "chờ chấm";
+  if (status === "pending_grading") return "Chờ chấm";
 
   return "Chưa đúng";
 }
 
 function getBestAttemptId(attempts: QuizAttemptResult[]): string | null {
   if (attempts.length === 0) return null;
+
+  if (attempts.every((a) => a.pendingEssayCount > 0)) return null;
 
   return attempts.reduce((best, attempt) => {
     if (attempt.totalScore > best.totalScore) return attempt;

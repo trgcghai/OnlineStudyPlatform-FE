@@ -1,7 +1,7 @@
 import type { CartFilters } from "@/services/api/cart";
 import type { CourseListFilters } from "@/services/api/courses";
 import type { CourseEnrollmentListFilters } from "@/services/api/enrollments";
-import type { EssayGradingStatusFilter } from "@/services/api/essay-grading";
+import type { EssayGradingSubmissionListFilters } from "@/services/api/essay-grading";
 import type {
   AdminPaymentTransactionFilters,
   AdminProviderEventFilters,
@@ -115,22 +115,8 @@ export const instructorQuizKeys = {
 
 export const instructorEssayGradingKeys = {
   all: ["instructor-essay-grading"] as const,
-  list: (
-    courseId: string,
-    quizId: string,
-    status: EssayGradingStatusFilter,
-    page: number,
-    limit: number,
-  ) =>
-    [
-      ...instructorEssayGradingKeys.all,
-      "list",
-      courseId,
-      quizId,
-      status,
-      page,
-      limit,
-    ] as const,
+  list: (filters: EssayGradingSubmissionListFilters) =>
+    [...instructorEssayGradingKeys.all, "list", filters] as const,
 };
 
 export const notificationKeys = {

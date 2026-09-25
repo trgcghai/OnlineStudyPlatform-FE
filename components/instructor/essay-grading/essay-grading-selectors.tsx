@@ -1,5 +1,7 @@
 "use client";
 
+import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import {
   Select,
@@ -14,22 +16,20 @@ import {
   type EssayGradingStatusFilter,
 } from "@/services/api/essay-grading";
 import type { Lesson } from "@/services/api/lessons";
-import type { QuizSummary } from "@/services/api/quizzes";
+
+const ALL_FILTER_VALUE = "__all__";
 
 interface EssayGradingSelectorsProps {
   courses: Course[];
   lessons: Lesson[];
-  quizzes: QuizSummary[];
   courseId: string;
   lessonId: string;
-  quizId: string;
   status: EssayGradingStatusFilter;
   coursesLoading: boolean;
   lessonsLoading: boolean;
-  quizzesLoading: boolean;
   onCourseChange: (value: string) => void;
   onLessonChange: (value: string) => void;
-  onQuizChange: (value: string) => void;
+  onReset: () => void;
   onStatusChange: (value: EssayGradingStatusFilter) => void;
 }
 
@@ -42,39 +42,37 @@ const statusOptions = [
 export function EssayGradingSelectors({
   courses,
   lessons,
-  quizzes,
   courseId,
   lessonId,
-  quizId,
   status,
   coursesLoading,
   lessonsLoading,
-  quizzesLoading,
   onCourseChange,
   onLessonChange,
-  onQuizChange,
+  onReset,
   onStatusChange,
 }: EssayGradingSelectorsProps) {
-  const courseItems = Object.fromEntries(
-    courses.map((course) => [course.id, course.title]),
-  );
-  const lessonItems = Object.fromEntries(
-    lessons.map((lesson) => [lesson.id, lesson.title]),
-  );
-  const quizItems = Object.fromEntries(
-    quizzes.map((quiz) => [quiz.id, quiz.title]),
-  );
+  const courseItems = Object.fromEntries([
+    [ALL_FILTER_VALUE, "Tất cả khóa học"],
+    ...courses.map((course) => [course.id, course.title]),
+  ]);
+  const lessonItems = Object.fromEntries([
+    [ALL_FILTER_VALUE, "Tất cả bài học"],
+    ...lessons.map((lesson) => [lesson.id, lesson.title]),
+  ]);
   const statusItems = Object.fromEntries(
     statusOptions.map((option) => [option.value, option.label]),
   );
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-[1fr_1fr_1fr_auto] md:items-end">
       <Field>
         <FieldLabel>Khóa học</FieldLabel>
         <Select
-          value={courseId}
-          onValueChange={(value) => onCourseChange(value ?? "")}
+          value={courseId || ALL_FILTER_VALUE}
+          onValueChange={(value) =>
+            onCourseChange(value === ALL_FILTER_VALUE ? "" : (value ?? ""))
+          }
           disabled={coursesLoading || courses.length === 0}
           items={courseItems}
         >
@@ -84,6 +82,7 @@ export function EssayGradingSelectors({
             />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value={ALL_FILTER_VALUE}>Tất cả khóa học</SelectItem>
             {courses.map((course) => (
               <SelectItem key={course.id} value={course.id}>
                 {course.title}
@@ -96,8 +95,10 @@ export function EssayGradingSelectors({
       <Field>
         <FieldLabel>Bài học</FieldLabel>
         <Select
-          value={lessonId}
-          onValueChange={(value) => onLessonChange(value ?? "")}
+          value={lessonId || ALL_FILTER_VALUE}
+          onValueChange={(value) =>
+            onLessonChange(value === ALL_FILTER_VALUE ? "" : (value ?? ""))
+          }
           disabled={!courseId || lessonsLoading || lessons.length === 0}
           items={lessonItems}
         >
@@ -107,32 +108,10 @@ export function EssayGradingSelectors({
             />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value={ALL_FILTER_VALUE}>Tất cả bài học</SelectItem>
             {lessons.map((lesson) => (
               <SelectItem key={lesson.id} value={lesson.id}>
                 {lesson.title}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </Field>
-
-      <Field>
-        <FieldLabel>Bài kiểm tra</FieldLabel>
-        <Select
-          value={quizId}
-          onValueChange={(value) => onQuizChange(value ?? "")}
-          disabled={!lessonId || quizzesLoading || quizzes.length === 0}
-          items={quizItems}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue
-              placeholder={quizzesLoading ? "Đang tải..." : "Chọn bài kiểm tra"}
-            />
-          </SelectTrigger>
-          <SelectContent>
-            {quizzes.map((quiz) => (
-              <SelectItem key={quiz.id} value={quiz.id}>
-                {quiz.title}
               </SelectItem>
             ))}
           </SelectContent>
@@ -160,6 +139,21 @@ export function EssayGradingSelectors({
           </SelectContent>
         </Select>
       </Field>
+
+      <Button
+        type="button"
+        variant="destructive"
+        className="w-full md:w-auto"
+        onClick={onReset}
+        disabled={
+          !courseId &&
+          !lessonId &&
+          status === ESSAY_GRADING_STATUS_FILTERS.PENDING
+        }
+      >
+        <X className="size-4" aria-hidden="true" />
+        Xóa bộ lọc
+      </Button>
     </div>
   );
 }
