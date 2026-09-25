@@ -1,6 +1,13 @@
 "use client";
 
-import { ListChecks, PencilLine, Plus, Settings2, Trash2 } from "lucide-react";
+import {
+  FileSpreadsheet,
+  ListChecks,
+  PencilLine,
+  Plus,
+  Settings2,
+  Trash2,
+} from "lucide-react";
 import { useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +22,7 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DeleteQuizDialog } from "@/components/instructor/quizzes/delete-quiz-dialog";
+import { ImportQuizDialog } from "@/components/instructor/quizzes/import-quiz-dialog";
 import { QuizFormDialog } from "@/components/instructor/quizzes/quiz-form-dialog";
 import { useInstructorLessonQuiz } from "@/hooks/useInstructorQuizzes";
 import type { QuizSummary } from "@/services/api/quizzes";
@@ -29,6 +37,7 @@ export function QuizList({ courseId, lessonId, onBuild }: QuizListProps) {
   const [creating, setCreating] = useState(false);
   const [editingQuiz, setEditingQuiz] = useState<QuizSummary | null>(null);
   const [deletingQuiz, setDeletingQuiz] = useState<QuizSummary | null>(null);
+  const [importing, setImporting] = useState(false);
 
   const {
     data: quiz,
@@ -49,6 +58,13 @@ export function QuizList({ courseId, lessonId, onBuild }: QuizListProps) {
           <CardAction>
             <Button size="sm" onClick={() => setCreating(true)}>
               <Plus /> Tạo bài kiểm tra
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setImporting(true)}
+            >
+              <FileSpreadsheet /> Import Excel
             </Button>
           </CardAction>
         )}
@@ -120,6 +136,13 @@ export function QuizList({ courseId, lessonId, onBuild }: QuizListProps) {
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 size="sm"
+                variant="outline"
+                onClick={() => setImporting(true)}
+              >
+                <FileSpreadsheet /> Import Excel
+              </Button>
+              <Button
+                size="sm"
                 onClick={() => onBuild(quiz)}
                 aria-label={`Xây dựng câu hỏi cho ${quiz.title}`}
               >
@@ -161,6 +184,13 @@ export function QuizList({ courseId, lessonId, onBuild }: QuizListProps) {
           courseId={courseId}
           lessonId={lessonId}
           quiz={editingQuiz}
+        />
+
+        <ImportQuizDialog
+          open={importing}
+          onOpenChange={setImporting}
+          courseId={courseId}
+          lessonId={lessonId}
         />
 
         <DeleteQuizDialog
