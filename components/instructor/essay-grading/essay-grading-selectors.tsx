@@ -1,5 +1,7 @@
 "use client";
 
+import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import {
   Select,
@@ -27,6 +29,7 @@ interface EssayGradingSelectorsProps {
   lessonsLoading: boolean;
   onCourseChange: (value: string) => void;
   onLessonChange: (value: string) => void;
+  onReset: () => void;
   onStatusChange: (value: EssayGradingStatusFilter) => void;
 }
 
@@ -46,6 +49,7 @@ export function EssayGradingSelectors({
   lessonsLoading,
   onCourseChange,
   onLessonChange,
+  onReset,
   onStatusChange,
 }: EssayGradingSelectorsProps) {
   const courseItems = Object.fromEntries([
@@ -61,7 +65,7 @@ export function EssayGradingSelectors({
   );
 
   return (
-    <div className="grid gap-4 md:grid-cols-3">
+    <div className="grid gap-4 md:grid-cols-[1fr_1fr_1fr_auto] md:items-end">
       <Field>
         <FieldLabel>Khóa học</FieldLabel>
         <Select
@@ -135,6 +139,21 @@ export function EssayGradingSelectors({
           </SelectContent>
         </Select>
       </Field>
+
+      <Button
+        type="button"
+        variant="destructive"
+        className="w-full md:w-auto"
+        onClick={onReset}
+        disabled={
+          !courseId &&
+          !lessonId &&
+          status === ESSAY_GRADING_STATUS_FILTERS.PENDING
+        }
+      >
+        <X className="size-4" aria-hidden="true" />
+        Xóa bộ lọc
+      </Button>
     </div>
   );
 }

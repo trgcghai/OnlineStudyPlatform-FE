@@ -121,6 +121,17 @@ export function EssayGradingWorkbench() {
     void setFiltersState({ limit: value, page: 1 });
   }
 
+  function handleResetFilters() {
+    setSelectedAttemptId(null);
+    void setFiltersState({
+      courseId: "",
+      lessonId: "",
+      status: ESSAY_GRADING_STATUS_FILTERS.PENDING,
+      page: 1,
+      limit: ESSAY_GRADING_PAGE_SIZE,
+    });
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -148,6 +159,7 @@ export function EssayGradingWorkbench() {
           lessonsLoading={lessonQuery.isPending}
           onCourseChange={handleCourseChange}
           onLessonChange={handleLessonChange}
+          onReset={handleResetFilters}
           onStatusChange={handleStatusChange}
         />
 
