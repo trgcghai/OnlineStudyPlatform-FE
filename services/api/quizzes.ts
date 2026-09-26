@@ -71,6 +71,16 @@ export type UpdateQuizPayload = Partial<{
   passScore: number;
 }>;
 
+export interface QuizImportResult {
+  quizId: string;
+  title: string;
+  questionCount: number;
+  totalPoints: number;
+  passScore: number;
+  passScorePoints: number;
+  createdQuiz: boolean;
+}
+
 export type UpdateQuestionPayload = Partial<CreateQuestionPayload>;
 
 export async function getLessonQuiz(
@@ -92,6 +102,22 @@ export async function createQuiz(
   const { data } = await axiosClient.post<ApiSuccessResponse<Quiz>>(
     `/courses/${courseId}/lessons/${lessonId}/quiz`,
     payload,
+  );
+
+  return data.data;
+}
+
+export async function importQuizExcel(
+  courseId: string,
+  lessonId: string,
+  file: File,
+): Promise<QuizImportResult> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const { data } = await axiosClient.post<ApiSuccessResponse<QuizImportResult>>(
+    `/courses/${courseId}/lessons/${lessonId}/quiz/import`,
+    formData,
   );
 
   return data.data;

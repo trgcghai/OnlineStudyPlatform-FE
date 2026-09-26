@@ -15,11 +15,13 @@ import {
   deleteQuiz,
   getQuiz,
   getLessonQuiz,
+  importQuizExcel,
   reorderQuestions,
   updateQuestion,
   updateQuiz,
   type CreateQuestionPayload,
   type Quiz,
+  type QuizImportResult,
   type QuizQuestion,
   type QuizSummary,
 } from "@/services/api/quizzes";
@@ -66,8 +68,9 @@ export function useInstructorQuiz(quizId: string) {
 
 interface QuizMutationResult {
   ok: boolean;
-  data?: Quiz | QuizSummary | QuizQuestion;
+  data?: Quiz | QuizSummary | QuizQuestion | QuizImportResult;
   message?: string;
+  details?: string[];
 }
 
 function invalidateQuizzes(queryClient: ReturnType<typeof useQueryClient>) {
@@ -127,6 +130,50 @@ export function useCreateInstructorQuiz() {
 
   return {
     createInstructorQuiz,
+    isPending: mutation.isPending,
+  };
+}
+
+export function useImportInstructorQuiz() {
+  const queryClient = useQueryClient();
+  const mutation = useMutation<
+    QuizImportResult,
+    unknown,
+    { courseId: string; lessonId: string; file: File }
+  >({
+    mutationFn: ({ courseId, lessonId, file }) =>
+      importQuizExcel(courseId, lessonId, file),
+    onSuccess: async (result, variables) => {
+      await invalidateQuizzes(queryClient)(
+        variables.courseId,
+        variables.lessonId,
+      );
+      await invalidateQuizDetail(queryClient)(result.quizId);
+    },
+  });
+
+  async function importInstructorQuiz(
+    courseId: string,
+    lessonId: string,
+    file: File,
+  ): Promise<QuizMutationResult> {
+    try {
+      const result = await mutation.mutateAsync({ courseId, lessonId, file });
+      return { ok: true, data: result };
+    } catch (error) {
+      if (isAxiosError(error) && isApiErrorResponse(error.response?.data)) {
+        return {
+          ok: false,
+          message: error.response.data.error.message,
+          details: error.response.data.error.details,
+        };
+      }
+      return { ok: false, message: mapQuizError(error) };
+    }
+  }
+
+  return {
+    importInstructorQuiz,
     isPending: mutation.isPending,
   };
 }
