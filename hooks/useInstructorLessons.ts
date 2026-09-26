@@ -1,24 +1,41 @@
 import { isAxiosError } from "axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRef, useState } from "react";
 import { toast } from "@/components/ui/toast";
 import { isApiErrorResponse } from "@/services/axios";
 import {
   createLesson,
+  abortLessonImport,
+  completeLessonImport,
   deleteLesson,
   getLesson,
+  getLessonImport,
+  initiateLessonImport,
   listLessons,
   reorderLessons,
+  uploadLessonImportParts,
   updateLesson,
+  type LessonImportResult,
   type Lesson,
 } from "@/services/api/lessons";
 import type { LessonFormValues } from "@/lib/schemas/lesson";
-import { GENERIC_ERROR_MESSAGE, NETWORK_ERROR_MESSAGE } from "@/constants/constants";
+import {
+  GENERIC_ERROR_MESSAGE,
+  NETWORK_ERROR_MESSAGE,
+} from "@/constants/constants";
 import { instructorLessonKeys } from "@/lib/query-keys";
 
 export interface LessonMutationResult {
   ok: boolean;
   data?: Lesson;
   message?: string;
+}
+
+export interface LessonImportMutationResult {
+  ok: boolean;
+  data?: LessonImportResult;
+  message?: string;
+  details?: string[];
 }
 
 export function mapLessonError(error: unknown): string {
@@ -209,7 +226,8 @@ export function useReorderInstructorLessons() {
     unknown,
     { courseId: string; orderedIds: string[] }
   >({
-    mutationFn: ({ courseId, orderedIds }) => reorderLessons(courseId, orderedIds),
+    mutationFn: ({ courseId, orderedIds }) =>
+      reorderLessons(courseId, orderedIds),
     onSuccess: async (_result, variables) => {
       await invalidate(variables.courseId);
     },
@@ -231,4 +249,117 @@ export function useReorderInstructorLessons() {
     reorderInstructorLessons,
     isPending: mutation.isPending,
   };
+}
+
+export function useImportInstructorLessons() {
+  const invalidate = useInvalidateLessons();
+  const [stage, setStage] = useState<
+    "idle" | "preparing" | "uploading" | "queued" | "processing"
+  >("idle");
+  const [progress, setProgress] = useState(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const activeImportRef = useRef<{ courseId: string; importId: string } | null>(
+    null,
+  );
+  const mutation = useMutation<
+    LessonImportResult,
+    unknown,
+    { courseId: string; file: File }
+  >({
+    mutationFn: async ({ courseId, file }) => {
+      setStage("preparing");
+      setProgress(0);
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+      const session = await initiateLessonImport(courseId, file);
+      activeImportRef.current = { courseId, importId: session.importId };
+      setStage("uploading");
+      await uploadLessonImportParts(
+        file,
+        session,
+        (uploadProgress) => setProgress(Math.round(uploadProgress * 0.35)),
+        controller.signal,
+      );
+      setStage("queued");
+      let status = await completeLessonImport(courseId, session.importId);
+      setProgress(status.progress);
+      while (status.status === "queued" || status.status === "processing") {
+        setStage(status.status);
+        await new Promise((resolve) => setTimeout(resolve, 2_000));
+        status = await getLessonImport(courseId, session.importId);
+        setProgress(status.progress);
+      }
+      if (status.status !== "completed") {
+        throw new LessonImportFailure(
+          status.errorDetails[0] ?? "Không thể import bài học.",
+          status.errorDetails,
+        );
+      }
+      return status;
+    },
+    onSuccess: async (result, variables) => {
+      await invalidate(variables.courseId);
+      toast.add({
+        title: `Đã import ${result.createdLessonCount} bài học.`,
+        type: "success",
+      });
+    },
+    onSettled: () => {
+      abortControllerRef.current = null;
+      activeImportRef.current = null;
+      setStage("idle");
+    },
+  });
+
+  async function importInstructorLessons(
+    courseId: string,
+    file: File,
+  ): Promise<LessonImportMutationResult> {
+    try {
+      const result = await mutation.mutateAsync({ courseId, file });
+      return { ok: true, data: result };
+    } catch (error) {
+      if (error instanceof LessonImportFailure) {
+        return { ok: false, message: error.message, details: error.details };
+      }
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return { ok: false, message: "Đã hủy tải gói bài học." };
+      }
+      if (isAxiosError(error) && isApiErrorResponse(error.response?.data)) {
+        return {
+          ok: false,
+          message: error.response.data.error.message,
+          details: error.response.data.error.details,
+        };
+      }
+      return { ok: false, message: mapLessonError(error) };
+    }
+  }
+
+  async function cancelImport(): Promise<void> {
+    abortControllerRef.current?.abort();
+    const active = activeImportRef.current;
+    if (active && stage === "uploading") {
+      await abortLessonImport(active.courseId, active.importId).catch(
+        () => undefined,
+      );
+    }
+  }
+
+  return {
+    importInstructorLessons,
+    cancelImport,
+    isPending: mutation.isPending,
+    stage,
+    progress,
+  };
+}
+
+class LessonImportFailure extends Error {
+  constructor(
+    message: string,
+    readonly details: string[],
+  ) {
+    super(message);
+  }
 }

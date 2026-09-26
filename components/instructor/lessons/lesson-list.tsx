@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
+  FileArchive,
   FileText,
   Film,
   GripVertical,
@@ -33,6 +34,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DeleteLessonDialog } from "@/components/instructor/lessons/delete-lesson-dialog";
+import { ImportLessonsDialog } from "@/components/instructor/lessons/import-lessons-dialog";
 import { LessonFormDialog } from "@/components/instructor/lessons/lesson-form-dialog";
 import {
   useInstructorLessonsList,
@@ -146,6 +148,7 @@ interface LessonListProps {
 
 export function LessonList({ courseId }: LessonListProps) {
   const [creating, setCreating] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
   const [deletingLesson, setDeletingLesson] = useState<Lesson | null>(null);
 
@@ -182,9 +185,18 @@ export function LessonList({ courseId }: LessonListProps) {
           lại thứ tự.
         </CardDescription>
         <CardAction>
-          <Button size="sm" onClick={() => setCreating(true)}>
-            <Plus /> Thêm bài học
-          </Button>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setImporting(true)}
+            >
+              <FileArchive /> Import ZIP
+            </Button>
+            <Button size="sm" onClick={() => setCreating(true)}>
+              <Plus /> Thêm bài học
+            </Button>
+          </div>
         </CardAction>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
@@ -273,6 +285,12 @@ export function LessonList({ courseId }: LessonListProps) {
         <LessonFormDialog
           open={creating}
           onOpenChange={setCreating}
+          courseId={courseId}
+        />
+
+        <ImportLessonsDialog
+          open={importing}
+          onOpenChange={setImporting}
           courseId={courseId}
         />
 
