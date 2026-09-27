@@ -1,7 +1,8 @@
 "use client";
 
 import { Download, Upload } from "lucide-react";
-import { useRef, useState } from "react";
+import { useState } from "react";
+import { useDropzone, type FileRejection } from "react-dropzone";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -20,6 +21,27 @@ import { cn } from "@/lib/utils";
 
 const MAX_ZIP_SIZE = 1024 * 1024 * 1024;
 
+function getFileRejectionMessage(rejections: FileRejection[]): string {
+  const errors = rejections[0]?.errors ?? [];
+
+  if (
+    rejections.length > 1 ||
+    errors.some((error) => error.code === "too-many-files")
+  ) {
+    return "Chỉ được chọn 1 tệp .zip.";
+  }
+
+  if (errors.some((error) => error.code === "file-too-large")) {
+    return "Gói bài học không được vượt quá 1 GB.";
+  }
+
+  if (errors.some((error) => error.code === "file-invalid-type")) {
+    return "Chỉ hỗ trợ gói bài học có định dạng .zip.";
+  }
+
+  return "Không thể chọn tệp này. Vui lòng thử tệp khác.";
+}
+
 interface ImportLessonsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -31,11 +53,11 @@ export function ImportLessonsDialog({
   onOpenChange,
   courseId,
 }: ImportLessonsDialogProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [details, setDetails] = useState<string[]>([]);
   const [result, setResult] = useState<LessonImportResult | null>(null);
+  const [inputKey, setInputKey] = useState(0);
   const { importInstructorLessons, cancelImport, isPending, stage, progress } =
     useImportInstructorLessons();
 
@@ -44,7 +66,7 @@ export function ImportLessonsDialog({
     setError(null);
     setDetails([]);
     setResult(null);
-    if (inputRef.current) inputRef.current.value = "";
+    setInputKey((key) => key + 1);
   }
 
   function handleOpenChange(nextOpen: boolean) {
@@ -53,8 +75,7 @@ export function ImportLessonsDialog({
     onOpenChange(nextOpen);
   }
 
-  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const nextFile = event.target.files?.[0] ?? null;
+  function handleFileSelect(nextFile: File | null) {
     setError(null);
     setDetails([]);
     setResult(null);
@@ -74,6 +95,24 @@ export function ImportLessonsDialog({
     setFile(nextFile);
   }
 
+  const { getRootProps, getInputProps, isDragActive, isDragReject } =
+    useDropzone({
+      accept: {
+        "application/zip": [".zip"],
+      },
+      disabled: isPending,
+      maxFiles: 1,
+      maxSize: MAX_ZIP_SIZE,
+      multiple: false,
+      onDropAccepted: (files) => handleFileSelect(files[0] ?? null),
+      onDropRejected: (rejections) => {
+        setFile(null);
+        setResult(null);
+        setDetails([]);
+        setError(getFileRejectionMessage(rejections));
+      },
+    });
+
   async function handleImport() {
     if (!file) {
       setError("Hãy chọn một tệp .zip trước khi import.");
@@ -91,7 +130,7 @@ export function ImportLessonsDialog({
 
     setResult(importResult.data ?? null);
     setFile(null);
-    if (inputRef.current) inputRef.current.value = "";
+    setInputKey((key) => key + 1);
   }
 
   return (
@@ -139,24 +178,25 @@ export function ImportLessonsDialog({
             </AlertDescription>
           </Alert>
 
-          <div className="rounded-lg border border-dashed p-4">
-            <label className="flex cursor-pointer flex-col items-center gap-2 text-center">
-              <Upload className="size-6 text-muted-foreground" />
-              <span className="font-medium">
-                {file ? file.name : "Chọn tệp .zip để import"}
-              </span>
-              <span className="text-sm text-muted-foreground">
-                Tối đa 1 GB · Video MP4/WebM · Tài liệu PDF/DOCX/PPTX
-              </span>
-              <input
-                ref={inputRef}
-                className="sr-only"
-                type="file"
-                accept=".zip,application/zip"
-                onChange={handleFileChange}
-                disabled={isPending}
-              />
-            </label>
+          <div
+            {...getRootProps({
+              className: cn(
+                "flex cursor-pointer flex-col items-center gap-2 rounded-lg border border-dashed p-4 text-center outline-none transition-colors",
+                "focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
+                isDragActive && "border-primary bg-primary/5",
+                isDragReject && "border-destructive bg-destructive/5",
+                isPending && "cursor-not-allowed opacity-70",
+              ),
+            })}
+          >
+            <input key={inputKey} {...getInputProps()} />
+            <Upload className="size-6 text-muted-foreground" />
+            <span className="font-medium">
+              {file ? file.name : "Kéo thả tệp .zip hoặc bấm để chọn"}
+            </span>
+            <span className="text-sm text-muted-foreground">
+              Tối đa 1 GB · Video MP4/WebM · Tài liệu PDF/DOCX/PPTX
+            </span>
           </div>
 
           {isPending && (
