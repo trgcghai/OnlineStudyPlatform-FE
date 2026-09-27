@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, FileArchive, Upload } from "lucide-react";
+import { Download, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -15,6 +15,8 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { useImportInstructorLessons } from "@/hooks/useInstructorLessons";
 import type { LessonImportResult } from "@/services/api/lessons";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 const MAX_ZIP_SIZE = 1024 * 1024 * 1024;
 
@@ -105,8 +107,7 @@ export function ImportLessonsDialog({
 
         <div className="flex flex-col gap-4">
           <Alert>
-            <FileArchive className="size-4" />
-            <AlertTitle>Cấu trúc gói import</AlertTitle>
+            <AlertTitle>Hướng dẫn import</AlertTitle>
             <AlertDescription className="space-y-2">
               <p>
                 Đặt <strong>lessons.xlsx</strong> ở thư mục gốc; video trong
@@ -125,13 +126,16 @@ export function ImportLessonsDialog({
 ├─ videos/lesson-1.mp4
 └─ materials/lesson-1.pdf`}
               </pre>
-              <a
-                className={buttonVariants({ variant: "outline", size: "sm" })}
+              <Link
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "sm" }),
+                  "no-underline!",
+                )}
                 href="/templates/lesson-import-template.zip"
                 download
               >
                 <Download /> Tải mẫu ZIP
-              </a>
+              </Link>
             </AlertDescription>
           </Alert>
 

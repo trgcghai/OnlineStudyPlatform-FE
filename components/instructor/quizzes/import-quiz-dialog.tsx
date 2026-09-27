@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, FileSpreadsheet, Upload } from "lucide-react";
+import { Download, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -15,6 +15,8 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { useImportInstructorQuiz } from "@/hooks/useInstructorQuizzes";
 import type { QuizImportResult } from "@/services/api/quizzes";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 interface ImportQuizDialogProps {
   open: boolean;
@@ -98,21 +100,23 @@ export function ImportQuizDialog({
 
         <div className="flex flex-col gap-4">
           <Alert>
-            <FileSpreadsheet className="size-4" />
-            <AlertTitle>Mẫu Excel</AlertTitle>
+            <AlertTitle>Hướng dẫn import</AlertTitle>
             <AlertDescription className="space-y-2">
               <p>
                 Dùng hai sheet <strong>Quiz</strong> và{" "}
                 <strong>Questions</strong>. Questions hỗ trợ MCQ và ESSAY; đáp
                 án MCQ ghi bằng chữ cái, ví dụ A,C.
               </p>
-              <a
-                className={buttonVariants({ variant: "outline", size: "sm" })}
+              <Link
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "sm" }),
+                  "no-underline!",
+                )}
                 href="/templates/quiz-import-template.xlsx"
                 download
               >
                 <Download /> Tải mẫu Excel
-              </a>
+              </Link>
             </AlertDescription>
           </Alert>
 
