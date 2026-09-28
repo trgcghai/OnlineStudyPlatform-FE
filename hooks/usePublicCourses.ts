@@ -15,10 +15,11 @@ export function usePublishedCoursesList(filters: PublicCourseListFilters) {
   });
 }
 
-export function usePublishedCourseSuggestions(limit = 8) {
+export function usePublishedCourseSuggestions(limit = 8, enabled = true) {
   return useQuery({
     queryKey: publicCourseKeys.suggestion(limit),
     queryFn: () => listPublishedCourseSuggestions(limit),
+    enabled,
   });
 }
 

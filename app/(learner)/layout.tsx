@@ -5,6 +5,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { USER_ROLES } from "@/services/api/users";
 import {
+  Bell,
   BookOpen,
   CircleUserRound,
   CreditCard,
@@ -30,6 +31,13 @@ export default function LearnerLayout({
             >
               <CircleUserRound data-icon="inline-start" aria-hidden="true" />
               Tổng quan
+            </Link>
+            <Link
+              href="/learner/notifications"
+              className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+            >
+              <Bell data-icon="inline-start" aria-hidden="true" />
+              Thông báo
             </Link>
             <Link
               href="/learner/courses"

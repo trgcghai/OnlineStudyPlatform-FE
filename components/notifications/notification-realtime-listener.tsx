@@ -60,12 +60,7 @@ export function NotificationRealtimeListener() {
     function handleNotificationCreated(payload: unknown) {
       if (!isNotificationCreatedPayload(payload)) return;
 
-      void Promise.all([
-        queryClient.invalidateQueries({ queryKey: notificationKeys.lists() }),
-        queryClient.invalidateQueries({
-          queryKey: notificationKeys.unreadCount(),
-        }),
-      ]);
+      void queryClient.invalidateQueries({ queryKey: notificationKeys.all });
     }
 
     socket.on(NOTIFICATION_CREATED_EVENT, handleNotificationCreated);
