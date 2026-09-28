@@ -137,6 +137,11 @@ export const publicCourseKeys = {
     [...publicCourseKeys.all, "detail", courseId] as const,
 };
 
+export const recommendationKeys = {
+  all: ["recommendations"] as const,
+  mine: (limit: number) => [...recommendationKeys.all, "mine", limit] as const,
+};
+
 export const enrollmentKeys = {
   all: ["enrollments"] as const,
   mine: () => [...enrollmentKeys.all, "mine"] as const,

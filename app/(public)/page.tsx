@@ -4,16 +4,49 @@ import Link from "next/link";
 import { BookOpen, Sparkles } from "lucide-react";
 import { PublicCourseSection } from "@/components/courses/public-course-section";
 import { buttonVariants } from "@/components/ui/button";
+import { useMyCourseRecommendations } from "@/hooks/useRecommendations";
 import {
   useLatestPublishedCourses,
   usePublishedCourseSuggestions,
 } from "@/hooks/usePublicCourses";
+import {
+  selectAuthUser,
+  selectIsAuthenticated,
+} from "@/lib/features/authSlice";
+import { USER_ROLES } from "@/services/api/users";
+import { useSelector } from "react-redux";
 
 const SECTION_LIMIT = 8;
 
 export default function Home() {
-  const suggestionsQuery = usePublishedCourseSuggestions(SECTION_LIMIT);
+  const authUser = useSelector(selectAuthUser);
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const isLearner = isAuthenticated && authUser?.role === USER_ROLES.LEARNER;
+  const suggestionsQuery = usePublishedCourseSuggestions(
+    SECTION_LIMIT,
+    !isLearner,
+  );
+  const recommendationsQuery = useMyCourseRecommendations(
+    SECTION_LIMIT,
+    isLearner,
+  );
   const latestQuery = useLatestPublishedCourses(SECTION_LIMIT);
+  const recommendationSection = isLearner
+    ? {
+        title: "Gợi ý cho bạn",
+        description:
+          "Các khóa học phù hợp với lịch sử học tập và mức độ tương tác của bạn.",
+        courses: recommendationsQuery.data,
+        isLoading: recommendationsQuery.isLoading,
+        isError: recommendationsQuery.isError,
+      }
+    : {
+        title: "Gợi ý khóa học",
+        description: "Một số khóa học đã xuất bản để bạn bắt đầu khám phá.",
+        courses: suggestionsQuery.data,
+        isLoading: suggestionsQuery.isLoading,
+        isError: suggestionsQuery.isError,
+      };
 
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-12 px-6 py-10">
@@ -51,12 +84,14 @@ export default function Home() {
         </div>
       </section>
 
-      <PublicCourseSection
-        title="Gợi ý khóa học"
-        description="Một số khóa học đã xuất bản để bạn bắt đầu khám phá."
-        courses={suggestionsQuery.data}
-        isLoading={suggestionsQuery.isLoading}
-      />
+      {!recommendationSection.isError ? (
+        <PublicCourseSection
+          title={recommendationSection.title}
+          description={recommendationSection.description}
+          courses={recommendationSection.courses}
+          isLoading={recommendationSection.isLoading}
+        />
+      ) : null}
       <PublicCourseSection
         title="Khóa học mới cập nhật"
         description="Các khóa học có nội dung được cập nhật gần đây."
