@@ -28,6 +28,21 @@ export function useNotificationsList() {
   });
 }
 
+export function useNotificationsPage({
+  page,
+  limit = NOTIFICATION_PAGE_SIZE,
+}: {
+  page: number;
+  limit?: number;
+}) {
+  const filters = { page, limit };
+
+  return useQuery({
+    queryKey: notificationKeys.page(filters),
+    queryFn: () => listMyNotifications(filters),
+  });
+}
+
 export function useUnreadNotificationCount() {
   return useQuery({
     queryKey: notificationKeys.unreadCount(),
@@ -40,12 +55,7 @@ export function useMarkNotificationSeen() {
   const mutation = useMutation<NotificationItem, unknown, string>({
     mutationFn: markNotificationSeen,
     onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: notificationKeys.lists() }),
-        queryClient.invalidateQueries({
-          queryKey: notificationKeys.unreadCount(),
-        }),
-      ]);
+      await queryClient.invalidateQueries({ queryKey: notificationKeys.all });
     },
   });
 
@@ -61,12 +71,7 @@ export function useMarkAllNotificationsSeen() {
   const mutation = useMutation<MarkAllNotificationsSeenResult>({
     mutationFn: markAllNotificationsSeen,
     onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: notificationKeys.lists() }),
-        queryClient.invalidateQueries({
-          queryKey: notificationKeys.unreadCount(),
-        }),
-      ]);
+      await queryClient.invalidateQueries({ queryKey: notificationKeys.all });
     },
     onError: (error) => {
       console.error("Error marking all notifications as seen:", error);

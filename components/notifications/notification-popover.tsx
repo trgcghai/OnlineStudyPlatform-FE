@@ -26,6 +26,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { getSafeNotificationActionUrl } from "./notification-action-url";
 
 function NotificationRow({
   notification,
@@ -116,8 +117,9 @@ export function NotificationPopover() {
       await markSeen(notification.id);
     }
 
-    if (notification.actionUrl) {
-      router.push(notification.actionUrl);
+    const actionUrl = getSafeNotificationActionUrl(notification.actionUrl);
+    if (actionUrl) {
+      router.push(actionUrl);
     }
   }
 
@@ -161,18 +163,20 @@ export function NotificationPopover() {
 
             {unreadCount > 0 ? (
               <Tooltip>
-                <TooltipTrigger>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    className="shrink-0 px-2 text-xs"
-                    disabled={isMarkingAllSeen}
-                    onClick={() => void handleMarkAllSeen()}
-                  >
-                    <CheckCheck className="size-4" aria-hidden="true" />
-                  </Button>
-                </TooltipTrigger>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      className="shrink-0 px-2 text-xs"
+                      disabled={isMarkingAllSeen}
+                      onClick={() => void handleMarkAllSeen()}
+                    >
+                      <CheckCheck className="size-4" aria-hidden="true" />
+                    </Button>
+                  }
+                />
                 <TooltipContent>
                   <p>Đánh dấu tất cả đã xem</p>
                 </TooltipContent>

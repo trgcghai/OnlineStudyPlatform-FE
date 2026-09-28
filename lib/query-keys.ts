@@ -2,6 +2,7 @@ import type { CartFilters } from "@/services/api/cart";
 import type { CourseListFilters } from "@/services/api/courses";
 import type { CourseEnrollmentListFilters } from "@/services/api/enrollments";
 import type { EssayGradingSubmissionListFilters } from "@/services/api/essay-grading";
+import type { NotificationListFilters } from "@/services/api/notifications";
 import type {
   AdminPaymentTransactionFilters,
   AdminProviderEventFilters,
@@ -122,6 +123,8 @@ export const instructorEssayGradingKeys = {
 export const notificationKeys = {
   all: ["notifications"] as const,
   lists: () => [...notificationKeys.all, "list"] as const,
+  page: (filters: NotificationListFilters) =>
+    [...notificationKeys.all, "page", filters] as const,
   unreadCount: () => [...notificationKeys.all, "unread-count"] as const,
 };
 
