@@ -8,6 +8,7 @@ import {
   enrollmentKeys,
   learnerDashboardKeys,
   learningKeys,
+  recommendationKeys,
 } from "@/lib/query-keys";
 import {
   getCourseChatSession,
@@ -108,6 +109,7 @@ export function useSendLessonWatchEvent(
         queryClient.invalidateQueries({
           queryKey: learnerDashboardKeys.detail(),
         }),
+        queryClient.invalidateQueries({ queryKey: recommendationKeys.all }),
       ]);
     },
     onError: async (error) => {

@@ -9,6 +9,7 @@ import {
   courseEnrollmentKeys,
   enrollmentKeys,
   publicCourseKeys,
+  recommendationKeys,
 } from "@/lib/query-keys";
 import {
   enrollInCourse,
@@ -95,6 +96,7 @@ export function useEnrollInCourse() {
         queryClient.invalidateQueries({
           queryKey: publicCourseKeys.detail(enrollment.courseId),
         }),
+        queryClient.invalidateQueries({ queryKey: recommendationKeys.all }),
       ]);
       toast.add({ title: "Đã đăng ký khóa học.", type: "success" });
     },

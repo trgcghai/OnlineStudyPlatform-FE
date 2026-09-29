@@ -8,6 +8,7 @@ import {
   CreditCardIcon,
   DashboardSquare01Icon,
   Money01Icon,
+  Notification01Icon,
   Presentation,
 } from "@hugeicons/core-free-icons";
 import Link from "next/link";
@@ -32,6 +33,11 @@ const adminNavItems = [
     title: "Tổng quan",
     href: "/instructor",
     icon: DashboardSquare01Icon,
+  },
+  {
+    title: "Thông báo",
+    href: "/instructor/notifications",
+    icon: Notification01Icon,
   },
   {
     title: "Khóa học",

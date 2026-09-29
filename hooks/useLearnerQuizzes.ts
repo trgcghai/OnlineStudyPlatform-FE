@@ -4,6 +4,7 @@ import {
   learnerDashboardKeys,
   learnerQuizKeys,
   learningKeys,
+  recommendationKeys,
 } from "@/lib/query-keys";
 import {
   getLearnerQuiz,
@@ -82,6 +83,7 @@ export function useSubmitQuizAttempt(
         queryClient.invalidateQueries({
           queryKey: learnerQuizKeys.attempts(courseId, lessonId, quizId),
         }),
+        queryClient.invalidateQueries({ queryKey: recommendationKeys.all }),
       ]);
     },
   });

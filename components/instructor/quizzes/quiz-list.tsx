@@ -55,16 +55,16 @@ export function QuizList({ courseId, lessonId, onBuild }: QuizListProps) {
           kiểm tra.
         </CardDescription>
         {!quiz && (
-          <CardAction>
-            <Button size="sm" onClick={() => setCreating(true)}>
-              <Plus /> Tạo bài kiểm tra
-            </Button>
+          <CardAction className="flex flex-wrap items-center gap-2">
             <Button
               size="sm"
               variant="outline"
               onClick={() => setImporting(true)}
             >
               <FileSpreadsheet /> Import Excel
+            </Button>
+            <Button size="sm" onClick={() => setCreating(true)}>
+              <Plus /> Tạo bài kiểm tra
             </Button>
           </CardAction>
         )}
@@ -109,13 +109,18 @@ export function QuizList({ courseId, lessonId, onBuild }: QuizListProps) {
             <p className="text-sm text-muted-foreground">
               Tạo bài kiểm tra đầu tiên để kiểm tra kiến thức của học viên.
             </p>
-            <Button
-              size="sm"
-              className="mt-2"
-              onClick={() => setCreating(true)}
-            >
-              <Plus /> Tạo bài kiểm tra
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setImporting(true)}
+              >
+                <FileSpreadsheet /> Import Excel
+              </Button>
+              <Button size="sm" onClick={() => setCreating(true)}>
+                <Plus /> Tạo bài kiểm tra
+              </Button>
+            </div>
           </div>
         )}
 
