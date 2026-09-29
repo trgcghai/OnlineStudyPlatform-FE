@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import {
   AlertCircle,
@@ -14,7 +15,7 @@ import {
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -24,14 +25,104 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LearnerQuizPanel } from "@/app/(learning)/learner/courses/[courseId]/learn/learner-quiz-panel";
-import { mapLearningError } from "@/hooks/useLearning";
+import {
+  mapLearningError,
+  useLearningLessonSummary,
+} from "@/hooks/useLearning";
 import { cn } from "@/lib/utils";
 import type {
   LearningCourse,
   LearningLesson,
   LearningLessonSummary,
 } from "@/services/api/learning";
+
+type SummaryBlock =
+  | { type: "heading"; content: string }
+  | { type: "paragraph"; content: string }
+  | { type: "list"; items: string[] };
+
+function parseSummaryMarkdown(content: string): SummaryBlock[] {
+  const blocks: SummaryBlock[] = [];
+  let paragraphLines: string[] = [];
+  let listItems: string[] = [];
+
+  const flushParagraph = () => {
+    if (paragraphLines.length === 0) return;
+    blocks.push({ type: "paragraph", content: paragraphLines.join(" ") });
+    paragraphLines = [];
+  };
+  const flushList = () => {
+    if (listItems.length === 0) return;
+    blocks.push({ type: "list", items: listItems });
+    listItems = [];
+  };
+
+  for (const rawLine of content.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line) {
+      flushParagraph();
+      flushList();
+      continue;
+    }
+    if (line.startsWith("## ")) {
+      flushParagraph();
+      flushList();
+      blocks.push({ type: "heading", content: line.slice(3).trim() });
+      continue;
+    }
+    if (line.startsWith("- ")) {
+      flushParagraph();
+      listItems.push(line.slice(2).trim());
+      continue;
+    }
+    flushList();
+    paragraphLines.push(line);
+  }
+
+  flushParagraph();
+  flushList();
+  return blocks;
+}
+
+function SummaryDocument({ content }: { content: string }) {
+  const blocks = parseSummaryMarkdown(content);
+
+  return (
+    <article className="space-y-4 rounded-xl border bg-muted/20 p-5 text-foreground sm:p-6">
+      {blocks.map((block, index) => {
+        if (block.type === "heading") {
+          return (
+            <h3
+              key={`heading-${index}`}
+              className="pt-1 text-base font-semibold tracking-tight first:pt-0"
+            >
+              {block.content}
+            </h3>
+          );
+        }
+        if (block.type === "list") {
+          return (
+            <ul
+              key={`list-${index}`}
+              className="list-disc space-y-2 pl-5 text-sm leading-7 marker:text-primary"
+            >
+              {block.items.map((item, itemIndex) => (
+                <li key={`${index}-${itemIndex}`}>{item}</li>
+              ))}
+            </ul>
+          );
+        }
+        return (
+          <p key={`paragraph-${index}`} className="text-sm leading-7">
+            {block.content}
+          </p>
+        );
+      })}
+    </article>
+  );
+}
 
 export function formatProgress(progress: string): string {
   const value = Number(progress);
@@ -361,6 +452,91 @@ export function LessonVideo({
   );
 }
 
+function LessonSummaryPanel({
+  courseId,
+  enabled,
+  lessonId,
+}: {
+  courseId: string;
+  enabled: boolean;
+  lessonId: string;
+}) {
+  const summaryQuery = useLearningLessonSummary(courseId, lessonId, enabled);
+
+  if (!enabled || summaryQuery.isLoading) {
+    return (
+      <div
+        className="flex flex-col gap-3"
+        aria-label="Đang tải tóm tắt bài giảng"
+      >
+        <Skeleton className="h-5 w-2/5" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-5/6" />
+        <Skeleton className="h-4 w-3/4" />
+      </div>
+    );
+  }
+
+  if (summaryQuery.isError) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle aria-hidden="true" />
+        <AlertTitle>Không tải được tóm tắt</AlertTitle>
+        <AlertDescription>
+          <div className="flex flex-col items-start gap-3">
+            <p>{mapLearningError(summaryQuery.error)}</p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => void summaryQuery.refetch()}
+            >
+              Thử lại
+            </Button>
+          </div>
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  const summary = summaryQuery.data;
+  if (
+    !summary ||
+    summary.status === "pending" ||
+    summary.status === "processing"
+  ) {
+    return (
+      <Alert>
+        <BookOpen aria-hidden="true" />
+        <AlertTitle>Đang tạo tóm tắt bài giảng</AlertTitle>
+        <AlertDescription>
+          Nội dung tóm tắt đang được AI xử lý, vui lòng quay lại sau. Nội dung
+          sẽ tự động cập nhật tại đây.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (summary.status === "failed") {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle aria-hidden="true" />
+        <AlertTitle>Chưa thể tạo tóm tắt</AlertTitle>
+        <AlertDescription>
+          Tóm tắt bài giảng tạm thời chưa khả dụng. Bạn vẫn có thể tiếp tục xem
+          video và quay lại sau.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  return (
+    <SummaryDocument
+      content={summary.summaryText || "Tóm tắt bài giảng chưa có nội dung."}
+    />
+  );
+}
+
 export function LessonContentCard({
   courseId,
   hasQuiz,
@@ -388,6 +564,8 @@ export function LessonContentCard({
   onTimeUpdate: () => void;
   onVolumeChange: () => void;
 }) {
+  const [activeTab, setActiveTab] = useState("content");
+
   return (
     <main className="flex flex-col gap-6">
       {isLoading ? (
@@ -421,16 +599,31 @@ export function LessonContentCard({
               </p>
             </div>
           </div>
-          <MaterialPanel materialUrl={lesson.materialUrl} />
-          {hasQuiz && (
-            <section className="flex flex-col gap-4">
-              <h2 className="flex items-center gap-2 text-lg font-semibold">
-                <FileQuestion className="size-5" aria-hidden="true" />
-                Bài kiểm tra
-              </h2>
-              <LearnerQuizPanel courseId={courseId} lessonId={lesson.id} />
-            </section>
-          )}
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList variant="line" className="w-full justify-start">
+              <TabsTrigger value="content">Nội dung bài học</TabsTrigger>
+              <TabsTrigger value="summary">Tóm tắt bài giảng</TabsTrigger>
+            </TabsList>
+            <TabsContent value="content" className="flex flex-col gap-6 pt-4">
+              <MaterialPanel materialUrl={lesson.materialUrl} />
+              {hasQuiz && (
+                <section className="flex flex-col gap-4">
+                  <h2 className="flex items-center gap-2 text-lg font-semibold">
+                    <FileQuestion className="size-5" aria-hidden="true" />
+                    Bài kiểm tra
+                  </h2>
+                  <LearnerQuizPanel courseId={courseId} lessonId={lesson.id} />
+                </section>
+              )}
+            </TabsContent>
+            <TabsContent value="summary" className="pt-4">
+              <LessonSummaryPanel
+                courseId={courseId}
+                enabled={activeTab === "summary"}
+                lessonId={lesson.id}
+              />
+            </TabsContent>
+          </Tabs>
         </>
       ) : (
         <p className="text-sm text-muted-foreground">

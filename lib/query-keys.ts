@@ -159,6 +159,8 @@ export const learningKeys = {
     [...learningKeys.all, "course", courseId] as const,
   lesson: (courseId: string, lessonId: string) =>
     [...learningKeys.all, "lesson", courseId, lessonId] as const,
+  lessonSummary: (courseId: string, lessonId: string) =>
+    [...learningKeys.all, "lesson-summary", courseId, lessonId] as const,
   chat: (courseId: string) => [...learningKeys.all, "chat", courseId] as const,
 };
 

@@ -41,6 +41,15 @@ export interface LearningLesson extends LearningLessonSummary {
   materialUrl: string | null;
 }
 
+export type LessonSummaryStatus = "pending" | "processing" | "ready" | "failed";
+
+export interface LearningLessonAiSummary {
+  lessonId: string;
+  status: LessonSummaryStatus;
+  summaryText: string | null;
+  updatedAt: string | null;
+}
+
 export type WatchEventType = "opened" | "heartbeat" | "paused" | "completed";
 
 export interface CreateWatchEventPayload {
@@ -112,6 +121,17 @@ export async function getLearningLesson(
   const { data } = await axiosClient.get<ApiSuccessResponse<LearningLesson>>(
     `/learning/courses/${courseId}/lessons/${lessonId}`,
   );
+
+  return data.data;
+}
+
+export async function getLearningLessonSummary(
+  courseId: string,
+  lessonId: string,
+): Promise<LearningLessonAiSummary> {
+  const { data } = await axiosClient.get<
+    ApiSuccessResponse<LearningLessonAiSummary>
+  >(`/learning/courses/${courseId}/lessons/${lessonId}/summary`);
 
   return data.data;
 }
