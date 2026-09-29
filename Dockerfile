@@ -16,8 +16,10 @@ FROM node:22-alpine AS build
 WORKDIR /app
 RUN corepack enable
 ARG NEXT_PUBLIC_ENV=production
+ARG NEXT_PUBLIC_API_URL
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NEXT_PUBLIC_ENV=$NEXT_PUBLIC_ENV
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN pnpm build

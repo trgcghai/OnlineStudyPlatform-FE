@@ -14,6 +14,7 @@ import {
   getCourseChatSession,
   getLearningCourse,
   getLearningLesson,
+  getLearningLessonSummary,
   sendCourseChatMessage,
   sendLessonWatchEvent,
   type CreateWatchEventPayload,
@@ -59,6 +60,24 @@ export function useLearningLesson(courseId: string, lessonId: string | null) {
     queryKey: learningKeys.lesson(courseId, lessonId ?? ""),
     queryFn: () => getLearningLesson(courseId, lessonId ?? ""),
     enabled: courseId.trim().length > 0 && !!lessonId?.trim(),
+  });
+}
+
+export function useLearningLessonSummary(
+  courseId: string,
+  lessonId: string,
+  enabled: boolean,
+) {
+  return useQuery({
+    queryKey: learningKeys.lessonSummary(courseId, lessonId),
+    queryFn: () => getLearningLessonSummary(courseId, lessonId),
+    enabled:
+      enabled && courseId.trim().length > 0 && lessonId.trim().length > 0,
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      return status === "pending" || status === "processing" ? 5_000 : false;
+    },
+    refetchIntervalInBackground: false,
   });
 }
 
