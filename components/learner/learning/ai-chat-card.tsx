@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { FormEvent, useState } from "react";
 import { Bot, MessageCircle, Send, UserRound, X } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -18,6 +19,10 @@ import type { AiChatMessage } from "@/services/api/learning";
 interface AiChatCardProps {
   courseId: string;
 }
+
+const AiChatMarkdown = dynamic(() =>
+  import("./ai-chat-markdown").then((module) => module.AiChatMarkdown),
+);
 
 function ChatBubble({ message }: { message: AiChatMessage }) {
   const isAssistant = message.role === "assistant";
@@ -42,7 +47,11 @@ function ChatBubble({ message }: { message: AiChatMessage }) {
             : "bg-primary text-primary-foreground",
         )}
       >
-        <p className="whitespace-pre-wrap">{message.content}</p>
+        {isAssistant ? (
+          <AiChatMarkdown content={message.content} />
+        ) : (
+          <p className="whitespace-pre-wrap break-words">{message.content}</p>
+        )}
         {isAssistant && message.citations.length > 0 && (
           <div className="mt-3 space-y-2 border-t border-border/70 pt-3">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
