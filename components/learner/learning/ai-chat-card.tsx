@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { FormEvent, useState } from "react";
 import { Bot, MessageCircle, Send, UserRound, X } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -18,6 +19,10 @@ import type { AiChatMessage } from "@/services/api/learning";
 interface AiChatCardProps {
   courseId: string;
 }
+
+const AiChatMarkdown = dynamic(() =>
+  import("./ai-chat-markdown").then((module) => module.AiChatMarkdown),
+);
 
 function ChatBubble({ message }: { message: AiChatMessage }) {
   const isAssistant = message.role === "assistant";
@@ -42,7 +47,11 @@ function ChatBubble({ message }: { message: AiChatMessage }) {
             : "bg-primary text-primary-foreground",
         )}
       >
-        <p className="whitespace-pre-wrap">{message.content}</p>
+        {isAssistant ? (
+          <AiChatMarkdown content={message.content} />
+        ) : (
+          <p className="whitespace-pre-wrap break-words">{message.content}</p>
+        )}
         {isAssistant && message.citations.length > 0 && (
           <div className="mt-3 space-y-2 border-t border-border/70 pt-3">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -95,7 +104,12 @@ export function AiChatCard({ courseId }: AiChatCardProps) {
   return (
     <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">
       {isOpen && (
-        <Card className="max-h-[calc(100dvh-7rem)] w-[min(26rem,calc(100vw-2rem))] overflow-hidden border-primary/20 bg-gradient-to-br from-card via-card to-primary/5 shadow-2xl">
+        <Card
+          id="course-ai-chat"
+          role="region"
+          aria-label="Trợ lý AI khóa học"
+          className="max-h-[calc(100dvh-7rem)] w-[min(26rem,calc(100vw-2rem))] overflow-hidden border-primary/20 bg-gradient-to-br from-card via-card to-primary/5 shadow-2xl"
+        >
           <CardHeader className="space-y-3 border-b bg-background/80 backdrop-blur">
             <div className="flex items-start justify-between gap-3">
               <div className="space-y-2">
@@ -141,7 +155,12 @@ export function AiChatCard({ courseId }: AiChatCardProps) {
               </Alert>
             )}
 
-            <div className="max-h-[45dvh] space-y-4 overflow-y-auto rounded-2xl border bg-background/70 p-4">
+            <div
+              role="log"
+              aria-live="polite"
+              aria-relevant="additions"
+              className="max-h-[45dvh] space-y-4 overflow-y-auto rounded-2xl border bg-background/70 p-4"
+            >
               {chatQuery.isLoading ? (
                 <p className="text-sm text-muted-foreground">
                   Đang tải lịch sử trò chuyện...
@@ -165,7 +184,11 @@ export function AiChatCard({ courseId }: AiChatCardProps) {
             )}
 
             <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
+              <label htmlFor="course-ai-chat-question" className="sr-only">
+                Câu hỏi dành cho trợ lý AI khóa học
+              </label>
               <Textarea
+                id="course-ai-chat-question"
                 value={question}
                 onChange={(event) => setQuestion(event.target.value)}
                 placeholder="Ví dụ: Bài này giải thích dependency injection như thế nào?"
@@ -187,6 +210,7 @@ export function AiChatCard({ courseId }: AiChatCardProps) {
         size="lg"
         onClick={() => setIsOpen((open) => !open)}
         aria-expanded={isOpen}
+        aria-controls="course-ai-chat"
         aria-label={isOpen ? "Thu nhỏ chatbot AI" : "Mở chatbot AI"}
         className="h-14 rounded-full px-5 shadow-2xl shadow-primary/25"
       >
