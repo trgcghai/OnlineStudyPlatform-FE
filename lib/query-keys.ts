@@ -168,6 +168,11 @@ export const riskKeys = {
     [...riskKeys.course(courseId), "learner", learnerId] as const,
 };
 
+export const riskModelKeys = {
+  all: ["risk-model"] as const,
+  active: () => [...riskModelKeys.all, "active"] as const,
+};
+
 export const learnerDashboardKeys = {
   all: ["learner-dashboard"] as const,
   detail: () => [...learnerDashboardKeys.all, "detail"] as const,

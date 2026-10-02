@@ -63,6 +63,11 @@ const adminNavItems = [
     href: "/admin/payment-config",
     icon: BoltIcon,
   },
+  {
+    title: "Risk Model",
+    href: "/admin/risk-model",
+    icon: BoltIcon,
+  },
 ];
 
 export function AdminSidebar({
