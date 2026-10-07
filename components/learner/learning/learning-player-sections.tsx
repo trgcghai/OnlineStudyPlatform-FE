@@ -27,6 +27,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LearnerQuizPanel } from "@/app/(learning)/learner/courses/[courseId]/learn/learner-quiz-panel";
+import { LessonCompletionButton } from "./lesson-completion-button";
 import {
   mapLearningError,
   useLearningLessonSummary,
@@ -235,6 +236,7 @@ function LessonTree({
             key={lesson.id}
             type="button"
             disabled={!lesson.isAccessible}
+            aria-current={isActive ? "true" : undefined}
             onClick={() => onSelectLesson(lesson)}
             className={cn(
               "flex w-full items-start gap-3 rounded-2xl border p-3 text-left transition-colors",
@@ -246,11 +248,19 @@ function LessonTree({
             )}
           >
             <Icon
-              className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+              className={cn(
+                "mt-0.5 size-4 shrink-0",
+                lesson.isCompleted ? "text-success" : "text-muted-foreground",
+              )}
               aria-hidden="true"
             />
             <span className="min-w-0 flex-1">
               <span className="block text-sm font-medium">{lesson.title}</span>
+              {lesson.isCompleted && (
+                <span className="mt-1 block text-xs text-success">
+                  Đã hoàn thành
+                </span>
+              )}
               {lesson.blockedReason && (
                 <span className="mt-1 block text-xs text-muted-foreground">
                   {lesson.blockedReason}
@@ -539,6 +549,7 @@ function LessonSummaryPanel({
 
 export function LessonContentCard({
   courseId,
+  isSavingWatchProgress,
   hasQuiz,
   isError,
   isLoading,
@@ -552,6 +563,7 @@ export function LessonContentCard({
   onVolumeChange,
 }: {
   courseId: string;
+  isSavingWatchProgress: boolean;
   hasQuiz: boolean;
   isError: boolean;
   isLoading: boolean;
@@ -599,6 +611,12 @@ export function LessonContentCard({
               </p>
             </div>
           </div>
+          <LessonCompletionButton
+            key={lesson.id}
+            courseId={courseId}
+            lesson={lesson}
+            isSavingWatchProgress={isSavingWatchProgress}
+          />
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList variant="line" className="w-full justify-start">
               <TabsTrigger value="content">Nội dung bài học</TabsTrigger>

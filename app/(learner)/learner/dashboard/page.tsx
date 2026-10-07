@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLearnerDashboard } from "@/hooks/useLearnerDashboard";
+import { CertificatesSection } from "@/components/learner/certificates-section";
 import type {
   LearnerDashboardCourse,
   LearnerDashboardRecentActivity,
@@ -283,6 +284,12 @@ export default function LearnerDashboardPage() {
           <CourseDashboardCard key={course.enrollmentId} course={course} />
         ))}
       </section>
+
+      <CertificatesSection
+        completedCourseIds={dashboard.courses
+          .filter((course) => course.status === "completed")
+          .map((course) => course.courseId)}
+      />
 
       <section className="space-y-4">
         <h2 className="text-xl font-semibold tracking-tight">

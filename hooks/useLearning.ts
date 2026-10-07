@@ -5,12 +5,14 @@ import {
   NETWORK_ERROR_MESSAGE,
 } from "@/constants/constants";
 import {
+  certificateKeys,
   enrollmentKeys,
   learnerDashboardKeys,
   learningKeys,
   recommendationKeys,
 } from "@/lib/query-keys";
 import {
+  completeLearningLesson,
   getCourseChatSession,
   getLearningCourse,
   getLearningLesson,
@@ -18,6 +20,8 @@ import {
   sendCourseChatMessage,
   sendLessonWatchEvent,
   type CreateWatchEventPayload,
+  type LearningCourse,
+  type LearningLesson,
 } from "@/services/api/learning";
 import { isApiErrorResponse } from "@/services/axios";
 
@@ -122,6 +126,64 @@ export function useSendLessonWatchEvent(
         queryClient.invalidateQueries({
           queryKey: learningKeys.lesson(courseId, lessonId),
         }),
+      ]);
+    },
+  });
+}
+
+export function useCompleteLearningLesson(courseId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (lessonId: string) =>
+      completeLearningLesson(courseId, lessonId),
+    onSuccess: async (data, lessonId) => {
+      await Promise.all([
+        queryClient.cancelQueries({ queryKey: learningKeys.course(courseId) }),
+        queryClient.cancelQueries({
+          queryKey: learningKeys.lesson(courseId, lessonId),
+        }),
+      ]);
+
+      queryClient.setQueryData<LearningCourse>(
+        learningKeys.course(courseId),
+        (current) =>
+          current
+            ? {
+                ...current,
+                enrollment: data.enrollment,
+                lessons: current.lessons.map((lesson) =>
+                  lesson.id === lessonId
+                    ? {
+                        ...lesson,
+                        isCompleted: data.lessonProgress.isLessonComplete,
+                      }
+                    : lesson,
+                ),
+              }
+            : current,
+      );
+      queryClient.setQueryData<LearningLesson>(
+        learningKeys.lesson(courseId, lessonId),
+        (current) =>
+          current
+            ? { ...current, isCompleted: data.lessonProgress.isLessonComplete }
+            : current,
+      );
+
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: learningKeys.course(courseId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: learningKeys.lesson(courseId, lessonId),
+        }),
+        queryClient.invalidateQueries({ queryKey: enrollmentKeys.mine() }),
+        queryClient.invalidateQueries({
+          queryKey: learnerDashboardKeys.detail(),
+        }),
+        queryClient.invalidateQueries({ queryKey: recommendationKeys.all }),
+        queryClient.invalidateQueries({ queryKey: certificateKeys.all }),
       ]);
     },
   });
