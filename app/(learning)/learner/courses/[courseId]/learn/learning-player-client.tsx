@@ -123,6 +123,7 @@ export function LearningPlayerClient({ courseId }: LearningPlayerClientProps) {
           <div className="flex w-full flex-col gap-6 px-4 py-6 sm:px-6 lg:py-8">
             <LessonContentCard
               courseId={courseId}
+              isSavingWatchProgress={watchEventMutation.isPending}
               hasQuiz={hasQuiz}
               isError={lessonQuery.isError}
               isLoading={lessonQuery.isLoading}

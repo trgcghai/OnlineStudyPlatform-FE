@@ -148,6 +148,17 @@ export async function sendLessonWatchEvent(
   return data.data;
 }
 
+export async function completeLearningLesson(
+  courseId: string,
+  lessonId: string,
+): Promise<LearningWatchEventResponse> {
+  const { data } = await axiosClient.post<
+    ApiSuccessResponse<LearningWatchEventResponse>
+  >(`/learning/courses/${courseId}/lessons/${lessonId}/complete`);
+
+  return data.data;
+}
+
 export async function getCourseChatSession(
   courseId: string,
 ): Promise<AiChatSession> {
