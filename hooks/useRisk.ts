@@ -26,6 +26,9 @@ export function mapRiskError(error: unknown): string {
     return "Bạn không có quyền xem phân tích rủi ro cho khóa học này.";
   }
   if (status === 404) return "Không tìm thấy dữ liệu rủi ro cho khóa học này.";
+  if (status === 503) {
+    return "Có vấn đề với máy chủ phân tích rủi ro. Vui lòng thử lại sau.";
+  }
 
   return data.error.message || GENERIC_ERROR_MESSAGE;
 }

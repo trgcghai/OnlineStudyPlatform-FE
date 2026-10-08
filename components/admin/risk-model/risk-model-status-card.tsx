@@ -74,7 +74,7 @@ export function RiskModelStatusCard({ model }: RiskModelStatusCardProps) {
               Chưa có metric.
             </p>
           ) : (
-            <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
               {metrics.map(([key, value]) => (
                 <div key={key} className="rounded-xl bg-muted/50 p-3">
                   <p className="text-sm text-muted-foreground">
