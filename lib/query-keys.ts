@@ -13,6 +13,7 @@ import type {
   WithdrawRequestFilters,
 } from "@/services/api/payment";
 import type { PublicCourseListFilters } from "@/services/api/public-courses";
+import type { RiskLearnerFilters } from "@/services/api/risk";
 import type { AdminUserFilters } from "@/services/api/users";
 
 export const authKeys = {
@@ -154,6 +155,22 @@ export const courseEnrollmentKeys = {
   all: ["course-enrollments"] as const,
   list: (courseId: string, filters: CourseEnrollmentListFilters) =>
     [...courseEnrollmentKeys.all, "list", courseId, filters] as const,
+};
+
+export const riskKeys = {
+  all: ["risk"] as const,
+  course: (courseId: string) => [...riskKeys.all, "course", courseId] as const,
+  summary: (courseId: string) =>
+    [...riskKeys.course(courseId), "summary"] as const,
+  learners: (courseId: string, filters: RiskLearnerFilters) =>
+    [...riskKeys.course(courseId), "learners", filters] as const,
+  learnerDetail: (courseId: string, learnerId: string) =>
+    [...riskKeys.course(courseId), "learner", learnerId] as const,
+};
+
+export const riskModelKeys = {
+  all: ["risk-model"] as const,
+  active: () => [...riskModelKeys.all, "active"] as const,
 };
 
 export const learnerDashboardKeys = {

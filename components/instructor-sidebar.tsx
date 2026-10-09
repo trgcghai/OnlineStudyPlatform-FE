@@ -45,6 +45,11 @@ const adminNavItems = [
     icon: Presentation,
   },
   {
+    title: "Learning Risk",
+    href: "/instructor/risk",
+    icon: DashboardSquare01Icon,
+  },
+  {
     title: "Chấm tự luận",
     href: "/instructor/essay-grading",
     icon: BookEditIcon,
