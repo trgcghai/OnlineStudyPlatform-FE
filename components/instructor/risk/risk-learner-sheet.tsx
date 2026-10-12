@@ -22,7 +22,7 @@ import {
   RISK_BAND_BADGE_VARIANTS,
   RISK_BAND_LABELS,
 } from "./risk-formatters";
-import { SmartReminderPlaceholder } from "./smart-reminder-placeholder";
+import { SmartReminderAction } from "./smart-reminder-action";
 
 interface RiskLearnerSheetProps {
   learner: RiskScore | null;
@@ -96,7 +96,7 @@ export function RiskLearnerSheet({
               <RiskFeatureTable features={latest.features} compact />
             </section>
 
-            <SmartReminderPlaceholder />
+            <SmartReminderAction score={latest} />
 
             <Button
               nativeButton={false}

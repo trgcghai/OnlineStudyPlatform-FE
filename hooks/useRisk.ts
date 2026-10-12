@@ -5,14 +5,16 @@ import {
   GENERIC_ERROR_MESSAGE,
   NETWORK_ERROR_MESSAGE,
 } from "@/constants/constants";
-import { riskKeys } from "@/lib/query-keys";
+import { notificationKeys, riskKeys } from "@/lib/query-keys";
 import {
   getRiskLearnerDetail,
   getRiskSummary,
   listRiskLearners,
   recomputeCourseRisk,
+  sendSmartReminder,
   type RiskLearnerFilters,
   type RiskRecomputeResult,
+  type RiskReminderResult,
 } from "@/services/api/risk";
 import { isApiErrorResponse } from "@/services/axios";
 
@@ -24,6 +26,9 @@ export function mapRiskError(error: unknown): string {
 
   if (status === 403) {
     return "Bạn không có quyền xem phân tích rủi ro cho khóa học này.";
+  }
+  if (status === 400) {
+    return "Chỉ có thể gửi Smart Reminder cho học viên đang ở mức rủi ro cao.";
   }
   if (status === 404) return "Không tìm thấy dữ liệu rủi ro cho khóa học này.";
   if (status === 503) {
@@ -90,5 +95,58 @@ export function useRecomputeCourseRisk() {
     recompute,
     isPending: mutation.isPending,
     pendingCourseId: mutation.variables,
+  };
+}
+
+interface SendSmartReminderVariables {
+  courseId: string;
+  learnerId: string;
+}
+
+export function useSendSmartReminder() {
+  const queryClient = useQueryClient();
+  const mutation = useMutation<
+    RiskReminderResult,
+    unknown,
+    SendSmartReminderVariables
+  >({
+    mutationFn: ({ courseId, learnerId }) =>
+      sendSmartReminder(courseId, learnerId),
+    onSuccess: async (_result, variables) => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: riskKeys.learnerDetail(
+            variables.courseId,
+            variables.learnerId,
+          ),
+        }),
+        queryClient.invalidateQueries({ queryKey: notificationKeys.all }),
+      ]);
+      toast.add({
+        title: "Đã gửi Smart Reminder.",
+        type: "success",
+      });
+    },
+  });
+
+  async function send(courseId: string, learnerId: string) {
+    try {
+      const data = await mutation.mutateAsync({ courseId, learnerId });
+      return { ok: true as const, data };
+    } catch (error) {
+      const message = mapRiskError(error);
+      toast.add({
+        title: "Không thể gửi Smart Reminder",
+        description: message,
+        type: "error",
+      });
+      return { ok: false as const, message };
+    }
+  }
+
+  return {
+    send,
+    isPending: mutation.isPending,
+    pendingVariables: mutation.variables,
   };
 }

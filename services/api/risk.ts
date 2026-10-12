@@ -68,6 +68,10 @@ export interface RiskRecomputeResult {
   failed: number;
 }
 
+export interface RiskReminderResult {
+  enqueued: true;
+}
+
 function buildRiskLearnerQuery(filters: RiskLearnerFilters): string {
   const params = new URLSearchParams();
 
@@ -119,6 +123,17 @@ export async function recomputeCourseRisk(
   const { data } = await axiosClient.post<
     ApiSuccessResponse<RiskRecomputeResult>
   >(`/risk/courses/${courseId}/recompute`);
+
+  return data.data;
+}
+
+export async function sendSmartReminder(
+  courseId: string,
+  learnerId: string,
+): Promise<RiskReminderResult> {
+  const { data } = await axiosClient.post<
+    ApiSuccessResponse<RiskReminderResult>
+  >(`/risk/courses/${courseId}/learners/${learnerId}/reminder`);
 
   return data.data;
 }
