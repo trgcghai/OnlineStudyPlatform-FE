@@ -29,10 +29,10 @@ export function SmartReminderAction({ score }: SmartReminderActionProps) {
         <p className="font-medium">Gửi Smart Reminder</p>
         <p className="text-sm text-muted-foreground">
           Học viên đang hoàn thành khoảng{" "}
-          {formatRiskPercent(score.features.courseProgressPercent)} và chậm hơn
+          {formatRiskPercent(score.features?.courseProgressPercent)} và chậm hơn
           kế hoạch khoảng{" "}
-          {formatRiskPercent(score.features.expectedProgressGap)}. Yếu tố chính:{" "}
-          {topFactor?.label ?? "Chưa có yếu tố nổi bật"}.
+          {formatRiskPercent(score.features?.expectedProgressGap)}. Yếu tố
+          chính: {topFactor?.label ?? "Chưa có yếu tố nổi bật"}.
         </p>
       </div>
 

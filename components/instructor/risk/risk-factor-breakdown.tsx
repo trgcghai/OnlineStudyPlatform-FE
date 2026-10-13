@@ -3,7 +3,7 @@ import type { RiskFactor } from "@/services/api/risk";
 import { formatRiskScore, sortRiskFactors } from "./risk-formatters";
 
 interface RiskFactorBreakdownProps {
-  factors: RiskFactor[];
+  factors?: RiskFactor[] | null;
   limit?: number;
 }
 
@@ -11,9 +11,10 @@ export function RiskFactorBreakdown({
   factors,
   limit,
 }: RiskFactorBreakdownProps) {
+  const factorCount = Array.isArray(factors) ? factors.length : 0;
   const visibleFactors = sortRiskFactors(factors).slice(
     0,
-    limit ?? factors.length,
+    limit ?? factorCount,
   );
 
   if (visibleFactors.length === 0) {
