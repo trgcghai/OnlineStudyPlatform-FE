@@ -12,7 +12,7 @@ import {
   RISK_BAND_BADGE_VARIANTS,
   RISK_BAND_LABELS,
 } from "@/components/instructor/risk/risk-formatters";
-import { SmartReminderPlaceholder } from "@/components/instructor/risk/smart-reminder-placeholder";
+import { SmartReminderAction } from "@/components/instructor/risk/smart-reminder-action";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -157,11 +157,11 @@ export default function RiskLearnerDetailPage() {
               <CardHeader>
                 <CardTitle>Hành động hỗ trợ</CardTitle>
                 <CardDescription>
-                  Chuẩn bị gửi nhắc nhở thông minh ở T3-06.
+                  Gửi nhắc nhở thông minh cho học viên rủi ro cao.
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <SmartReminderPlaceholder />
+                <SmartReminderAction score={latest} />
               </CardContent>
             </Card>
           </div>

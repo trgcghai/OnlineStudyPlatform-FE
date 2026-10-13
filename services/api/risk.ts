@@ -25,10 +25,23 @@ export interface RiskFactor {
   value: number;
 }
 
+export interface RiskLearnerSummary {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface RiskCourseSummary {
+  id: string;
+  title: string;
+}
+
 export interface RiskScore {
   learnerId: string;
   courseId: string;
   enrollmentId: string;
+  learner?: RiskLearnerSummary;
+  course?: RiskCourseSummary;
   calculatedAt: string;
   score: number;
   band: RiskBand;
@@ -66,6 +79,10 @@ export interface RiskRecomputeResult {
   processed: number;
   succeeded: number;
   failed: number;
+}
+
+export interface RiskReminderResult {
+  enqueued: true;
 }
 
 function buildRiskLearnerQuery(filters: RiskLearnerFilters): string {
@@ -119,6 +136,17 @@ export async function recomputeCourseRisk(
   const { data } = await axiosClient.post<
     ApiSuccessResponse<RiskRecomputeResult>
   >(`/risk/courses/${courseId}/recompute`);
+
+  return data.data;
+}
+
+export async function sendSmartReminder(
+  courseId: string,
+  learnerId: string,
+): Promise<RiskReminderResult> {
+  const { data } = await axiosClient.post<
+    ApiSuccessResponse<RiskReminderResult>
+  >(`/risk/courses/${courseId}/learners/${learnerId}/reminder`);
 
   return data.data;
 }

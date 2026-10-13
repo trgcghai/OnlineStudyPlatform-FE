@@ -1,6 +1,7 @@
 "use client";
 
-import { AlertTriangle, ShieldCheck } from "lucide-react";
+import Link from "next/link";
+import { AlertTriangle, Eye, ShieldCheck } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -107,21 +108,43 @@ export function RiskLearnersTable({
           <TableBody>
             {items.map((item) => {
               const topFactor = getTopRiskFactor(item.factors);
+              const learnerName =
+                item.learner?.name?.trim() || "Không rõ học viên";
+              const learnerEmail =
+                item.learner?.email?.trim() || "Chưa có email";
+              const enrollmentHref = item.learner?.email?.trim()
+                ? `/instructor/courses/${item.courseId}/enrollments?q=${encodeURIComponent(
+                    item.learner.email.trim(),
+                  )}`
+                : null;
+              const courseTitle = item.course?.title?.trim() || course.title;
 
               return (
                 <TableRow
                   key={`${item.courseId}-${item.learnerId}-${item.calculatedAt}`}
                 >
                   <TableCell>
-                    <div className="flex flex-col">
-                      <span className="font-medium">{item.learnerId}</span>
-                      <span className="text-xs text-muted-foreground">
-                        Enrollment: {item.enrollmentId}
-                      </span>
-                    </div>
+                    {enrollmentHref ? (
+                      <Link
+                        href={enrollmentHref}
+                        className="flex flex-col rounded-md underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <span className="font-medium">{learnerName}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {learnerEmail}
+                        </span>
+                      </Link>
+                    ) : (
+                      <div className="flex flex-col">
+                        <span className="font-medium">{learnerName}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {learnerEmail}
+                        </span>
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell className="max-w-56 truncate">
-                    {course.title}
+                    {courseTitle}
                   </TableCell>
                   <TableCell>
                     <Badge variant={RISK_BAND_BADGE_VARIANTS[item.band]}>
@@ -139,11 +162,11 @@ export function RiskLearnersTable({
                   </TableCell>
                   <TableCell className="text-right">
                     <Button
-                      size="sm"
+                      size="icon"
                       variant="outline"
                       onClick={() => onOpenLearner(item)}
                     >
-                      Xem nhanh
+                      <Eye className="size-4" />
                     </Button>
                   </TableCell>
                 </TableRow>

@@ -14,7 +14,7 @@ const FEATURE_KEYS = Object.keys(RISK_FEATURE_LABELS) as Array<
 >;
 
 interface RiskFeatureTableProps {
-  features: RiskFeatures;
+  features?: Partial<RiskFeatures> | null;
   compact?: boolean;
 }
 
@@ -46,7 +46,7 @@ export function RiskFeatureTable({
             <TableRow key={key}>
               <TableCell>{RISK_FEATURE_LABELS[key]}</TableCell>
               <TableCell className="text-right font-medium">
-                {formatRiskScore(features[key])}
+                {formatRiskScore(features?.[key])}
               </TableCell>
             </TableRow>
           ))}

@@ -31,11 +31,19 @@ export const RISK_FEATURE_LABELS: Record<keyof RiskFeatures, string> = {
   pauseCount: "Số lần tạm dừng video",
 };
 
-export function formatRiskScore(score: number): string {
+export function formatRiskScore(score: number | null | undefined): string {
+  if (typeof score !== "number" || !Number.isFinite(score)) {
+    return "Chưa có dữ liệu";
+  }
+
   return score.toLocaleString("vi-VN", { maximumFractionDigits: 1 });
 }
 
-export function formatRiskPercent(value: number): string {
+export function formatRiskPercent(value: number | null | undefined): string {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return "Chưa có dữ liệu";
+  }
+
   return `${value.toLocaleString("vi-VN", { maximumFractionDigits: 1 })}%`;
 }
 
@@ -43,10 +51,16 @@ export function formatRiskDate(value: string | null): string {
   return value ? formatDateTime(value) : "Chưa có dữ liệu";
 }
 
-export function getTopRiskFactor(factors: RiskFactor[]): RiskFactor | null {
+export function getTopRiskFactor(
+  factors: RiskFactor[] | null | undefined,
+): RiskFactor | null {
   return sortRiskFactors(factors)[0] ?? null;
 }
 
-export function sortRiskFactors(factors: RiskFactor[]): RiskFactor[] {
+export function sortRiskFactors(
+  factors: RiskFactor[] | null | undefined,
+): RiskFactor[] {
+  if (!Array.isArray(factors)) return [];
+
   return [...factors].sort((a, b) => b.contribution - a.contribution);
 }
