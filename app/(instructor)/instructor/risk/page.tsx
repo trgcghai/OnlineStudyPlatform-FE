@@ -71,6 +71,11 @@ export default function InstructorRiskPage() {
     () => coursesQuery.data?.items ?? [],
     [coursesQuery.data?.items],
   );
+  const courseItems = useMemo(
+    () =>
+      Object.fromEntries(courses.map((course) => [course.id, course.title])),
+    [courses],
+  );
   const selectedCourse = useMemo<Course | undefined>(
     () => courses.find((course) => course.id === filtersState.courseId),
     [courses, filtersState.courseId],
@@ -172,6 +177,7 @@ export default function InstructorRiskPage() {
                   onValueChange={(courseId) => {
                     void setFiltersState({ courseId });
                   }}
+                  items={courseItems}
                 >
                   <SelectTrigger className="w-full" aria-label="Chọn khóa học">
                     <SelectValue />
