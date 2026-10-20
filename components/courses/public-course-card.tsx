@@ -33,6 +33,7 @@ export function PublicCourseCard({ course }: PublicCourseCardProps) {
           {course.thumbnail ? (
             <Image
               src={course.thumbnail}
+              unoptimized
               alt={course.title}
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               width={800}

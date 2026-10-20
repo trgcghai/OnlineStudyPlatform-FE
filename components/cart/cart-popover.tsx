@@ -85,6 +85,7 @@ export function CartPopover() {
                 {item.course.thumbnail ? (
                   <Image
                     src={item.course.thumbnail}
+                    unoptimized
                     alt={item.course.title}
                     fill
                     className="object-cover"

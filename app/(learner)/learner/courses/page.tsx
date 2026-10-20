@@ -39,6 +39,7 @@ function EnrollmentCard({ enrollment }: { enrollment: Enrollment }) {
         {course?.thumbnail ? (
           <Image
             src={course.thumbnail}
+            unoptimized
             alt={course.title}
             className="aspect-video h-full w-full object-cover"
             width={440}
