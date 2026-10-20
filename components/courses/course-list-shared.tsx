@@ -26,6 +26,7 @@ export function CourseThumbnail({ course }: { course: CourseThumbnailSource }) {
       {course.thumbnail ? (
         <Image
           src={course.thumbnail}
+          unoptimized
           alt={course.title}
           fill
           sizes="56px"

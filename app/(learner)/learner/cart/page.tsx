@@ -115,6 +115,7 @@ export default function LearnerCartPage() {
                 {item.course.thumbnail ? (
                   <Image
                     src={item.course.thumbnail}
+                    unoptimized
                     alt={item.course.title}
                     fill
                     className="object-cover"
