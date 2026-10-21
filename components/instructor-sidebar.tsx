@@ -7,6 +7,7 @@ import {
   CircleUserRound,
   CreditCardIcon,
   DashboardSquare01Icon,
+  ChartBarLineIcon,
   Money01Icon,
   Notification01Icon,
   Presentation,
@@ -48,6 +49,11 @@ const adminNavItems = [
     title: "Learning Risk",
     href: "/instructor/risk",
     icon: DashboardSquare01Icon,
+  },
+  {
+    title: "Learning Analytics",
+    href: "/instructor/analytics",
+    icon: ChartBarLineIcon,
   },
   {
     title: "Chấm tự luận",
