@@ -70,7 +70,7 @@ export default function InstructorAnalyticsPage() {
   );
   const analyticsQuery = useCourseAnalytics(courseId, selectedRange);
   const customInvalid = preset === "custom" && (!customFrom || !customTo || !customDateRange(customFrom, customTo));
-  const analytics = analyticsQuery.data;
+  const analytics = analyticsQuery.isFetching ? undefined : analyticsQuery.data;
   const errorStatus = isAxiosError(analyticsQuery.error) ? analyticsQuery.error.response?.status : undefined;
 
   function choosePreset(value: string | null) {
@@ -123,7 +123,7 @@ export default function InstructorAnalyticsPage() {
             </CardContent>
           </Card>
 
-          {analyticsQuery.isPending && selectedRange && <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{Array.from({ length: 4 }, (_, index) => <Skeleton key={index} className="h-36" />)}</div>}
+          {(analyticsQuery.isPending || analyticsQuery.isFetching) && selectedRange && !customInvalid && <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{Array.from({ length: 4 }, (_, index) => <Skeleton key={index} className="h-36" />)}</div>}
           {analyticsQuery.isError && <Alert variant="destructive"><AlertTriangle className="size-4" /><AlertTitle>{errorStatus === 403 ? "Không có quyền truy cập" : "Không thể tải dữ liệu phân tích"}</AlertTitle><AlertDescription>{errorStatus === 403 ? "Bạn không có quyền xem số liệu của khóa học này." : "Vui lòng thử lại để tải báo cáo."}</AlertDescription><Button className="mt-2 w-fit" size="sm" variant="outline" onClick={() => void analyticsQuery.refetch()}><RefreshCw aria-hidden="true" />Thử lại</Button></Alert>}
           {!customInvalid && !analyticsQuery.isPending && !analyticsQuery.isError && analytics && (
             <>
