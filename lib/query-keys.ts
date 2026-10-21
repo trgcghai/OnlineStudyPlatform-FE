@@ -178,6 +178,11 @@ export const learnerDashboardKeys = {
   detail: () => [...learnerDashboardKeys.all, "detail"] as const,
 };
 
+export const adminDashboardKeys = {
+  all: ["admin-dashboard"] as const,
+  detail: () => [...adminDashboardKeys.all, "detail"] as const,
+};
+
 export const certificateKeys = {
   all: ["certificates"] as const,
   mine: () => [...certificateKeys.all, "mine"] as const,
