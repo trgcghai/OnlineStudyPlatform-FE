@@ -16,6 +16,12 @@ import type { PublicCourseListFilters } from "@/services/api/public-courses";
 import type { RiskLearnerFilters } from "@/services/api/risk";
 import type { AdminUserFilters } from "@/services/api/users";
 
+export const instructorAnalyticsKeys = {
+  all: ["instructor-analytics"] as const,
+  course: (courseId: string, from: string, to: string) =>
+    [...instructorAnalyticsKeys.all, "course", courseId, from, to] as const,
+};
+
 export const authKeys = {
   all: ["auth"] as const,
   me: () => [...authKeys.all, "me"] as const,
