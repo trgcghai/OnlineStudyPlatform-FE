@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { USER_ROLES } from "@/services/api/users";
 import {
   Bell,
+  Award,
   BookOpen,
   CircleUserRound,
   CreditCard,
@@ -45,6 +46,13 @@ export default function LearnerLayout({
             >
               <BookOpen data-icon="inline-start" aria-hidden="true" />
               Khóa học của tôi
+            </Link>
+            <Link
+              href="/learner/certificates"
+              className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+            >
+              <Award data-icon="inline-start" aria-hidden="true" />
+              Chứng chỉ
             </Link>
             <Link
               href="/learner/cart"

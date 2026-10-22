@@ -19,6 +19,7 @@ import {
   EmptyDescription,
 } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLearnerDashboard } from "@/hooks/useLearnerDashboard";
 import { useLearnerCertificates } from "@/hooks/useLearnerCertificates";
 import {
   downloadCertificate,
@@ -75,11 +76,12 @@ function CertificateCard({ certificate }: { certificate: LearnerCertificate }) {
   );
 }
 
-export function CertificatesSection({
-  completedCourseIds,
-}: {
-  completedCourseIds: string[];
-}) {
+export function CertificatesSection() {
+  const dashboardQuery = useLearnerDashboard();
+  const completedCourseIds =
+    dashboardQuery.data?.courses
+      .filter((course) => course.status === "completed")
+      .map((course) => course.courseId) ?? [];
   const certificatesQuery = useLearnerCertificates(completedCourseIds);
   const certificates = certificatesQuery.data ?? [];
   const issuedIds = new Set(
@@ -103,8 +105,21 @@ export function CertificatesSection({
         />
         Chứng chỉ của bạn
       </h2>
-      {certificatesQuery.isLoading ? (
+      {dashboardQuery.isLoading || certificatesQuery.isLoading ? (
         <Skeleton className="h-32 w-full" aria-label="Đang tải chứng chỉ" />
+      ) : dashboardQuery.isError ? (
+        <Alert variant="destructive">
+          <AlertTitle>Không tải được trạng thái khóa học</AlertTitle>
+          <AlertDescription>
+            <Button
+              variant="outline"
+              onClick={() => dashboardQuery.refetch()}
+              disabled={dashboardQuery.isFetching}
+            >
+              Thử lại
+            </Button>
+          </AlertDescription>
+        </Alert>
       ) : certificatesQuery.isError ? (
         <Alert variant="destructive">
           <AlertTitle>Không tải được danh sách chứng chỉ</AlertTitle>
