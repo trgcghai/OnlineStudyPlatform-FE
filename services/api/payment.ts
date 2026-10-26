@@ -189,6 +189,42 @@ export interface InstructorBalanceHistoryList {
   totalPages: number;
 }
 
+export interface InstructorRevenueReportFilters {
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+export interface InstructorRevenueCourseReport {
+  courseId: string;
+  courseTitle: string;
+  purchaseCount: number;
+  grossRevenue: number;
+  platformFee: number;
+  netRevenue: number;
+  currency: PaymentConfigCurrency;
+}
+
+export interface InstructorRevenuePaymentStat {
+  status: PaymentStatus;
+  transactionCount: number;
+  amount: number;
+  currency: PaymentConfigCurrency;
+}
+
+export interface InstructorRevenueReport {
+  dateFrom: string | null;
+  dateTo: string | null;
+  summary: {
+    purchaseCount: number;
+    grossRevenue: number;
+    platformFee: number;
+    netRevenue: number;
+    currency: PaymentConfigCurrency;
+  };
+  courses: InstructorRevenueCourseReport[];
+  paymentStats: InstructorRevenuePaymentStat[];
+}
+
 export interface WithdrawRequest {
   id: string;
   instructorId: string;
@@ -495,6 +531,16 @@ export async function listInstructorBalanceHistory(
   const { data } = await axiosClient.get<
     ApiSuccessResponse<InstructorBalanceHistoryList>
   >(`/payments/instructor/balance/history${buildPaymentAdminQuery(filters)}`);
+
+  return data.data;
+}
+
+export async function getInstructorRevenueReport(
+  filters: InstructorRevenueReportFilters = {},
+): Promise<InstructorRevenueReport> {
+  const { data } = await axiosClient.get<
+    ApiSuccessResponse<InstructorRevenueReport>
+  >(`/payments/instructor/revenue-report${buildPaymentAdminQuery(filters)}`);
 
   return data.data;
 }

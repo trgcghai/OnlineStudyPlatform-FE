@@ -8,6 +8,7 @@ import type {
   AdminProviderEventFilters,
   AdminWithdrawRequestFilters,
   InstructorBalanceHistoryFilters,
+  InstructorRevenueReportFilters,
   LearnerPaymentTransactionFilters,
   PaymentConfigAuditFilters,
   WithdrawRequestFilters,
@@ -15,6 +16,12 @@ import type {
 import type { PublicCourseListFilters } from "@/services/api/public-courses";
 import type { RiskLearnerFilters } from "@/services/api/risk";
 import type { AdminUserFilters } from "@/services/api/users";
+
+export const instructorAnalyticsKeys = {
+  all: ["instructor-analytics"] as const,
+  course: (courseId: string, from: string, to: string) =>
+    [...instructorAnalyticsKeys.all, "course", courseId, from, to] as const,
+};
 
 export const authKeys = {
   all: ["auth"] as const,
@@ -66,6 +73,8 @@ export const paymentKeys = {
     [...paymentKeys.all, "instructor-balance-summary"] as const,
   instructorBalanceHistory: (filters: InstructorBalanceHistoryFilters) =>
     [...paymentKeys.all, "instructor-balance-history", filters] as const,
+  instructorRevenueReport: (filters: InstructorRevenueReportFilters) =>
+    [...paymentKeys.all, "instructor-revenue-report", filters] as const,
   adminTransactions: (filters: AdminPaymentTransactionFilters) =>
     [...paymentKeys.all, "admin-transactions", filters] as const,
   adminTransactionDetail: (transactionId: string) =>
@@ -176,6 +185,11 @@ export const riskModelKeys = {
 export const learnerDashboardKeys = {
   all: ["learner-dashboard"] as const,
   detail: () => [...learnerDashboardKeys.all, "detail"] as const,
+};
+
+export const adminDashboardKeys = {
+  all: ["admin-dashboard"] as const,
+  detail: () => [...adminDashboardKeys.all, "detail"] as const,
 };
 
 export const certificateKeys = {
