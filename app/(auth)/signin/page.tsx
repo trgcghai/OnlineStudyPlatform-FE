@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { AuthFormFrame } from "@/components/auth/auth-form-frame";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -63,11 +64,15 @@ export default function SignInPage() {
   }
 
   return (
-    <section className="flex flex-1 items-center justify-center px-6 py-12">
-      <Card className="w-full max-w-md">
+    <AuthFormFrame>
+      <Card className="w-full max-w-md border-0 bg-transparent py-0 ring-0">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">Đăng nhập</CardTitle>
-          <CardDescription>Đăng nhập để tiếp tục học tập.</CardDescription>
+          <CardTitle className="text-3xl tracking-tight sm:text-4xl">
+            Đăng nhập
+          </CardTitle>
+          <CardDescription className="text-base leading-6">
+            Đăng nhập để tiếp tục học tập.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form
@@ -83,8 +88,10 @@ export default function SignInPage() {
 
             <FieldGroup>
               <Field data-invalid={!!errors.email}>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
-                <InputGroup>
+                <FieldLabel htmlFor="email" className="font-medium">
+                  Email
+                </FieldLabel>
+                <InputGroup className="h-12 rounded-xl bg-muted/40">
                   <InputGroupAddon>
                     <Mail aria-hidden="true" />
                   </InputGroupAddon>
@@ -102,8 +109,10 @@ export default function SignInPage() {
               </Field>
 
               <Field data-invalid={!!errors.password}>
-                <FieldLabel htmlFor="password">Mật khẩu</FieldLabel>
-                <InputGroup>
+                <FieldLabel htmlFor="password" className="font-medium">
+                  Mật khẩu
+                </FieldLabel>
+                <InputGroup className="h-12 rounded-xl bg-muted/40">
                   <InputGroupAddon>
                     <LockKeyhole aria-hidden="true" />
                   </InputGroupAddon>
@@ -132,7 +141,11 @@ export default function SignInPage() {
               </Link>
             </div>
 
-            <Button type="submit" disabled={loginMutation.isPending}>
+            <Button
+              type="submit"
+              disabled={loginMutation.isPending}
+              className="h-12 rounded-xl text-base"
+            >
               {loginMutation.isPending ? (
                 "Đang đăng nhập..."
               ) : (
@@ -156,6 +169,6 @@ export default function SignInPage() {
           </p>
         </CardFooter>
       </Card>
-    </section>
+    </AuthFormFrame>
   );
 }
