@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { AuthFormFrame } from "@/components/auth/auth-form-frame";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -83,13 +84,13 @@ export default function RegisterPage() {
   }
 
   return (
-    <section className="flex flex-1 items-center justify-center px-6 py-12">
-      <Card className="w-full max-w-md">
+    <AuthFormFrame>
+      <Card className="w-full max-w-md border-0 bg-transparent py-0 ring-0">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="text-3xl tracking-tight sm:text-4xl">
             Đăng ký tài khoản
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-base leading-6">
             Tạo tài khoản học viên để tham gia các khóa học.
           </CardDescription>
         </CardHeader>
@@ -107,8 +108,10 @@ export default function RegisterPage() {
 
             <FieldGroup>
               <Field data-invalid={!!errors.name}>
-                <FieldLabel htmlFor="name">Họ và tên</FieldLabel>
-                <InputGroup>
+                <FieldLabel htmlFor="name" className="font-medium">
+                  Họ và tên
+                </FieldLabel>
+                <InputGroup className="h-12 rounded-xl bg-muted/40">
                   <InputGroupAddon>
                     <User aria-hidden="true" />
                   </InputGroupAddon>
@@ -124,8 +127,10 @@ export default function RegisterPage() {
               </Field>
 
               <Field data-invalid={!!errors.email}>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
-                <InputGroup>
+                <FieldLabel htmlFor="email" className="font-medium">
+                  Email
+                </FieldLabel>
+                <InputGroup className="h-12 rounded-xl bg-muted/40">
                   <InputGroupAddon>
                     <Mail aria-hidden="true" />
                   </InputGroupAddon>
@@ -142,8 +147,10 @@ export default function RegisterPage() {
               </Field>
 
               <Field data-invalid={!!errors.password}>
-                <FieldLabel htmlFor="password">Mật khẩu</FieldLabel>
-                <InputGroup>
+                <FieldLabel htmlFor="password" className="font-medium">
+                  Mật khẩu
+                </FieldLabel>
+                <InputGroup className="h-12 rounded-xl bg-muted/40">
                   <InputGroupAddon>
                     <Lock aria-hidden="true" />
                   </InputGroupAddon>
@@ -160,10 +167,10 @@ export default function RegisterPage() {
               </Field>
 
               <Field data-invalid={!!errors.confirmPassword}>
-                <FieldLabel htmlFor="confirmPassword">
+                <FieldLabel htmlFor="confirmPassword" className="font-medium">
                   Xác nhận mật khẩu
                 </FieldLabel>
-                <InputGroup>
+                <InputGroup className="h-12 rounded-xl bg-muted/40">
                   <InputGroupAddon>
                     <Lock aria-hidden="true" />
                   </InputGroupAddon>
@@ -180,7 +187,11 @@ export default function RegisterPage() {
               </Field>
             </FieldGroup>
 
-            <Button type="submit" disabled={registerMutation.isPending}>
+            <Button
+              type="submit"
+              disabled={registerMutation.isPending}
+              className="h-12 rounded-xl text-base"
+            >
               {registerMutation.isPending ? (
                 "Đang đăng ký..."
               ) : (
@@ -204,6 +215,6 @@ export default function RegisterPage() {
           </p>
         </CardFooter>
       </Card>
-    </section>
+    </AuthFormFrame>
   );
 }

@@ -172,14 +172,16 @@ export default function ForgotPasswordPage() {
   const { onChange: onOtpChange, ...otpField } = register("otp");
 
   return (
-    <section className="flex flex-1 items-center justify-center px-6 py-12">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ShieldCheck aria-hidden="true" />
+    <section className="flex flex-1 items-center justify-center px-5 py-8 sm:px-6 sm:py-12">
+      <Card className="w-full max-w-md rounded-3xl border-border shadow-xl shadow-indigo-950/5">
+        <CardHeader className="gap-4">
+          <span className="grid size-12 place-items-center rounded-2xl bg-primary/10 text-primary">
+            <ShieldCheck className="size-6" aria-hidden="true" />
+          </span>
+          <CardTitle className="text-2xl font-semibold tracking-tight sm:text-3xl">
             Đặt lại mật khẩu
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-base leading-6">
             Xác thực email bằng OTP trước khi tạo mật khẩu mới.
           </CardDescription>
         </CardHeader>
@@ -203,8 +205,10 @@ export default function ForgotPasswordPage() {
               <>
                 <FieldGroup>
                   <Field data-invalid={!!errors.email}>
-                    <FieldLabel htmlFor="email">Email</FieldLabel>
-                    <InputGroup>
+                    <FieldLabel htmlFor="email" className="font-medium">
+                      Email
+                    </FieldLabel>
+                    <InputGroup className="h-12 rounded-xl bg-muted/40">
                       <InputGroupAddon>
                         <Mail aria-hidden="true" />
                       </InputGroupAddon>
@@ -220,7 +224,11 @@ export default function ForgotPasswordPage() {
                     <FieldError errors={[errors.email]} />
                   </Field>
                 </FieldGroup>
-                <Button type="submit" disabled={requestMutation.isPending}>
+                <Button
+                  type="submit"
+                  disabled={requestMutation.isPending}
+                  className="h-12 rounded-xl text-base"
+                >
                   {requestMutation.isPending ? "Đang gửi..." : "Gửi mã OTP"}
                 </Button>
               </>
@@ -230,8 +238,10 @@ export default function ForgotPasswordPage() {
               <>
                 <FieldGroup>
                   <Field data-invalid={!!errors.otp}>
-                    <FieldLabel htmlFor="otp">Mã OTP</FieldLabel>
-                    <InputGroup>
+                    <FieldLabel htmlFor="otp" className="font-medium">
+                      Mã OTP
+                    </FieldLabel>
+                    <InputGroup className="h-12 rounded-xl bg-muted/40">
                       <InputGroupAddon>
                         <MailCheck aria-hidden="true" />
                       </InputGroupAddon>
@@ -254,7 +264,11 @@ export default function ForgotPasswordPage() {
                     <FieldError errors={[errors.otp]} />
                   </Field>
                 </FieldGroup>
-                <Button type="submit" disabled={verifyMutation.isPending}>
+                <Button
+                  type="submit"
+                  disabled={verifyMutation.isPending}
+                  className="h-12 rounded-xl text-base"
+                >
                   {verifyMutation.isPending
                     ? "Đang xác thực..."
                     : "Xác thực OTP"}
@@ -264,6 +278,7 @@ export default function ForgotPasswordPage() {
                   variant="outline"
                   disabled={cooldown > 0 || requestMutation.isPending}
                   onClick={onResend}
+                  className="h-12 rounded-xl"
                 >
                   <RotateCcw aria-hidden="true" />
                   {cooldown > 0 ? `Gửi lại sau ${cooldown}s` : "Gửi lại mã OTP"}
@@ -275,8 +290,10 @@ export default function ForgotPasswordPage() {
               <>
                 <FieldGroup>
                   <Field data-invalid={!!errors.newPassword}>
-                    <FieldLabel htmlFor="newPassword">Mật khẩu mới</FieldLabel>
-                    <InputGroup>
+                    <FieldLabel htmlFor="newPassword" className="font-medium">
+                      Mật khẩu mới
+                    </FieldLabel>
+                    <InputGroup className="h-12 rounded-xl bg-muted/40">
                       <InputGroupAddon>
                         <Lock aria-hidden="true" />
                       </InputGroupAddon>
@@ -292,10 +309,13 @@ export default function ForgotPasswordPage() {
                     <FieldError errors={[errors.newPassword]} />
                   </Field>
                   <Field data-invalid={!!errors.confirmPassword}>
-                    <FieldLabel htmlFor="confirmPassword">
+                    <FieldLabel
+                      htmlFor="confirmPassword"
+                      className="font-medium"
+                    >
                       Xác nhận mật khẩu
                     </FieldLabel>
-                    <InputGroup>
+                    <InputGroup className="h-12 rounded-xl bg-muted/40">
                       <InputGroupAddon>
                         <Lock aria-hidden="true" />
                       </InputGroupAddon>
@@ -311,7 +331,11 @@ export default function ForgotPasswordPage() {
                     <FieldError errors={[errors.confirmPassword]} />
                   </Field>
                 </FieldGroup>
-                <Button type="submit" disabled={resetMutation.isPending}>
+                <Button
+                  type="submit"
+                  disabled={resetMutation.isPending}
+                  className="h-12 rounded-xl text-base"
+                >
                   {resetMutation.isPending
                     ? "Đang cập nhật..."
                     : "Cập nhật mật khẩu"}

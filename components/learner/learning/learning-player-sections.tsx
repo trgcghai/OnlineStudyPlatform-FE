@@ -9,6 +9,7 @@ import {
   ExternalLink,
   FileQuestion,
   Lock,
+  MessageCircle,
   PanelRightClose,
   PlayCircle,
   X,
@@ -23,10 +24,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LearnerQuizPanel } from "@/app/(learning)/learner/courses/[courseId]/learn/learner-quiz-panel";
+import { AiChatCard } from "@/components/learner/learning/ai-chat-card";
 import { LessonCompletionButton } from "./lesson-completion-button";
 import {
   mapLearningError,
@@ -319,7 +320,7 @@ export function LearningSidebar({
   const progressValue = getProgressValue(learningCourse.enrollment.progress);
 
   return (
-    <div className="flex flex-col gap-4 p-4 sm:p-5 lg:p-6">
+    <div className="flex h-full min-h-0 flex-col gap-4 p-4 sm:p-5 lg:p-6">
       <div className="flex items-center justify-between gap-2">
         <Badge variant="secondary" className="shrink-0">
           {learningCourse.course.learningOrder === "sequential"
@@ -327,46 +328,77 @@ export function LearningSidebar({
             : "Học tự do"}
         </Badge>
         <div className="flex shrink-0 items-center gap-2">
-          <span className="text-sm font-medium text-muted-foreground">
+          <span className="text-sm font-semibold tabular-nums text-foreground">
             {progressLabel}
           </span>
           <button
             type="button"
             onClick={onToggleLessonPanel}
             aria-pressed={lessonPanelOpen}
-            title={
-              lessonPanelOpen
-                ? "Ẩn danh sách bài học"
-                : "Hiện danh sách bài học"
-            }
+            title={lessonPanelOpen ? "Ẩn bảng học tập" : "Hiện bảng học tập"}
             className={buttonVariants({ variant: "ghost", size: "icon-sm" })}
           >
             <PanelRightClose aria-hidden="true" />
           </button>
         </div>
       </div>
-      <h2 className="truncate text-sm font-semibold">
-        {learningCourse.course.title}
-      </h2>
-      <div className="h-2 overflow-hidden rounded-full bg-muted">
+      <div className="space-y-2">
+        <h2 className="truncate text-sm font-semibold">
+          {learningCourse.course.title}
+        </h2>
         <div
-          className="h-full rounded-full bg-primary"
-          style={{ width: `${progressValue}%` }}
-        />
-      </div>
-      <Separator />
-      <div className="flex flex-col gap-2">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Nội dung khóa học · {learningCourse.lessons.length} bài học
-        </h3>
-        <div className="max-h-[50vh] overflow-y-auto lg:max-h-none">
-          <LessonTree
-            lessons={learningCourse.lessons}
-            activeLessonId={activeLessonId}
-            onSelectLesson={onSelectLesson}
+          className="h-2 overflow-hidden rounded-full bg-muted"
+          role="progressbar"
+          aria-label="Tiến độ khóa học"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={progressValue}
+        >
+          <div
+            className="h-full rounded-full bg-primary transition-[width] duration-500 motion-reduce:transition-none"
+            style={{ width: `${progressValue}%` }}
           />
         </div>
       </div>
+
+      <Tabs defaultValue="lessons" className="min-h-0 flex-1">
+        <TabsList className="grid h-11 w-full grid-cols-2 rounded-xl bg-muted p-1">
+          <TabsTrigger value="lessons" className="rounded-lg">
+            <BookOpen data-icon="inline-start" aria-hidden="true" />
+            Bài học
+          </TabsTrigger>
+          <TabsTrigger value="chat" className="rounded-lg">
+            <MessageCircle data-icon="inline-start" aria-hidden="true" />
+            Trợ lý AI
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent
+          value="lessons"
+          keepMounted
+          className="mt-0 min-h-0 flex-1 overflow-y-auto pt-1"
+        >
+          <div className="flex flex-col gap-3">
+            <div className="flex items-baseline justify-between gap-2">
+              <h3 className="text-sm font-semibold">Nội dung khóa học</h3>
+              <span className="text-xs text-muted-foreground">
+                {learningCourse.lessons.length} bài học
+              </span>
+            </div>
+            <LessonTree
+              lessons={learningCourse.lessons}
+              activeLessonId={activeLessonId}
+              onSelectLesson={onSelectLesson}
+            />
+          </div>
+        </TabsContent>
+        <TabsContent
+          value="chat"
+          keepMounted
+          className="mt-0 min-h-0 flex-1 pt-1"
+        >
+          <AiChatCard courseId={learningCourse.course.id} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
