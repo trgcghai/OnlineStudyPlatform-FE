@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   BookOpen,
   CalendarDays,
+  ChevronDown,
   ChevronLeft,
   GraduationCap,
 } from "lucide-react";
@@ -116,80 +117,82 @@ export function CourseDetailClient({ courseId }: CourseDetailClientProps) {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 px-6 py-10">
+    <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-6 sm:px-6 sm:py-10">
       <Link
         href="/courses"
-        className="inline-flex w-fit items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+        className="mb-6 inline-flex w-fit items-center gap-2 rounded-md text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
         <ChevronLeft className="size-4" aria-hidden="true" />
         Quay lại danh sách khóa học
       </Link>
 
-      <section className="grid gap-8 lg:grid-cols-[1.3fr_0.7fr]">
-        <div className="space-y-6">
-          <div className="overflow-hidden rounded-3xl bg-muted ring-1 ring-border">
-            {course.thumbnail ? (
-              <Image
-                src={course.thumbnail}
-                unoptimized
-                alt={course.title}
-                className="aspect-video w-full object-cover"
-                width={800}
-                height={450}
-              />
-            ) : (
-              <div className="flex aspect-video items-center justify-center bg-linear-to-br from-primary/15 via-muted to-secondary/20">
-                <BookOpen className="size-16 text-primary" aria-hidden="true" />
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-4">
-            <Badge variant="secondary" className="w-fit">
-              {course.category}
-            </Badge>
-            <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
-              {course.title}
-            </h1>
-            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-              <span className="inline-flex items-center gap-2">
-                <GraduationCap className="size-4" aria-hidden="true" />
-                {course.instructor?.name ?? "Giảng viên đang cập nhật"}
-              </span>
-              <span className="inline-flex items-center gap-2">
-                <CalendarDays className="size-4" aria-hidden="true" />
-                Cập nhật {formatDate(course.updatedAt)}
-              </span>
+      <section className="grid items-stretch gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-8">
+        <div className="order-1 overflow-hidden rounded-3xl border bg-muted shadow-sm lg:col-start-1 lg:row-start-1">
+          {course.thumbnail ? (
+            <Image
+              src={course.thumbnail}
+              unoptimized
+              alt={course.title}
+              className="aspect-video w-full object-cover md:aspect-16/8"
+              width={800}
+              height={450}
+              loading="eager"
+            />
+          ) : (
+            <div className="flex aspect-video items-center justify-center bg-linear-to-br from-primary/15 via-muted to-secondary/20 md:aspect-16/8">
+              <BookOpen className="size-16 text-primary" aria-hidden="true" />
             </div>
-          </div>
-
-          <section className="rounded-3xl border bg-card p-6">
-            <h2 className="text-2xl font-semibold">Mô tả khóa học</h2>
-            <p className="mt-4 whitespace-pre-line leading-7 text-muted-foreground">
-              {course.description}
-            </p>
-          </section>
+          )}
         </div>
 
-        <aside className="h-fit rounded-3xl border bg-card p-6 shadow-sm lg:sticky lg:top-6">
-          <div className="flex items-baseline justify-between gap-3">
-            <h2 className="text-xl font-semibold">Sẵn sàng bắt đầu?</h2>
-            <span
-              className={
-                course.price === 0
-                  ? "text-sm font-medium text-primary"
-                  : "text-xl font-bold text-foreground"
-              }
-            >
-              {formatCoursePrice(course.price)}
+        <header className="order-2 space-y-4 lg:col-start-1 lg:row-start-2">
+          <Badge variant="secondary" className="w-fit">
+            {course.category}
+          </Badge>
+          <h1 className="max-w-4xl text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+            {course.title}
+          </h1>
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
+            <span className="inline-flex items-center gap-2">
+              <GraduationCap
+                className="size-4 text-primary"
+                aria-hidden="true"
+              />
+              {course.instructor?.name ?? "Giảng viên đang cập nhật"}
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <CalendarDays
+                className="size-4 text-primary"
+                aria-hidden="true"
+              />
+              Cập nhật {formatDate(course.updatedAt)}
             </span>
           </div>
-          <p className="mt-3 text-sm text-muted-foreground">
-            {course.price === 0
-              ? "Ghi danh để lưu khóa học vào lộ trình học tập và theo dõi tiến độ của bạn."
-              : "Khóa học trả phí. Bạn phải hoàn tất thanh toán trước khi truy cập nội dung."}
-          </p>
-          <div className="mt-5 grid gap-3">
+        </header>
+
+        <aside className="relative order-3 flex h-full flex-col justify-between gap-5 overflow-hidden rounded-3xl border bg-card p-5 shadow sm:p-6 lg:col-start-2 lg:row-start-1">
+          <div>
+            <div className="flex items-baseline justify-between gap-3">
+              <h2 className="text-lg font-semibold tracking-tight">
+                Sẵn sàng bắt đầu?
+              </h2>
+              <span
+                className={
+                  course.price === 0
+                    ? "text-sm font-semibold text-primary"
+                    : "text-xl font-bold tracking-tight text-foreground"
+                }
+              >
+                {formatCoursePrice(course.price)}
+              </span>
+            </div>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+              {course.price === 0
+                ? "Ghi danh để lưu khóa học vào lộ trình học tập và theo dõi tiến độ của bạn."
+                : "Khóa học trả phí. Bạn phải hoàn tất thanh toán trước khi truy cập nội dung."}
+            </p>
+          </div>
+          <div className="grid gap-3">
             {!isAuthenticated && (
               <>
                 <Link
@@ -267,31 +270,63 @@ export function CourseDetailClient({ courseId }: CourseDetailClientProps) {
                 </div>
               )}
           </div>
-          <div className="mt-6 rounded-2xl bg-muted p-4">
-            <h3 className="font-medium">Danh sách bài học</h3>
+        </aside>
+      </section>
+
+      <section className="mt-8 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-8">
+        <section className="rounded-3xl border bg-card p-5 shadow-sm sm:p-7">
+          <h2 className="mb-5 text-xl font-semibold tracking-tight sm:text-2xl">
+            Mô tả khóa học
+          </h2>
+          <p className="whitespace-pre-line leading-7 text-muted-foreground">
+            {course.description}
+          </p>
+        </section>
+
+        <details
+          open
+          className="group overflow-hidden rounded-3xl border bg-card shadow-sm"
+        >
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:px-7 [&::-webkit-details-marker]:hidden">
+            <span className="flex-col min-w-0 items-center gap-3">
+              <span className="block text-lg font-semibold tracking-tight">
+                Danh sách bài học
+              </span>
+              {lessons.length > 0 ? (
+                <span className="mt-0.5 block text-sm text-muted-foreground">
+                  {lessons.length} bài học
+                </span>
+              ) : null}
+            </span>
+            <ChevronDown
+              className="size-5 shrink-0 text-muted-foreground transition-transform duration-200 group-open:rotate-180 motion-reduce:transition-none"
+              aria-hidden="true"
+            />
+          </summary>
+          <div className="border-t px-5 pb-5 sm:px-7 sm:pb-6">
             {lessons.length > 0 ? (
-              <ol className="mt-3 space-y-2">
+              <ol className="mt-4">
                 {lessons.map((lesson, index) => (
                   <li
                     key={lesson.id}
-                    className="flex gap-3 rounded-xl bg-background/70 px-3 py-2 text-sm"
+                    className="group relative grid grid-cols-[2rem_minmax(0,1fr)] gap-3 py-3.5 first:pt-1 last:pb-1"
                   >
-                    <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                      {index + 1}
+                    <span className="relative z-10 flex size-8 items-center justify-center rounded-xl border border-primary/15 bg-primary/5 text-xs font-semibold text-primary transition-colors group-hover:border-primary/30 group-hover:bg-primary/10">
+                      {String(index + 1).padStart(2, "0")}
                     </span>
-                    <span className="font-medium text-foreground">
+                    <span className="min-w-0 self-center wrap-break-word text-sm font-medium leading-6 text-foreground">
                       {lesson.title}
                     </span>
                   </li>
                 ))}
               </ol>
             ) : (
-              <p className="mt-2 text-sm text-muted-foreground">
+              <p className="mt-4 text-sm leading-6 text-muted-foreground">
                 Danh sách bài học sẽ được cập nhật sau.
               </p>
             )}
           </div>
-        </aside>
+        </details>
       </section>
     </main>
   );
