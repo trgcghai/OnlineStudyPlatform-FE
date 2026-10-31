@@ -11,12 +11,20 @@ import {
   Lock,
   MessageCircle,
   PanelRightClose,
+  PanelRightOpen,
   PlayCircle,
   X,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import {
   Card,
   CardContent,
@@ -142,20 +150,128 @@ export function getProgressValue(progress: string): number {
   return Math.min(Math.max(value, 0), 100);
 }
 
+function LearningVideoSkeleton() {
+  return (
+    <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-border/70 bg-black shadow-xl shadow-black/10">
+      <Skeleton className="absolute inset-0 rounded-none bg-gradient-to-br from-primary/15 via-black/80 to-black" />
+      <div className="absolute inset-0 flex items-center justify-center">
+        <Skeleton className="size-14 rounded-full bg-primary/35 ring-8 ring-primary/10 sm:size-16" />
+      </div>
+      <div className="absolute inset-x-0 bottom-0 flex flex-col gap-3 bg-gradient-to-t from-black/90 via-black/60 to-transparent px-4 pb-4 pt-12 sm:px-6 sm:pb-5">
+        <Skeleton className="h-1.5 w-full rounded-full bg-primary/55" />
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Skeleton className="size-8 rounded-full bg-white/25" />
+            <Skeleton className="h-3 w-20 bg-white/20" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-3 w-12 bg-white/20" />
+            <Skeleton className="size-7 rounded-md bg-white/20" />
+          </div>
+        </div>
+      </div>
+      <Skeleton className="absolute left-4 top-4 h-6 w-24 rounded-full bg-white/20" />
+    </div>
+  );
+}
+
+function LessonSidebarSkeleton() {
+  return (
+    <aside
+      aria-hidden="true"
+      className="hidden min-h-0 shrink-0 flex-col gap-5 overflow-hidden border-l bg-card p-5 lg:flex lg:w-[clamp(20rem,28vw,35rem)]"
+    >
+      <div className="flex items-center justify-between gap-3">
+        <Skeleton className="h-6 w-24 rounded-full bg-primary/15" />
+        <Skeleton className="h-5 w-12" />
+      </div>
+      <div className="flex flex-col gap-3 rounded-2xl border bg-background/70 p-4">
+        <Skeleton className="h-4 w-4/5" />
+        <Skeleton className="h-2 w-full rounded-full bg-primary/10">
+          <span className="block h-full w-2/3 rounded-full bg-primary/55" />
+        </Skeleton>
+        <div className="flex justify-between">
+          <Skeleton className="h-3 w-16" />
+          <Skeleton className="h-3 w-10" />
+        </div>
+      </div>
+      <Skeleton className="h-11 w-full rounded-xl bg-muted/80" />
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-3 w-16" />
+        </div>
+        {Array.from({ length: 6 }, (_, index) => (
+          <div
+            key={index}
+            className={cn(
+              "flex items-start gap-3 rounded-2xl border p-3",
+              index === 0 && "border-primary/30 bg-primary/5",
+            )}
+          >
+            <Skeleton
+              className={cn(
+                "mt-0.5 size-4 shrink-0 rounded-full",
+                index === 0 && "bg-primary/35",
+              )}
+            />
+            <div className="flex min-w-0 flex-1 flex-col gap-2">
+              <Skeleton className="h-3.5 w-full" />
+              <Skeleton className="h-3 w-2/3" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </aside>
+  );
+}
+
 export function LearningPlayerSkeleton() {
   return (
-    <div className="flex min-h-dvh flex-col bg-background">
-      <div className="flex h-14 shrink-0 items-center justify-between border-b px-4 sm:px-6">
-        <Skeleton className="h-5 w-40" />
-        <Skeleton className="h-9 w-24" />
-      </div>
-      <div className="flex flex-1 flex-col lg:flex-row">
-        <div className="flex w-full flex-1 flex-col gap-6 px-4 py-6 sm:px-6 lg:py-8">
-          <Skeleton className="aspect-video w-full rounded-2xl" />
-          <Skeleton className="h-8 w-2/3" />
-          <Skeleton className="h-24 w-full rounded-2xl" />
+    <div
+      role="status"
+      aria-label="Đang tải giao diện học tập"
+      aria-busy="true"
+      className="flex h-dvh min-h-0 flex-col overflow-hidden bg-background"
+    >
+      <div className="flex h-14 shrink-0 items-center justify-between gap-4 border-b bg-card px-4 sm:px-6">
+        <Skeleton className="h-5 w-36 sm:w-56" />
+        <div className="flex items-center gap-2">
+          <Skeleton className="hidden h-8 w-28 rounded-full sm:block" />
+          <Skeleton className="size-9 rounded-full bg-primary/15 sm:hidden" />
+          <Skeleton className="h-8 w-20 rounded-full" />
         </div>
-        <Skeleton className="h-96 w-full lg:w-[26rem]" />
+      </div>
+      <div className="flex min-h-0 flex-1 overflow-hidden">
+        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain">
+          <div className="flex min-h-full w-full flex-col gap-5 px-4 py-5 sm:gap-6 sm:px-6 sm:py-7 lg:px-8">
+            <LearningVideoSkeleton />
+            <div className="flex flex-col gap-2">
+              <Skeleton className="h-7 w-3/4 sm:h-8 sm:w-2/3" />
+              <Skeleton className="h-4 w-full max-w-3xl" />
+              <Skeleton className="h-4 w-4/5 max-w-2xl" />
+            </div>
+            <div className="flex items-center justify-between gap-4 rounded-2xl border bg-card/70 p-3 sm:p-4">
+              <div className="flex items-center gap-3">
+                <Skeleton className="size-9 rounded-full bg-primary/15" />
+                <div className="flex flex-col gap-2">
+                  <Skeleton className="h-3.5 w-28" />
+                  <Skeleton className="h-3 w-40" />
+                </div>
+              </div>
+              <Skeleton className="h-9 w-28 rounded-full bg-primary/20" />
+            </div>
+            <Skeleton className="h-11 w-full max-w-xl rounded-xl bg-muted/80" />
+            <div className="flex flex-col gap-4 rounded-2xl border bg-card/60 p-4 sm:p-6">
+              <div className="flex items-center gap-3">
+                <Skeleton className="size-9 rounded-xl bg-primary/15" />
+                <Skeleton className="h-5 w-40" />
+              </div>
+              <Skeleton className="h-24 w-full rounded-xl" />
+            </div>
+          </div>
+        </main>
+        <LessonSidebarSkeleton />
       </div>
     </div>
   );
@@ -277,8 +393,12 @@ function LessonTree({
 
 export function LearningPlayerTopbar({
   learningCourse,
+  isPanelOpen,
+  onShowPanel,
 }: {
   learningCourse: LearningCourse;
+  isPanelOpen: boolean;
+  onShowPanel: () => void;
 }) {
   return (
     <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center justify-between gap-3 border-b bg-card px-4 sm:px-6">
@@ -286,6 +406,18 @@ export function LearningPlayerTopbar({
         {learningCourse.course.title}
       </h1>
       <div className="flex shrink-0 items-center gap-2">
+        {!isPanelOpen && (
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            aria-label="Hiện danh sách bài học và trợ lý AI"
+            onClick={onShowPanel}
+          >
+            <PanelRightOpen data-icon="inline-start" aria-hidden="true" />
+            <span className="hidden sm:inline">Bảng học tập</span>
+          </Button>
+        )}
         <span className="hidden text-sm text-muted-foreground md:inline">
           {learningCourse.course.learningOrder === "sequential"
             ? "Học tuần tự"
@@ -320,7 +452,7 @@ export function LearningSidebar({
   const progressValue = getProgressValue(learningCourse.enrollment.progress);
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-4 p-4 sm:p-5 lg:p-6">
+    <div className="flex h-full min-h-0 flex-col gap-4 overflow-hidden p-4 sm:p-5 lg:p-6">
       <div className="flex items-center justify-between gap-2">
         <Badge variant="secondary" className="shrink-0">
           {learningCourse.course.learningOrder === "sequential"
@@ -335,6 +467,9 @@ export function LearningSidebar({
             type="button"
             onClick={onToggleLessonPanel}
             aria-pressed={lessonPanelOpen}
+            aria-label={
+              lessonPanelOpen ? "Ẩn bảng học tập" : "Hiện bảng học tập"
+            }
             title={lessonPanelOpen ? "Ẩn bảng học tập" : "Hiện bảng học tập"}
             className={buttonVariants({ variant: "ghost", size: "icon-sm" })}
           >
@@ -361,8 +496,8 @@ export function LearningSidebar({
         </div>
       </div>
 
-      <Tabs defaultValue="lessons" className="min-h-0 flex-1">
-        <TabsList className="grid h-11 w-full grid-cols-2 rounded-xl bg-muted p-1">
+      <Tabs defaultValue="lessons" className="flex min-h-0 flex-1 flex-col">
+        <TabsList className="grid h-11 w-full shrink-0 grid-cols-2 rounded-xl bg-muted p-1">
           <TabsTrigger value="lessons" className="rounded-lg">
             <BookOpen data-icon="inline-start" aria-hidden="true" />
             Bài học
@@ -375,7 +510,7 @@ export function LearningSidebar({
         <TabsContent
           value="lessons"
           keepMounted
-          className="mt-0 min-h-0 flex-1 overflow-y-auto pt-1"
+          className="mt-0 flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain pt-1"
         >
           <div className="flex flex-col gap-3">
             <div className="flex items-baseline justify-between gap-2">
@@ -394,7 +529,7 @@ export function LearningSidebar({
         <TabsContent
           value="chat"
           keepMounted
-          className="mt-0 min-h-0 flex-1 pt-1"
+          className="mt-0 flex min-h-0 flex-1 flex-col overflow-hidden pt-1"
         >
           <AiChatCard courseId={learningCourse.course.id} />
         </TabsContent>
@@ -582,6 +717,9 @@ function LessonSummaryPanel({
 export function LessonContentCard({
   courseId,
   isSavingWatchProgress,
+  isQuizLoading,
+  isQuizError,
+  quizError,
   hasQuiz,
   isError,
   isLoading,
@@ -596,6 +734,9 @@ export function LessonContentCard({
 }: {
   courseId: string;
   isSavingWatchProgress: boolean;
+  isQuizLoading: boolean;
+  isQuizError: boolean;
+  quizError: unknown;
   hasQuiz: boolean;
   isError: boolean;
   isLoading: boolean;
@@ -614,9 +755,20 @@ export function LessonContentCard({
     <main className="flex flex-col gap-6">
       {isLoading ? (
         <>
-          <Skeleton className="aspect-video w-full bg-black" />
-          <Skeleton className="h-8 w-2/3" />
-          <Skeleton className="h-24 w-full rounded-2xl" />
+          <LearningVideoSkeleton />
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-7 w-3/4 sm:h-8 sm:w-2/3" />
+            <Skeleton className="h-4 w-full max-w-3xl" />
+            <Skeleton className="h-4 w-4/5 max-w-2xl" />
+          </div>
+          <Skeleton className="h-11 w-full max-w-xl rounded-xl bg-muted/80" />
+          <div className="flex flex-col gap-4 rounded-2xl border bg-card/60 p-4 sm:p-6">
+            <div className="flex items-center gap-3">
+              <Skeleton className="size-9 rounded-xl bg-primary/15" />
+              <Skeleton className="h-5 w-40" />
+            </div>
+            <Skeleton className="h-24 w-full rounded-xl" />
+          </div>
         </>
       ) : isError ? (
         <Alert variant="destructive">
@@ -649,10 +801,18 @@ export function LessonContentCard({
             lesson={lesson}
             isSavingWatchProgress={isSavingWatchProgress}
           />
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList variant="line" className="w-full justify-start">
-              <TabsTrigger value="content">Nội dung bài học</TabsTrigger>
-              <TabsTrigger value="summary">Tóm tắt bài giảng</TabsTrigger>
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
+            <TabsList className="grid h-11 w-full grid-cols-2 rounded-xl bg-muted p-1">
+              <TabsTrigger value="content" className="rounded-lg">
+                Nội dung bài học
+              </TabsTrigger>
+              <TabsTrigger value="summary" className="rounded-lg">
+                Tóm tắt bài giảng
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="content" className="flex flex-col gap-6 pt-4">
               <MaterialPanel materialUrl={lesson.materialUrl} />
@@ -663,6 +823,40 @@ export function LessonContentCard({
                     Bài kiểm tra
                   </h2>
                   <LearnerQuizPanel courseId={courseId} lessonId={lesson.id} />
+                </section>
+              )}
+              {isQuizError && !hasQuiz && (
+                <section className="flex flex-col gap-4">
+                  <h2 className="flex items-center gap-2 text-lg font-semibold">
+                    <FileQuestion className="size-5" aria-hidden="true" />
+                    Bài kiểm tra
+                  </h2>
+                  <Alert variant="destructive">
+                    <AlertCircle aria-hidden="true" />
+                    <AlertTitle>Không tải được bài kiểm tra</AlertTitle>
+                    <AlertDescription>
+                      {mapLearningError(quizError)}
+                    </AlertDescription>
+                  </Alert>
+                </section>
+              )}
+              {!hasQuiz && !isQuizLoading && !isQuizError && (
+                <section className="flex flex-col gap-4">
+                  <h2 className="flex items-center gap-2 text-lg font-semibold">
+                    <FileQuestion className="size-5" aria-hidden="true" />
+                    Bài kiểm tra
+                  </h2>
+                  <Empty className="min-h-48 flex-none gap-3 rounded-2xl border border-dashed border-border/70 bg-muted/20 px-6 py-8">
+                    <EmptyHeader>
+                      <EmptyMedia variant="icon">
+                        <FileQuestion aria-hidden="true" />
+                      </EmptyMedia>
+                      <EmptyTitle>Chưa có bài kiểm tra</EmptyTitle>
+                      <EmptyDescription>
+                        Bài học này hiện chưa có nội dung kiểm tra.
+                      </EmptyDescription>
+                    </EmptyHeader>
+                  </Empty>
                 </section>
               )}
             </TabsContent>

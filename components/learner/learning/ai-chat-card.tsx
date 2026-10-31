@@ -137,7 +137,7 @@ export function AiChatCard({ courseId }: AiChatCardProps) {
       id="course-ai-chat"
       role="region"
       aria-label="Trợ lý AI khóa học"
-      className="flex h-[62vh] min-h-[26rem] max-h-[42rem] flex-col overflow-hidden lg:h-full lg:min-h-0 lg:max-h-none"
+      className="flex h-full min-h-0 flex-col overflow-hidden"
     >
       <div className="flex min-h-0 flex-1 flex-col gap-3">
         {isAiUnavailable ? (
