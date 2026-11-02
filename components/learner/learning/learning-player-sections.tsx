@@ -285,13 +285,13 @@ export function LearningCourseError({
   error: unknown;
 }) {
   return (
-    <div className="container w-full max-w-3xl px-6">
-      <Alert variant="destructive">
+    <div className="container mx-auto flex min-h-dvh w-full flex-col items-center justify-center gap-4 px-6">
+      <Alert className="w-full max-w-3xl!" variant="destructive">
         <AlertCircle aria-hidden="true" />
         <AlertTitle>Không tải được nội dung học tập</AlertTitle>
         <AlertDescription>{mapLearningError(error)}</AlertDescription>
       </Alert>
-      <div className="mt-4 flex flex-wrap gap-3">
+      <div className="flex flex-wrap justify-center gap-3">
         <Link href={`/courses/${courseId}`} className={buttonVariants()}>
           Xem chi tiết khóa học
         </Link>
@@ -308,8 +308,8 @@ export function LearningCourseError({
 
 export function EmptyLearningCourse() {
   return (
-    <div className="container w-full max-w-3xl px-6">
-      <Card>
+    <div className="container mx-auto flex min-h-dvh w-full flex-col items-center justify-center gap-4 px-6">
+      <Card className="w-full max-w-3xl!">
         <CardHeader>
           <CardTitle>Khóa học chưa có bài học</CardTitle>
           <CardDescription>
