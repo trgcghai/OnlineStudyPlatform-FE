@@ -34,7 +34,7 @@ function getMaxSize(type: "video" | "material") {
 
 function getAcceptDescription(type: "video" | "material") {
   return type === "video"
-    ? "MP4, WebM (tối đa 200MB)"
+    ? "MP4, WebM, MKV (tối đa 200MB)"
     : "PDF, DOCX, PPTX (tối đa 20MB)";
 }
 
@@ -54,7 +54,7 @@ function getFileRejectionMessage(
 
   if (errors.some((error) => error.code === "file-invalid-type")) {
     return type === "video"
-      ? "Video phải là file MP4 hoặc WebM."
+      ? "Video phải là file MP4, WebM hoặc MKV."
       : "Tài liệu phải là PDF, DOCX hoặc PPTX.";
   }
 

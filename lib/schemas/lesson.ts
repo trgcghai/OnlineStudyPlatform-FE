@@ -3,6 +3,7 @@ import { z } from "zod";
 export const LESSON_VIDEO_ACCEPT = {
   "video/mp4": [".mp4"],
   "video/webm": [".webm"],
+  "video/x-matroska": [".mkv"],
 };
 
 export const LESSON_MATERIAL_ACCEPT = {
