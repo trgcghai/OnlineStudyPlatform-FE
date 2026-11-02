@@ -243,7 +243,7 @@ function uploadBlob(
     };
     request.onerror = () => {
       signal.removeEventListener("abort", abort);
-      reject(new Error("Could not upload ZIP to MinIO"));
+      reject(new Error("Could not upload lesson import archive to MinIO"));
     };
     request.onabort = () => {
       signal.removeEventListener("abort", abort);

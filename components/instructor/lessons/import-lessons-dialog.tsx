@@ -19,7 +19,7 @@ import type { LessonImportResult } from "@/services/api/lessons";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-const MAX_ZIP_SIZE = 1024 * 1024 * 1024;
+const MAX_IMPORT_SIZE = 1024 * 1024 * 1024;
 
 function getFileRejectionMessage(rejections: FileRejection[]): string {
   const errors = rejections[0]?.errors ?? [];
@@ -28,7 +28,7 @@ function getFileRejectionMessage(rejections: FileRejection[]): string {
     rejections.length > 1 ||
     errors.some((error) => error.code === "too-many-files")
   ) {
-    return "Chỉ được chọn 1 tệp .zip.";
+    return "Chỉ được chọn 1 tệp .zip hoặc .rar.";
   }
 
   if (errors.some((error) => error.code === "file-too-large")) {
@@ -36,7 +36,7 @@ function getFileRejectionMessage(rejections: FileRejection[]): string {
   }
 
   if (errors.some((error) => error.code === "file-invalid-type")) {
-    return "Chỉ hỗ trợ gói bài học có định dạng .zip.";
+    return "Chỉ hỗ trợ gói bài học có định dạng .zip hoặc .rar.";
   }
 
   return "Không thể chọn tệp này. Vui lòng thử tệp khác.";
@@ -80,13 +80,13 @@ export function ImportLessonsDialog({
     setDetails([]);
     setResult(null);
 
-    if (nextFile && !nextFile.name.toLowerCase().endsWith(".zip")) {
+    if (nextFile && !/\.(zip|rar)$/i.test(nextFile.name)) {
       setFile(null);
-      setError("Chỉ hỗ trợ gói bài học có định dạng .zip.");
+      setError("Chỉ hỗ trợ gói bài học có định dạng .zip hoặc .rar.");
       return;
     }
 
-    if (nextFile && nextFile.size > MAX_ZIP_SIZE) {
+    if (nextFile && nextFile.size > MAX_IMPORT_SIZE) {
       setFile(null);
       setError("Gói bài học không được vượt quá 1 GB.");
       return;
@@ -99,10 +99,12 @@ export function ImportLessonsDialog({
     useDropzone({
       accept: {
         "application/zip": [".zip"],
+        "application/vnd.rar": [".rar"],
+        "application/x-rar-compressed": [".rar"],
       },
       disabled: isPending,
       maxFiles: 1,
-      maxSize: MAX_ZIP_SIZE,
+      maxSize: MAX_IMPORT_SIZE,
       multiple: false,
       onDropAccepted: (files) => handleFileSelect(files[0] ?? null),
       onDropRejected: (rejections) => {
@@ -115,7 +117,7 @@ export function ImportLessonsDialog({
 
   async function handleImport() {
     if (!file) {
-      setError("Hãy chọn một tệp .zip trước khi import.");
+      setError("Hãy chọn một tệp .zip hoặc .rar trước khi import.");
       return;
     }
 
@@ -137,7 +139,7 @@ export function ImportLessonsDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl!">
         <DialogHeader>
-          <DialogTitle>Import nhiều bài học từ ZIP</DialogTitle>
+          <DialogTitle>Import nhiều bài học từ ZIP/RAR</DialogTitle>
           <DialogDescription>
             Các bài học mới được thêm vào cuối khóa học. Cột order trong Excel
             quyết định thứ tự giữa các bài vừa import.
@@ -192,10 +194,10 @@ export function ImportLessonsDialog({
             <input key={inputKey} {...getInputProps()} />
             <Upload className="size-6 text-muted-foreground" />
             <span className="font-medium">
-              {file ? file.name : "Kéo thả tệp .zip hoặc bấm để chọn"}
+              {file ? file.name : "Kéo thả tệp .zip/.rar hoặc bấm để chọn"}
             </span>
             <span className="text-sm text-muted-foreground">
-              Tối đa 1 GB · Video MP4/WebM · Tài liệu PDF/DOCX/PPTX
+              Tối đa 1 GB · Video MP4/WebM/MKV · Tài liệu PDF/DOCX/PPTX
             </span>
           </div>
 
@@ -205,7 +207,7 @@ export function ImportLessonsDialog({
                 <span>
                   {stage === "preparing" && "Đang tạo phiên tải lên..."}
                   {stage === "uploading" &&
-                    "Đang tải ZIP trực tiếp lên kho tệp..."}
+                    "Đang tải gói import trực tiếp lên kho tệp..."}
                   {stage === "queued" && "Đang chờ xử lý..."}
                   {stage === "processing" && "Đang kiểm tra và tạo bài học..."}
                 </span>
@@ -273,7 +275,7 @@ export function ImportLessonsDialog({
               </>
             ) : (
               <>
-                <Upload /> Import ZIP
+                <Upload /> Import ZIP/RAR
               </>
             )}
           </Button>
