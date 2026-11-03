@@ -140,10 +140,6 @@ export function ImportLessonsDialog({
       <DialogContent className="max-w-2xl!">
         <DialogHeader>
           <DialogTitle>Import nhiều bài học từ ZIP/RAR</DialogTitle>
-          <DialogDescription>
-            Các bài học mới được thêm vào cuối khóa học. Cột order trong Excel
-            quyết định thứ tự giữa các bài vừa import.
-          </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
