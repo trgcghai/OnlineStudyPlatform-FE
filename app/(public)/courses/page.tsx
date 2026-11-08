@@ -1,7 +1,8 @@
 "use client";
 
-import { ArrowRight, BookOpen, Search, X } from "lucide-react";
+import { BookOpen, Search, X } from "lucide-react";
 import { useQueryStates } from "nuqs";
+import { useSelector } from "react-redux";
 import { PublicCourseCard } from "@/components/courses/public-course-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +19,12 @@ import {
   URL_SEARCH_DEBOUNCE_MS,
 } from "@/lib/search-params/filter-parsers";
 import { usePublishedCoursesList } from "@/hooks/usePublicCourses";
+import { useMyCourseRecommendations } from "@/hooks/useRecommendations";
+import {
+  selectAuthUser,
+  selectIsAuthenticated,
+} from "@/lib/features/authSlice";
+import { USER_ROLES } from "@/services/api/users";
 import {
   Select,
   SelectContent,
@@ -52,6 +59,13 @@ export default function CoursePage() {
   const isEmpty =
     !coursesQuery.isLoading && !coursesQuery.isError && total === 0;
   const hasFilters = Boolean(filters.q || filters.category);
+  const authUser = useSelector(selectAuthUser);
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const isLearner = isAuthenticated && authUser?.role === USER_ROLES.LEARNER;
+  const recommendationsQuery = useMyCourseRecommendations(
+    8,
+    isEmpty && hasFilters && isLearner,
+  );
 
   useClampUrlPage({
     page: filters.page,
@@ -177,7 +191,7 @@ export default function CoursePage() {
       </section>
 
       <section className="space-y-5" aria-live="polite">
-        <div className="flex flex-wrap items-end justify-between gap-3 border-b pb-4">
+        <div className="flex flex-wrap items-end justify-between gap-3 pb-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
               Khám phá
@@ -215,20 +229,63 @@ export default function CoursePage() {
             ))}
           </div>
         ) : isEmpty ? (
-          <div className="rounded-3xl border border-dashed bg-card px-6 py-16 text-center">
-            <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-indigo-50 text-indigo-700 dark:bg-indigo-400/10 dark:text-indigo-200">
-              <Search className="size-6" aria-hidden="true" />
+          <>
+            <div className="rounded-3xl border border-dashed bg-card px-6 py-16 text-center">
+              <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-indigo-50 text-indigo-700 dark:bg-indigo-400/10 dark:text-indigo-200">
+                <Search className="size-6" aria-hidden="true" />
+              </div>
+              <h3 className="mt-5 text-2xl">Chưa tìm thấy khóa học phù hợp</h3>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
+                Thử một từ khóa khác hoặc xóa bộ lọc để xem thêm lựa chọn.
+              </p>
+              {hasFilters ? (
+                <Button
+                  className="mt-5"
+                  variant="destructive"
+                  onClick={clearFilters}
+                >
+                  <X className="size-4" /> Xóa bộ lọc
+                </Button>
+              ) : null}
             </div>
-            <h3 className="mt-5 text-2xl">Chưa tìm thấy khóa học phù hợp</h3>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-              Thử một từ khóa khác hoặc xóa bộ lọc để xem thêm lựa chọn.
-            </p>
-            {hasFilters ? (
-              <Button className="mt-5" variant="outline" onClick={clearFilters}>
-                Xóa bộ lọc <ArrowRight className="size-4" />
-              </Button>
+            {hasFilters && isLearner ? (
+              <section
+                className="space-y-5 mt-8"
+                aria-live="polite"
+                aria-label="Gợi ý khóa học theo sở thích"
+              >
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+                    Dành cho bạn
+                  </p>
+                  <h3 className="mt-1 text-2xl tracking-tight sm:text-3xl">
+                    Có thể bạn cũng quan tâm
+                  </h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Gợi ý dựa trên hồ sơ và sở thích học tập của bạn.
+                  </p>
+                </div>
+                {recommendationsQuery.isLoading ? (
+                  <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {Array.from({ length: 4 }, (_, index) => (
+                      <Skeleton key={index} className="h-80 rounded-2xl" />
+                    ))}
+                  </div>
+                ) : recommendationsQuery.data?.length ? (
+                  <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {recommendationsQuery.data.map((course) => (
+                      <PublicCourseCard key={course.id} course={course} />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="rounded-2xl border bg-card p-5 text-sm text-muted-foreground">
+                    Chưa có gợi ý phù hợp lúc này. Hãy thử xóa bộ lọc để khám
+                    phá toàn bộ khóa học.
+                  </p>
+                )}
+              </section>
             ) : null}
-          </div>
+          </>
         ) : (
           <>
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
