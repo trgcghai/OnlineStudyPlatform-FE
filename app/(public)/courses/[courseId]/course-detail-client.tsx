@@ -14,11 +14,16 @@ import { useSelector } from "react-redux";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { PublicCourseSection } from "@/components/courses/public-course-section";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toast";
 import { useAddCartItem } from "@/hooks/useCart";
 import { useEnrollInCourse } from "@/hooks/useEnrollments";
-import { usePublishedCourse } from "@/hooks/usePublicCourses";
+import {
+  useLatestPublishedCourses,
+  usePublishedCourse,
+  usePublishedCourseSuggestions,
+} from "@/hooks/usePublicCourses";
 import { formatCoursePrice } from "@/lib/schemas/course";
 import {
   selectIsAuthenticated,
@@ -36,6 +41,8 @@ export function CourseDetailClient({ courseId }: CourseDetailClientProps) {
   const router = useRouter();
   const [paymentRequired, setPaymentRequired] = useState(false);
   const courseQuery = usePublishedCourse(courseId);
+  const suggestionsQuery = usePublishedCourseSuggestions(8);
+  const latestQuery = useLatestPublishedCourses(8);
   const course = courseQuery.data;
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const userRole = useSelector(selectUserRole);
@@ -49,6 +56,12 @@ export function CourseDetailClient({ courseId }: CourseDetailClientProps) {
   const lessons = course
     ? [...(course.lessons ?? [])].sort((a, b) => a.position - b.position)
     : [];
+  const suggestions = (suggestionsQuery.data ?? [])
+    .filter((suggestion) => suggestion.id !== course?.id)
+    .slice(0, 4);
+  const latestCourses = (latestQuery.data ?? [])
+    .filter((latestCourse) => latestCourse.id !== course?.id)
+    .slice(0, 4);
 
   async function handleEnroll() {
     if (!course) return;
@@ -328,6 +341,21 @@ export function CourseDetailClient({ courseId }: CourseDetailClientProps) {
           </div>
         </details>
       </section>
+
+      <div className="mt-14 space-y-12 pt-6">
+        <PublicCourseSection
+          title="Gợi ý dành cho bạn"
+          description="Những khóa học được chọn theo hành trình học tập của bạn."
+          courses={suggestions}
+          isLoading={suggestionsQuery.isLoading}
+        />
+        <PublicCourseSection
+          title="Khóa học mới nhất"
+          description="Khám phá những khóa học vừa được cập nhật."
+          courses={latestCourses}
+          isLoading={latestQuery.isLoading}
+        />
+      </div>
     </main>
   );
 }
