@@ -47,7 +47,7 @@ export function PublicHeader() {
             <span className="flex size-9 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <GraduationCap className="size-5" aria-hidden="true" />
             </span>
-            <span className="truncate">LMS AI</span>
+            <span className="truncate">E-Learning AI</span>
           </Link>
           <nav className="hidden items-center gap-4 text-sm font-medium text-muted-foreground sm:flex">
             <Link href="/courses" className="hover:text-foreground">

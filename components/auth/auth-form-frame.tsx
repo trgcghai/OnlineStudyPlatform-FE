@@ -22,7 +22,9 @@ export function AuthFormFrame({ children }: { children: ReactNode }) {
           <span className="grid size-10 place-items-center rounded-2xl border border-white/15 bg-white/10 text-indigo-100">
             <BookOpen className="size-5" aria-hidden="true" />
           </span>
-          <span className="text-sm font-semibold tracking-wide">LMS AI</span>
+          <span className="text-sm font-semibold tracking-wide">
+            E-Learning AI
+          </span>
         </div>
 
         <div className="relative z-10 mt-8 max-w-md lg:mt-0">
