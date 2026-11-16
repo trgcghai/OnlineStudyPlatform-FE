@@ -61,7 +61,7 @@ export function PublicHeader() {
           {isAuthenticated ? (
             <>
               {isLearner ? <CartPopover /> : null}
-              <NotificationPopover />
+              <NotificationPopover mobileHref="/learner/notifications" />
               <Link
                 href="/profile"
                 className={cn(

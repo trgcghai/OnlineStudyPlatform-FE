@@ -62,40 +62,42 @@ export function Pagination({
   pageSize,
   onPageChange,
   onPageSizeChange,
-  allowPageSizeChange = true
+  allowPageSizeChange = true,
 }: PaginationProps) {
   const currentCount = Math.min(pageSize, totalItems - (page - 1) * pageSize);
   const pageNumbers = getPageNumbers(page, totalPages);
 
   return (
-    <div className="mt-4 flex items-center justify-between gap-4">
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 sm:gap-4">
+      <div className="flex min-w-0 flex-wrap items-center gap-2 text-sm text-muted-foreground">
         <span>
           {currentCount} trên {totalItems} mục
         </span>
-        {allowPageSizeChange && <Select
-          value={String(pageSize)}
-          onValueChange={(v) => {
-            if (allowPageSizeChange && onPageSizeChange) {
-              onPageSizeChange(Number(v));
-            }
-          }}
-        >
-          <SelectTrigger className="h-8 w-16">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {PAGE_SIZE_OPTIONS.map((size) => (
-              <SelectItem key={size} value={String(size)}>
-                {size}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>}
+        {allowPageSizeChange && (
+          <Select
+            value={String(pageSize)}
+            onValueChange={(v) => {
+              if (allowPageSizeChange && onPageSizeChange) {
+                onPageSizeChange(Number(v));
+              }
+            }}
+          >
+            <SelectTrigger className="h-8 w-16">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PAGE_SIZE_OPTIONS.map((size) => (
+                <SelectItem key={size} value={String(size)}>
+                  {size}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
       {totalPages > 1 && (
-        <div className="flex items-center gap-1">
+        <div className="flex max-w-full flex-wrap items-center justify-end gap-1">
           <Tooltip>
             <TooltipTrigger
               render={

@@ -40,7 +40,7 @@ export default function LearnerCartPage() {
 
   return (
     <section className="w-full space-y-6">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col items-start justify-between gap-5 sm:flex-row sm:gap-4">
         <div className="space-y-2">
           <p className="inline-flex items-center gap-2 text-sm font-medium text-primary">
             Giỏ hàng của tôi
@@ -52,7 +52,7 @@ export default function LearnerCartPage() {
             Xem lại các khóa học bạn đã thêm vào giỏ hàng.
           </p>
         </div>
-        <div className="rounded-2xl bg-muted p-4 text-sm">
+        <div className="w-full shrink-0 rounded-2xl bg-muted p-4 text-sm sm:w-auto">
           <p className="text-muted-foreground">Tổng tạm tính</p>
           <p className="mt-1 text-2xl font-bold">
             {formatCoursePrice(cart?.summary.totalPrice ?? 0)}
@@ -60,7 +60,9 @@ export default function LearnerCartPage() {
           {items.length > 0 ? (
             <Link
               href="/learner/checkout"
-              className={buttonVariants({ className: "mt-4 w-full" })}
+              className={buttonVariants({
+                className: "mt-4 w-full sm:min-w-48",
+              })}
             >
               Xem lại đơn hàng
             </Link>
@@ -83,7 +85,7 @@ export default function LearnerCartPage() {
       ) : null}
 
       {!cartQuery.isLoading && !cartQuery.isError && items.length === 0 ? (
-        <div className="flex flex-col items-center rounded-3xl border bg-card px-6 py-16 text-center">
+        <div className="flex flex-col items-center rounded-3xl border bg-card px-4 py-12 text-center sm:px-6 sm:py-16">
           <ShoppingCart
             className="size-12 text-muted-foreground"
             aria-hidden="true"
@@ -107,9 +109,9 @@ export default function LearnerCartPage() {
           {items.map((item) => (
             <article
               key={item.id}
-              className="flex gap-4 rounded-2xl border bg-card p-4 shadow-sm"
+              className="grid grid-cols-[auto_minmax(0,1fr)_auto] gap-3 rounded-2xl border bg-card p-3 shadow-sm sm:flex sm:gap-4 sm:p-4"
             >
-              <div className="relative size-24 shrink-0 overflow-hidden rounded-2xl bg-muted">
+              <div className="relative size-20 shrink-0 overflow-hidden rounded-xl bg-muted sm:size-24 sm:rounded-2xl">
                 {item.course.thumbnail ? (
                   <Image
                     src={item.course.thumbnail}
@@ -117,11 +119,11 @@ export default function LearnerCartPage() {
                     alt={item.course.title}
                     fill
                     className="object-cover"
-                    sizes="96px"
+                    sizes="(min-width: 640px) 96px, 80px"
                   />
                 ) : (
                   <BookOpen
-                    className="m-8 size-8 text-muted-foreground"
+                    className="m-6 size-8 text-muted-foreground sm:m-8"
                     aria-hidden="true"
                   />
                 )}
@@ -129,7 +131,7 @@ export default function LearnerCartPage() {
               <div className="min-w-0 flex-1">
                 <Link
                   href={`/courses/${item.courseId}`}
-                  className="line-clamp-2 text-lg font-semibold hover:text-primary"
+                  className="line-clamp-2 text-base font-semibold hover:text-primary sm:text-lg"
                 >
                   {item.course.title}
                 </Link>
@@ -144,6 +146,7 @@ export default function LearnerCartPage() {
                 type="button"
                 variant="destructive"
                 size="icon-sm"
+                className="self-start"
                 aria-label={`Xóa ${item.course.title} khỏi giỏ hàng`}
                 disabled={removeCartItem.isPending}
                 onClick={() => removeCartItem.mutate(item.courseId)}
