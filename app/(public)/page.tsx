@@ -496,7 +496,8 @@ function VisitorHome() {
               href="/courses"
               className={buttonVariants({
                 size: "lg",
-                className: "mt-7 bg-white text-indigo-950 hover:bg-indigo-50",
+                variant: "secondary",
+                className: "mt-7",
               })}
             >
               Khám phá khóa học{" "}
@@ -510,7 +511,7 @@ function VisitorHome() {
               <BookOpen className="size-12" aria-hidden="true" />
             </div>
             <span className="absolute left-[14%] top-[18%] rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm backdrop-blur">
-              Ý tưởng mới ✦
+              Ý tưởng mới
             </span>
             <span className="absolute bottom-[16%] right-[8%] rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm backdrop-blur">
               Học mọi lúc

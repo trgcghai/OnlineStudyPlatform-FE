@@ -43,15 +43,13 @@ export default function LearnerCartPage() {
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-2">
           <p className="inline-flex items-center gap-2 text-sm font-medium text-primary">
-            <ShoppingCart className="size-4" aria-hidden="true" />
             Giỏ hàng của tôi
           </p>
           <h1 className="text-3xl font-bold tracking-tight">
             Khóa học đã chọn
           </h1>
           <p className="max-w-3xl text-muted-foreground">
-            Xem lại các khóa học trả phí bạn đã thêm vào giỏ hàng. Bạn có thể
-            xóa các khóa học không muốn mua hoặc tiếp tục xem khóa học khác.
+            Xem lại các khóa học bạn đã thêm vào giỏ hàng.
           </p>
         </div>
         <div className="rounded-2xl bg-muted p-4 text-sm">
