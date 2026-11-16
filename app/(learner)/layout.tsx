@@ -1,17 +1,7 @@
-import Link from "next/link";
 import { AuthGuard } from "@/components/auth/auth-guard";
+import { LearnerNavigation } from "@/components/layout/learner-navigation";
 import { PublicHeader } from "@/components/layout/public-header";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { USER_ROLES } from "@/services/api/users";
-import {
-  Bell,
-  Award,
-  BookOpen,
-  CircleUserRound,
-  CreditCard,
-  ShoppingCart,
-} from "lucide-react";
 
 const LEARNER_ROLES = [USER_ROLES.LEARNER] as const;
 
@@ -25,59 +15,11 @@ export default function LearnerLayout({
       <div className="flex min-h-dvh flex-col bg-background">
         <PublicHeader />
         <div className="border-b bg-muted/30">
-          <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-2 px-6 py-3">
-            <Link
-              href="/learner/dashboard"
-              className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
-            >
-              <CircleUserRound data-icon="inline-start" aria-hidden="true" />
-              Tổng quan
-            </Link>
-            <Link
-              href="/learner/notifications"
-              className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
-            >
-              <Bell data-icon="inline-start" aria-hidden="true" />
-              Thông báo
-            </Link>
-            <Link
-              href="/learner/courses"
-              className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
-            >
-              <BookOpen data-icon="inline-start" aria-hidden="true" />
-              Khóa học của tôi
-            </Link>
-            <Link
-              href="/learner/certificates"
-              className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
-            >
-              <Award data-icon="inline-start" aria-hidden="true" />
-              Chứng chỉ
-            </Link>
-            <Link
-              href="/learner/cart"
-              className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
-            >
-              <ShoppingCart data-icon="inline-start" aria-hidden="true" />
-              Giỏ hàng
-            </Link>
-            <Link
-              href="/learner/payments"
-              className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
-            >
-              <CreditCard data-icon="inline-start" aria-hidden="true" />
-              Thanh toán
-            </Link>
-            <Link
-              href="/profile"
-              className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
-            >
-              <CircleUserRound data-icon="inline-start" aria-hidden="true" />
-              Hồ sơ của tôi
-            </Link>
+          <div className="mx-auto w-full max-w-7xl px-4 py-3 sm:px-6">
+            <LearnerNavigation />
           </div>
         </div>
-        <main className="flex flex-1 justify-center p-6 container mx-auto max-w-7xl">
+        <main className="container mx-auto flex max-w-7xl flex-1 justify-center px-4 py-5 sm:p-6">
           {children}
         </main>
       </div>

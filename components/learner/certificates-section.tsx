@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Download01Icon, Award01Icon } from "@hugeicons/core-free-icons";
+import { Download01Icon } from "@hugeicons/core-free-icons";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -94,17 +94,6 @@ export function CertificatesSection() {
       aria-labelledby="certificates-heading"
       className="flex flex-col gap-4"
     >
-      <h2
-        id="certificates-heading"
-        className="flex items-center gap-2 text-xl font-semibold tracking-tight"
-      >
-        <HugeiconsIcon
-          icon={Award01Icon}
-          className="size-5 text-primary"
-          aria-hidden="true"
-        />
-        Chứng chỉ của bạn
-      </h2>
       {dashboardQuery.isLoading || certificatesQuery.isLoading ? (
         <Skeleton className="h-32 w-full" aria-label="Đang tải chứng chỉ" />
       ) : dashboardQuery.isError ? (
@@ -146,8 +135,8 @@ export function CertificatesSection() {
               <EmptyHeader>
                 <EmptyTitle>Chưa có chứng chỉ</EmptyTitle>
                 <EmptyDescription>
-                  Hoàn thành toàn bộ bài học và đạt các bài quiz để nhận chứng
-                  chỉ Việt–Anh.
+                  Bạn chưa hoàn thành khóa học nào hoặc chứng chỉ chưa được cấp.
+                  Hãy tiếp tục học để nhận chứng chỉ khi hoàn thành khóa học.
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>

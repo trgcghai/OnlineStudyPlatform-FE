@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import { CreditCard } from "lucide-react";
 import { useQueryStates } from "nuqs";
 import {
   LearnerPaymentFilters,
@@ -65,16 +64,13 @@ export default function LearnerPaymentsPage() {
     <div className="w-full space-y-6">
       <div className="space-y-2">
         <p className="inline-flex items-center gap-2 text-sm font-medium text-primary">
-          <CreditCard className="size-4" aria-hidden="true" />
           Lịch sử thanh toán
         </p>
         <h1 className="text-3xl font-bold tracking-tight">
           Thanh toán của tôi
         </h1>
         <p className="max-w-3xl text-muted-foreground">
-          Xem lại các giao dịch thanh toán khóa học của bạn. Trang này chỉ hiển
-          thị thông tin tổng quan và không chứa dữ liệu ngân hàng hoặc nhà cung
-          cấp thanh toán.
+          Xem lại các giao dịch thanh toán khóa học của bạn.
         </p>
       </div>
 

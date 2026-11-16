@@ -2,12 +2,26 @@
 
 import Link from "next/link";
 import { useSelector } from "react-redux";
-import { CircleUserRound, GraduationCap, LogIn, UserPlus } from "lucide-react";
+import {
+  CircleUserRound,
+  GraduationCap,
+  LogIn,
+  Menu,
+  UserPlus,
+} from "lucide-react";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { CartPopover } from "@/components/cart/cart-popover";
 import { ModeToggle } from "@/components/mode-toggle";
 import { NotificationPopover } from "@/components/notifications/notification-popover";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import {
   selectAuthUser,
   selectIsAuthenticated,
@@ -24,16 +38,16 @@ export function PublicHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur">
-      <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-6">
-        <div className="flex items-center gap-6">
+      <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-3 px-4 sm:gap-4 sm:px-6">
+        <div className="flex min-w-0 items-center gap-4 sm:gap-6">
           <Link
             href="/"
-            className="flex items-center gap-2 font-semibold tracking-tight"
+            className="flex min-w-0 items-center gap-2 font-semibold tracking-tight"
           >
-            <span className="flex size-9 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <GraduationCap className="size-5" aria-hidden="true" />
             </span>
-            <span>LMS AI</span>
+            <span className="truncate">LMS AI</span>
           </Link>
           <nav className="hidden items-center gap-4 text-sm font-medium text-muted-foreground sm:flex">
             <Link href="/courses" className="hover:text-foreground">
@@ -42,12 +56,12 @@ export function PublicHeader() {
           </nav>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <ModeToggle />
           {isAuthenticated ? (
             <>
               {isLearner ? <CartPopover /> : null}
-              <NotificationPopover />
+              <NotificationPopover mobileHref="/learner/notifications" />
               <Link
                 href="/profile"
                 className={cn(
@@ -58,23 +72,117 @@ export function PublicHeader() {
                 <CircleUserRound aria-hidden="true" />
                 {user?.name ?? "Hồ sơ"}
               </Link>
-              <LogoutButton />
+              <span className="hidden sm:block">
+                <LogoutButton />
+              </span>
             </>
           ) : (
             <>
               <Link
                 href="/signin"
-                className={buttonVariants({ variant: "outline" })}
+                className={cn(
+                  buttonVariants({ variant: "outline" }),
+                  "hidden sm:inline-flex",
+                )}
               >
                 <LogIn aria-hidden="true" />
                 <span className="hidden sm:inline">Đăng nhập</span>
               </Link>
-              <Link href="/register" className={buttonVariants()}>
+              <Link
+                href="/register"
+                className={cn(buttonVariants(), "hidden sm:inline-flex")}
+              >
                 <UserPlus aria-hidden="true" />
                 <span className="hidden sm:inline">Tạo tài khoản</span>
               </Link>
             </>
           )}
+          <div className="sm:hidden">
+            <Sheet>
+              <SheetTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Mở menu điều hướng"
+                  />
+                }
+              >
+                <Menu aria-hidden="true" />
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[min(88vw,22rem)]">
+                <SheetHeader>
+                  <SheetTitle>Menu</SheetTitle>
+                </SheetHeader>
+                <nav className="flex flex-col gap-2 px-3 pb-6">
+                  <SheetClose
+                    nativeButton={false}
+                    render={
+                      <Link
+                        href="/courses"
+                        className={cn(
+                          buttonVariants({ variant: "ghost" }),
+                          "w-full justify-start",
+                        )}
+                      />
+                    }
+                  >
+                    <GraduationCap aria-hidden="true" />
+                    Khóa học
+                  </SheetClose>
+                  {isAuthenticated ? (
+                    <>
+                      <SheetClose
+                        nativeButton={false}
+                        render={
+                          <Link
+                            href="/profile"
+                            className={cn(
+                              buttonVariants({ variant: "ghost" }),
+                              "w-full justify-start",
+                            )}
+                          />
+                        }
+                      >
+                        <CircleUserRound aria-hidden="true" />
+                        Hồ sơ
+                      </SheetClose>
+                      <LogoutButton />
+                    </>
+                  ) : (
+                    <>
+                      <SheetClose
+                        nativeButton={false}
+                        render={
+                          <Link
+                            href="/signin"
+                            className={cn(
+                              buttonVariants({ variant: "outline" }),
+                              "w-full",
+                            )}
+                          />
+                        }
+                      >
+                        <LogIn aria-hidden="true" />
+                        Đăng nhập
+                      </SheetClose>
+                      <SheetClose
+                        render={
+                          <Link
+                            href="/register"
+                            className={cn(buttonVariants(), "w-full")}
+                          />
+                        }
+                      >
+                        <UserPlus aria-hidden="true" />
+                        Tạo tài khoản
+                      </SheetClose>
+                    </>
+                  )}
+                </nav>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
       </div>
     </header>

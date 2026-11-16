@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Bell, BellDot, CheckCheck, Inbox, LoaderCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
@@ -71,7 +72,7 @@ function NotificationRow({
   );
 }
 
-export function NotificationPopover() {
+export function NotificationPopover({ mobileHref }: { mobileHref?: string }) {
   const router = useRouter();
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const { data: unreadData } = useUnreadNotificationCount();
@@ -128,109 +129,134 @@ export function NotificationPopover() {
   }
 
   return (
-    <Popover>
-      <PopoverTrigger
-        render={
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Thông báo"
-            className="relative"
+    <>
+      {mobileHref ? (
+        <Link
+          href={mobileHref}
+          className={cn(
+            buttonVariants({ variant: "ghost", size: "icon-sm" }),
+            "relative sm:hidden",
+          )}
+          aria-label="Thông báo"
+        >
+          {unreadCount > 0 ? (
+            <BellDot aria-hidden="true" />
+          ) : (
+            <Bell aria-hidden="true" />
+          )}
+          {unreadCount > 0 ? (
+            <span className="absolute -right-1 -top-1 flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-destructive-foreground">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          ) : null}
+        </Link>
+      ) : null}
+      <div className="hidden sm:block">
+        <Popover>
+          <PopoverTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Thông báo"
+                className="relative"
+              >
+                {unreadCount > 0 ? <BellDot /> : <Bell />}
+                {unreadCount > 0 && (
+                  <span className="absolute -right-1 -top-1 flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-destructive-foreground">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </Button>
+            }
+          />
+          <PopoverContent
+            align="end"
+            className="w-[min(24rem,calc(100vw-2rem))] gap-3 p-0"
           >
-            {unreadCount > 0 ? <BellDot /> : <Bell />}
-            {unreadCount > 0 && (
-              <span className="absolute -right-1 -top-1 flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-destructive-foreground">
-                {unreadCount > 9 ? "9+" : unreadCount}
-              </span>
-            )}
-          </Button>
-        }
-      />
-      <PopoverContent
-        align="end"
-        className="w-[min(24rem,calc(100vw-2rem))] gap-3 p-0"
-      >
-        <PopoverHeader className="p-4 pb-0">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0 space-y-1">
-              <PopoverTitle>Thông báo</PopoverTitle>
-              <PopoverDescription>
-                {unreadCount > 0
-                  ? `${unreadCount} thông báo chưa xem`
-                  : "Không có thông báo chưa xem"}
-              </PopoverDescription>
-            </div>
+            <PopoverHeader className="p-4 pb-0">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 space-y-1">
+                  <PopoverTitle>Thông báo</PopoverTitle>
+                  <PopoverDescription>
+                    {unreadCount > 0
+                      ? `${unreadCount} thông báo chưa xem`
+                      : "Không có thông báo chưa xem"}
+                  </PopoverDescription>
+                </div>
 
-            {unreadCount > 0 ? (
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      className="shrink-0 px-2 text-xs"
-                      disabled={isMarkingAllSeen}
-                      onClick={() => void handleMarkAllSeen()}
-                    >
-                      <CheckCheck className="size-4" aria-hidden="true" />
-                    </Button>
+                {unreadCount > 0 ? (
+                  <Tooltip>
+                    <TooltipTrigger
+                      render={
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          className="shrink-0 px-2 text-xs"
+                          disabled={isMarkingAllSeen}
+                          onClick={() => void handleMarkAllSeen()}
+                        >
+                          <CheckCheck className="size-4" aria-hidden="true" />
+                        </Button>
+                      }
+                    />
+                    <TooltipContent>
+                      <p>Đánh dấu tất cả đã xem</p>
+                    </TooltipContent>
+                  </Tooltip>
+                ) : null}
+              </div>
+            </PopoverHeader>
+            <div className="max-h-[28rem] overflow-y-auto">
+              {isPending && (
+                <div className="flex items-center justify-center gap-2 py-8 text-sm text-muted-foreground">
+                  <LoaderCircle
+                    className="size-4 animate-spin"
+                    aria-hidden="true"
+                  />
+                </div>
+              )}
+
+              {isError && (
+                <div className="rounded-2xl bg-destructive/10 p-3 text-sm text-destructive">
+                  Không thể tải thông báo. Vui lòng thử lại sau.
+                </div>
+              )}
+
+              {!isPending && !isError && notifications.length === 0 && (
+                <div className="flex flex-col items-center gap-2 py-8 text-center text-sm text-muted-foreground">
+                  <Inbox className="size-8" aria-hidden="true" />
+                  Chưa có thông báo nào.
+                </div>
+              )}
+
+              {notifications.map((notification) => (
+                <NotificationRow
+                  key={notification.id}
+                  notification={notification}
+                  disabled={
+                    isMarkingSeen && pendingNotificationId === notification.id
                   }
+                  onOpen={handleOpenNotification}
                 />
-                <TooltipContent>
-                  <p>Đánh dấu tất cả đã xem</p>
-                </TooltipContent>
-              </Tooltip>
-            ) : null}
-          </div>
-        </PopoverHeader>
-        <div className="max-h-[28rem] overflow-y-auto">
-          {isPending && (
-            <div className="flex items-center justify-center gap-2 py-8 text-sm text-muted-foreground">
-              <LoaderCircle
-                className="size-4 animate-spin"
-                aria-hidden="true"
-              />
+              ))}
+
+              <div ref={loadMoreRef} aria-hidden="true" />
+
+              {isFetchingNextPage && (
+                <div className="flex items-center justify-center gap-2 py-3 text-sm text-muted-foreground">
+                  <LoaderCircle
+                    className="size-4 animate-spin"
+                    aria-hidden="true"
+                  />
+                  Đang tải thêm...
+                </div>
+              )}
             </div>
-          )}
-
-          {isError && (
-            <div className="rounded-2xl bg-destructive/10 p-3 text-sm text-destructive">
-              Không thể tải thông báo. Vui lòng thử lại sau.
-            </div>
-          )}
-
-          {!isPending && !isError && notifications.length === 0 && (
-            <div className="flex flex-col items-center gap-2 py-8 text-center text-sm text-muted-foreground">
-              <Inbox className="size-8" aria-hidden="true" />
-              Chưa có thông báo nào.
-            </div>
-          )}
-
-          {notifications.map((notification) => (
-            <NotificationRow
-              key={notification.id}
-              notification={notification}
-              disabled={
-                isMarkingSeen && pendingNotificationId === notification.id
-              }
-              onOpen={handleOpenNotification}
-            />
-          ))}
-
-          <div ref={loadMoreRef} aria-hidden="true" />
-
-          {isFetchingNextPage && (
-            <div className="flex items-center justify-center gap-2 py-3 text-sm text-muted-foreground">
-              <LoaderCircle
-                className="size-4 animate-spin"
-                aria-hidden="true"
-              />
-              Đang tải thêm...
-            </div>
-          )}
-        </div>
-      </PopoverContent>
-    </Popover>
+          </PopoverContent>
+        </Popover>
+      </div>
+    </>
   );
 }
