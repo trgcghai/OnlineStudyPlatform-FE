@@ -319,7 +319,7 @@ function LearnerHome({ name }: { name: string }) {
         isLoading={recommendationsQuery.isLoading}
       />
       <PublicCourseSection
-        title="Mới trên LMS AI"
+        title="Mới trên E-Learning"
         description="Khám phá những khóa học vừa được cập nhật."
         courses={latestQuery.data}
         isLoading={latestQuery.isLoading}
@@ -526,7 +526,7 @@ function VisitorHome() {
         isLoading={suggestionsQuery.isLoading}
       />
       <PublicCourseSection
-        title="Mới trên LMS AI"
+        title="Mới trên E-Learning"
         description="Những khóa học vừa được cập nhật gần đây."
         courses={latestQuery.data}
         isLoading={latestQuery.isLoading}

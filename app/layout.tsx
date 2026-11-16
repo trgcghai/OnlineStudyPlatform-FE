@@ -23,7 +23,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LMS – Nền tảng học trực tuyến thông minh",
+  title: "E-Learning - Nền tảng học trực tuyến thông minh",
   description: "Nền tảng học trực tuyến AI hỗ trợ người học và giảng viên.",
 };
 

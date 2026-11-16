@@ -18,7 +18,7 @@ export function PublicShell({ children }: PublicShellProps) {
       <footer className="border-t bg-muted/30">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-6 py-8 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="font-semibold text-foreground">LMS AI</p>
+            <p className="font-semibold text-foreground">E-Learning AI</p>
             <p className="mt-1">
               Nền tảng học trực tuyến thông minh cho người học và giảng viên.
             </p>
