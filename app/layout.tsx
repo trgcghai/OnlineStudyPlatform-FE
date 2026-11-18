@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Figtree } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import "./globals.css";
@@ -9,6 +9,7 @@ import ReduxProvider from "@/components/providers/redux-provider";
 import { Toaster } from "@/components/ui/toast";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { NotificationRealtimeListener } from "@/components/notifications/notification-realtime-listener";
+import { RegisterServiceWorker } from "@/components/pwa/register-sw";
 
 const figtree = Figtree({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -25,6 +26,17 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "E-Learning - Nền tảng học trực tuyến thông minh",
   description: "Nền tảng học trực tuyến AI hỗ trợ người học và giảng viên.",
+  icons: {
+    icon: "/icon-192x192.png",
+    apple: "/apple-touch-icon.png",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#2563eb",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -42,6 +54,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
+        <RegisterServiceWorker />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
