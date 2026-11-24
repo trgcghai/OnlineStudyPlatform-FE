@@ -75,13 +75,15 @@ function SummaryCard({
   value: string | number;
 }) {
   return (
-    <article className="rounded-3xl border bg-card p-5 shadow-sm">
+    <article className="min-w-0 rounded-3xl border bg-card p-5 shadow-sm">
       <div className="flex items-center justify-between gap-4">
-        <div>
+        <div className="min-w-0">
           <p className="text-sm text-muted-foreground">{label}</p>
-          <p className="mt-2 text-3xl font-bold tracking-tight">{value}</p>
+          <p className="mt-2 break-words text-3xl font-bold tracking-tight">
+            {value}
+          </p>
         </div>
-        <div className="rounded-2xl bg-primary/10 p-3 text-primary">
+        <div className="shrink-0 rounded-2xl bg-primary/10 p-3 text-primary">
           <Icon className="size-6" aria-hidden="true" />
         </div>
       </div>
@@ -129,7 +131,7 @@ function CourseDashboardCard({ course }: { course: LearnerDashboardCourse }) {
             </div>
           </div>
         </div>
-        <div className="grid gap-3 text-sm sm:grid-cols-2 lg:w-80 h-full">
+        <div className="grid w-full min-w-0 gap-3 text-sm sm:grid-cols-2 lg:w-80">
           <div className="rounded-2xl bg-muted/50 p-4">
             <p className="text-muted-foreground">Hoàn thành</p>
             <p className="mt-1 text-lg font-semibold">

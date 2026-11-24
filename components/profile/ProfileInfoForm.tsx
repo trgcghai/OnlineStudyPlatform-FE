@@ -138,7 +138,11 @@ function ProfileInfoForm() {
             </Field>
           </FieldGroup>
 
-          <Button type="submit" disabled={isPending}>
+          <Button
+            type="submit"
+            disabled={isPending}
+            className="w-full sm:w-fit"
+          >
             {isPending ? (
               <>
                 <Spinner /> Đang lưu...

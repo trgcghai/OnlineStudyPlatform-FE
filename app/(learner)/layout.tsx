@@ -14,7 +14,7 @@ export default function LearnerLayout({
   return (
     <AuthGuard allowedRoles={LEARNER_ROLES}>
       <div className="flex min-h-dvh flex-col bg-background">
-        <PublicHeader />
+        <PublicHeader showMobileMenu={false} />
         <MobileRouteHeader scope="learner" />
         <div className="border-b bg-muted/30">
           <div className="mx-auto w-full max-w-7xl px-4 py-3 sm:px-6">

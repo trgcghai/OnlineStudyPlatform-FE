@@ -128,7 +128,7 @@ function ProfileAvatar() {
           Chọn ảnh JPEG, PNG, WebP hoặc GIF, tối đa 5MB.
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col items-center gap-4">
+      <CardContent className="flex min-w-0 flex-col items-center gap-4">
         <div
           {...getRootProps({
             className: cn(
@@ -143,7 +143,9 @@ function ProfileAvatar() {
           <input {...getInputProps()} />
           <Avatar className="size-28">
             <AvatarImage src={avatarSrc} alt={profile?.name} />
-            <AvatarFallback className="text-2xl">{initials || "?"}</AvatarFallback>
+            <AvatarFallback className="text-2xl">
+              {initials || "?"}
+            </AvatarFallback>
           </Avatar>
           {!selectedFile && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 rounded-full bg-background/70 text-center text-xs font-medium opacity-0 transition-opacity group-hover:opacity-100">
@@ -172,6 +174,7 @@ function ProfileAvatar() {
             type="button"
             disabled={!selectedFile || isPending}
             onClick={() => void saveSelectedAvatar()}
+            className="w-full sm:w-fit"
           >
             {isPending ? (
               <>

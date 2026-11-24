@@ -32,7 +32,11 @@ import {
 import { cn } from "@/lib/utils";
 import { USER_ROLES } from "@/services/api/users";
 
-export function PublicHeader() {
+export function PublicHeader({
+  showMobileMenu = true,
+}: {
+  showMobileMenu?: boolean;
+}) {
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const user = useSelector(selectAuthUser);
   const userRole = useSelector(selectUserRole);
@@ -107,130 +111,135 @@ export function PublicHeader() {
               </Link>
             </>
           )}
-          <div className="sm:hidden">
-            <Sheet>
-              <SheetTrigger
-                render={
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-10"
-                    aria-label="Mở menu điều hướng"
-                  />
-                }
-              >
-                <Menu aria-hidden="true" />
-              </SheetTrigger>
-              <SheetContent
-                side="right"
-                className="max-h-dvh w-[min(88vw,22rem)] overflow-y-auto"
-              >
-                <SheetHeader>
-                  <SheetTitle>Menu</SheetTitle>
-                </SheetHeader>
-                <nav className="flex flex-col gap-2 px-3 pb-6">
-                  <SheetClose
-                    nativeButton={false}
-                    render={
-                      <Link
-                        href="/courses"
-                        className={cn(
-                          buttonVariants({ variant: "ghost" }),
-                          "min-h-11 w-full justify-start",
-                        )}
-                      />
-                    }
-                  >
-                    <GraduationCap aria-hidden="true" />
-                    Khóa học
-                  </SheetClose>
-                  {isAuthenticated ? (
-                    <>
-                      {isLearner ? (
-                        <>
-                          <SheetClose
-                            nativeButton={false}
-                            render={
-                              <Link
-                                href="/learner/cart"
-                                className={cn(
-                                  buttonVariants({ variant: "ghost" }),
-                                  "min-h-11 w-full justify-start",
-                                )}
-                              />
-                            }
-                          >
-                            <ShoppingCart aria-hidden="true" />
-                            Giỏ hàng
-                          </SheetClose>
-                          <SheetClose
-                            nativeButton={false}
-                            render={
-                              <Link
-                                href="/learner/notifications"
-                                className={cn(
-                                  buttonVariants({ variant: "ghost" }),
-                                  "min-h-11 w-full justify-start",
-                                )}
-                              />
-                            }
-                          >
-                            <Bell aria-hidden="true" />
-                            Thông báo
-                          </SheetClose>
-                        </>
-                      ) : null}
-                      <SheetClose
-                        nativeButton={false}
-                        render={
-                          <Link
-                            href="/profile"
-                            className={cn(
-                              buttonVariants({ variant: "ghost" }),
-                              "min-h-11 w-full justify-start",
-                            )}
-                          />
-                        }
-                      >
-                        <CircleUserRound aria-hidden="true" />
-                        Hồ sơ
-                      </SheetClose>
-                      <LogoutButton className="w-full justify-start" />
-                    </>
-                  ) : (
-                    <>
-                      <SheetClose
-                        nativeButton={false}
-                        render={
-                          <Link
-                            href="/signin"
-                            className={cn(
-                              buttonVariants({ variant: "outline" }),
-                              "min-h-11 w-full",
-                            )}
-                          />
-                        }
-                      >
-                        <LogIn aria-hidden="true" />
-                        Đăng nhập
-                      </SheetClose>
-                      <SheetClose
-                        render={
-                          <Link
-                            href="/register"
-                            className={cn(buttonVariants(), "min-h-11 w-full")}
-                          />
-                        }
-                      >
-                        <UserPlus aria-hidden="true" />
-                        Tạo tài khoản
-                      </SheetClose>
-                    </>
-                  )}
-                </nav>
-              </SheetContent>
-            </Sheet>
-          </div>
+          {showMobileMenu ? (
+            <div className="sm:hidden">
+              <Sheet>
+                <SheetTrigger
+                  render={
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-10"
+                      aria-label="Mở menu điều hướng"
+                    />
+                  }
+                >
+                  <Menu aria-hidden="true" />
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="max-h-dvh w-[min(88vw,22rem)] overflow-y-auto"
+                >
+                  <SheetHeader>
+                    <SheetTitle>Menu</SheetTitle>
+                  </SheetHeader>
+                  <nav className="flex flex-col gap-2 px-3 pb-6">
+                    <SheetClose
+                      nativeButton={false}
+                      render={
+                        <Link
+                          href="/courses"
+                          className={cn(
+                            buttonVariants({ variant: "ghost" }),
+                            "min-h-11 w-full justify-start",
+                          )}
+                        />
+                      }
+                    >
+                      <GraduationCap aria-hidden="true" />
+                      Khóa học
+                    </SheetClose>
+                    {isAuthenticated ? (
+                      <>
+                        {isLearner ? (
+                          <>
+                            <SheetClose
+                              nativeButton={false}
+                              render={
+                                <Link
+                                  href="/learner/cart"
+                                  className={cn(
+                                    buttonVariants({ variant: "ghost" }),
+                                    "min-h-11 w-full justify-start",
+                                  )}
+                                />
+                              }
+                            >
+                              <ShoppingCart aria-hidden="true" />
+                              Giỏ hàng
+                            </SheetClose>
+                            <SheetClose
+                              nativeButton={false}
+                              render={
+                                <Link
+                                  href="/learner/notifications"
+                                  className={cn(
+                                    buttonVariants({ variant: "ghost" }),
+                                    "min-h-11 w-full justify-start",
+                                  )}
+                                />
+                              }
+                            >
+                              <Bell aria-hidden="true" />
+                              Thông báo
+                            </SheetClose>
+                          </>
+                        ) : null}
+                        <SheetClose
+                          nativeButton={false}
+                          render={
+                            <Link
+                              href="/profile"
+                              className={cn(
+                                buttonVariants({ variant: "ghost" }),
+                                "min-h-11 w-full justify-start",
+                              )}
+                            />
+                          }
+                        >
+                          <CircleUserRound aria-hidden="true" />
+                          Hồ sơ
+                        </SheetClose>
+                        <LogoutButton className="w-full justify-start" />
+                      </>
+                    ) : (
+                      <>
+                        <SheetClose
+                          nativeButton={false}
+                          render={
+                            <Link
+                              href="/signin"
+                              className={cn(
+                                buttonVariants({ variant: "outline" }),
+                                "min-h-11 w-full",
+                              )}
+                            />
+                          }
+                        >
+                          <LogIn aria-hidden="true" />
+                          Đăng nhập
+                        </SheetClose>
+                        <SheetClose
+                          render={
+                            <Link
+                              href="/register"
+                              className={cn(
+                                buttonVariants(),
+                                "min-h-11 w-full",
+                              )}
+                            />
+                          }
+                        >
+                          <UserPlus aria-hidden="true" />
+                          Tạo tài khoản
+                        </SheetClose>
+                      </>
+                    )}
+                  </nav>
+                </SheetContent>
+              </Sheet>
+            </div>
+          ) : null}
         </div>
       </div>
     </header>

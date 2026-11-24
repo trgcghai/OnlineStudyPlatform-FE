@@ -57,7 +57,10 @@ export default function SignInPage() {
 
     try {
       const result = await loginMutation.mutateAsync(values);
-      router.push(getRoleHomePath(result.user.role));
+      // Do not keep the sign-in page in history after a successful login.
+      // Otherwise the mobile back button can return to sign-in and look like
+      // the session was logged out.
+      router.replace(getRoleHomePath(result.user.role));
     } catch (error) {
       setFormError(getLoginFormError(error));
     }
