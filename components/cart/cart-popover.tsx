@@ -29,8 +29,8 @@ export function CartPopover() {
       <Link
         href="/learner/cart"
         className={cn(
-          buttonVariants({ variant: "ghost", size: "icon-sm" }),
-          "relative sm:hidden",
+          buttonVariants({ variant: "ghost", size: "icon" }),
+          "relative size-10 sm:hidden",
         )}
         aria-label="Giỏ hàng"
       >

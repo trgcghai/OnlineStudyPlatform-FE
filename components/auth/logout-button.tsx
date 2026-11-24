@@ -15,8 +15,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { LoaderCircle, LogOut } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-export function LogoutButton() {
+interface LogoutButtonProps {
+  className?: string;
+  mobileIconOnly?: boolean;
+}
+
+export function LogoutButton({
+  className,
+  mobileIconOnly = false,
+}: LogoutButtonProps) {
   const router = useRouter();
   const { logout } = useAuth();
   const [pending, setPending] = useState(false);
@@ -42,18 +51,24 @@ export function LogoutButton() {
       <Button
         type="button"
         variant="destructive"
+        size={mobileIconOnly ? "icon" : undefined}
+        className={cn("min-h-11 sm:min-h-9", className)}
         onClick={() => setOpen(true)}
         disabled={pending}
       >
         {pending ? (
           <>
             <LoaderCircle className="animate-spin" aria-hidden="true" />
-            Đang đăng xuất...
+            <span className={mobileIconOnly ? "sr-only" : undefined}>
+              Đang đăng xuất...
+            </span>
           </>
         ) : (
           <>
             <LogOut aria-hidden="true" />
-            Đăng xuất
+            <span className={mobileIconOnly ? "sr-only" : undefined}>
+              Đăng xuất
+            </span>
           </>
         )}
       </Button>

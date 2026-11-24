@@ -1,6 +1,7 @@
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { AdminSidebar } from "@/components/admin-sidebar";
 import { AdminTopbar } from "@/components/layout/admin-topbar";
+import { MobileRouteHeader } from "@/components/layout/mobile-route-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { USER_ROLES } from "@/services/api/users";
 
@@ -17,7 +18,8 @@ export default function AdminLayout({
         <AdminSidebar />
         <SidebarInset className="bg-muted/30">
           <AdminTopbar />
-          <div className="flex-1 p-4 sm:p-6 lg:p-8 bg-background">
+          <MobileRouteHeader scope="admin" />
+          <div className="min-w-0 flex-1 bg-background p-4 sm:p-6 lg:p-8">
             {children}
           </div>
         </SidebarInset>

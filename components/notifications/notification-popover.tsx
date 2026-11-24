@@ -134,8 +134,8 @@ export function NotificationPopover({ mobileHref }: { mobileHref?: string }) {
         <Link
           href={mobileHref}
           className={cn(
-            buttonVariants({ variant: "ghost", size: "icon-sm" }),
-            "relative sm:hidden",
+            buttonVariants({ variant: "ghost", size: "icon" }),
+            "relative size-10 sm:hidden",
           )}
           aria-label="Thông báo"
         >
