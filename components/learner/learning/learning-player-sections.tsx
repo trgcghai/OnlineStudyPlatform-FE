@@ -36,6 +36,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LearnerQuizPanel } from "@/app/(learning)/learner/courses/[courseId]/learn/learner-quiz-panel";
 import { AiChatCard } from "@/components/learner/learning/ai-chat-card";
+import { MobileBackButton } from "@/components/layout/mobile-back-button";
 import { LessonCompletionButton } from "./lesson-completion-button";
 import {
   mapLearningError,
@@ -402,9 +403,14 @@ export function LearningPlayerTopbar({
 }) {
   return (
     <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center justify-between gap-3 border-b bg-card px-4 sm:px-6">
-      <h1 className="min-w-0 truncate text-sm font-semibold">
-        {learningCourse.course.title}
-      </h1>
+      <div className="flex min-w-0 items-center gap-2">
+        <MobileBackButton
+          fallbackHref={`/courses/${learningCourse.course.id}`}
+        />
+        <h1 className="min-w-0 truncate text-sm font-semibold">
+          {learningCourse.course.title}
+        </h1>
+      </div>
       <div className="flex shrink-0 items-center gap-2">
         {!isPanelOpen && (
           <Button
@@ -425,7 +431,10 @@ export function LearningPlayerTopbar({
         </span>
         <Link
           href={`/courses/${learningCourse.course.id}`}
-          className={buttonVariants({ variant: "outline", size: "sm" })}
+          className={cn(
+            buttonVariants({ variant: "outline", size: "sm" }),
+            "hidden md:inline-flex",
+          )}
         >
           <X aria-hidden="true" />
           Thoát

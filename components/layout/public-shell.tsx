@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { MobileRouteHeader } from "@/components/layout/mobile-route-header";
 import { PublicHeader } from "@/components/layout/public-header";
 
 interface PublicShellProps {
@@ -12,6 +13,7 @@ export function PublicShell({ children }: PublicShellProps) {
   return (
     <div className="flex min-h-dvh flex-col bg-background">
       <PublicHeader />
+      <MobileRouteHeader scope="public" />
 
       <div className="flex flex-1 flex-col">{children}</div>
 

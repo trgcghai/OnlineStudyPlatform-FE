@@ -28,6 +28,7 @@ export function ModeToggle() {
     <Button
       variant="ghost"
       size="icon"
+      className="size-10 sm:size-9"
       onClick={toggleTheme}
       aria-label={`Current theme: ${currentTheme.name}`}
     >

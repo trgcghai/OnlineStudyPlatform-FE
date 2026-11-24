@@ -53,7 +53,7 @@ function NavigationLink({
       href={item.href}
       className={cn(
         buttonVariants({ variant: "ghost", size: "sm" }),
-        mobile && "w-full justify-start",
+        mobile && "min-h-11 w-full justify-start",
       )}
     >
       <Icon data-icon="inline-start" aria-hidden="true" />
@@ -80,23 +80,26 @@ export function LearnerNavigation() {
             render={
               <Button
                 variant="outline"
-                className="w-full justify-between"
-                aria-label="Mở menu"
+                className="min-h-11 w-full justify-between"
+                aria-label="Mở menu học viên"
               />
             }
           >
             <span className="inline-flex items-center gap-2">
               <Menu aria-hidden="true" />
-              Menu
+              Menu học viên
             </span>
             <ChevronRight aria-hidden="true" />
           </SheetTrigger>
-          <SheetContent side="right" className="w-[min(88vw,22rem)]">
+          <SheetContent
+            side="right"
+            className="max-h-dvh w-[min(88vw,22rem)] overflow-y-auto"
+          >
             <SheetHeader>
-              <SheetTitle>Menu</SheetTitle>
+              <SheetTitle>Menu học viên</SheetTitle>
             </SheetHeader>
             <nav
-              aria-label="Điều hướng"
+              aria-label="Điều hướng học viên"
               className="flex flex-col gap-2 px-3 pb-6"
             >
               {LEARNER_NAVIGATION_ITEMS.map((item) => {
@@ -111,14 +114,14 @@ export function LearnerNavigation() {
                         href={item.href}
                         className={cn(
                           buttonVariants({ variant: "ghost", size: "sm" }),
-                          "w-full justify-start",
+                          "min-h-11 w-full justify-start",
                         )}
-                      >
-                        <Icon data-icon="inline-start" aria-hidden="true" />
-                        {item.label}
-                      </Link>
+                      />
                     }
-                  />
+                  >
+                    <Icon data-icon="inline-start" aria-hidden="true" />
+                    {item.label}
+                  </SheetClose>
                 );
               })}
             </nav>
