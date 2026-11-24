@@ -66,7 +66,7 @@ function getFallbackHref(scope: MobileRouteScope) {
 }
 
 function isRootRoute(pathname: string, scope: MobileRouteScope) {
-  if (scope === "public") return pathname === "/";
+  if (scope === "public") return pathname === "/" || pathname === "/courses";
   if (scope === "learner") return pathname === "/learner/dashboard";
   if (scope === "admin") return pathname === "/admin";
   return pathname === "/instructor";
